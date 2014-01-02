@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: Misc | Yet Another Blogy Blog]]></title>
+  <title><![CDATA[Category: Misc | Blog]]></title>
   <link href="http://yoursite.com/blog/categories/misc/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2014-01-02T14:22:48-08:00</updated>
+  <updated>2014-01-02T14:38:38-08:00</updated>
   <id>http://yoursite.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
