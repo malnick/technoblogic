@@ -9,8 +9,16 @@
         <lastmod>2014-01-02T14:35:45-08:00</lastmod>
     </url>
     <url>
+        <loc>http://yoursite.com/blog/about/</loc>
+        <lastmod>2014-01-03T08:01:14-08:00</lastmod>
+    </url>
+    <url>
         <loc>http://yoursite.com/blog/archives/</loc>
         <lastmod>2014-01-02T14:35:45-08:00</lastmod>
+    </url>
+    <url>
+        <loc>http://yoursite.com/blog/contact/</loc>
+        <lastmod>2014-01-03T08:10:10-08:00</lastmod>
     </url>
     <url>
         <loc>http://yoursite.com/</loc>

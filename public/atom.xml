@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Blog]]></title>
+  <title><![CDATA[A techy blog]]></title>
   <link href="http://yoursite.com/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2014-01-02T14:38:38-08:00</updated>
+  <updated>2014-01-03T08:10:18-08:00</updated>
   <id>http://yoursite.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
