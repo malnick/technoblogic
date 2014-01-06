@@ -4,7 +4,7 @@
   <title><![CDATA[A techy blog]]></title>
   <link href="http://yoursite.com/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2014-01-03T11:38:06-08:00</updated>
+  <updated>2014-01-06T15:52:09-07:00</updated>
   <id>http://yoursite.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
@@ -14,9 +14,38 @@
 
   
   <entry>
+    <title type="html"><![CDATA[Puppet Run Vis]]></title>
+    <link href="http://yoursite.com/blog/2014/01/06/puppet-run-vis/"/>
+    <updated>2014-01-06T00:00:00-07:00</updated>
+    <id>http://yoursite.com/blog/2014/01/06/puppet-run-vis</id>
+    <content type="html"><![CDATA[<h3>D3 Visualization for a Puppet Run</h3>
+
+<p>One of the common complaints with puppet, especially puppet enterprise (PE) is that it does not scale in the way that one would hope. In example, the PE console. EVERY NODE must report to the console in PE. So, if, for example, you&rsquo;re a sysadmin working with 10,000+ or even 1,000+ PE nodes you&rsquo;re going to have a crazy busy console.</p>
+
+<p>One way to make this problem more managable is to find savvy ways to visualize the data. Here I propose one such way to manage this using D3 as the visualization tool and js-yaml, a node.js lib to parse a PE run YAML file for the D3 dataset.</p>
+
+<p>The main issue here is in developing such a debugging tool I would hope to alliviate and not add to the already cumbersome way console manages 1000&rsquo;s of nodes. The tool should scale to &lsquo;n&rsquo; number of nodes, no matter what changes on the backend with postgres or the number of consoles &ndash; if there are 10 or 10,000,000 nodes I want this tool to be able to help the user troubleshoot errors on three axes:</p>
+
+<pre><code>* Time - the time the error occured in the context of the run
+* Error type - red for failure, orange for warning, green for successful
+* Resource Invovled - the resource that either failued, generated warning or was successful. 
+</code></pre>
+
+<p>So in my mind, I have this layout which actually involved a couple layers:</p>
+
+<pre><code>* View 1 - Circular graph; inner circle represents precentage of nodes with failures in red; mid circle is percentage of nodes with warnings in orange; outer circle is percentage of nodes with no errors in green.
+* View 2 - Click on red area of graph; transition to new circular graph of same circumfrance; starting at 12 o'clock and moving clockwise around the graph is time, each 360 rotation starts a new level; each level is denoted by the number of failures; each failure's area or degrees of circumfrance is the precentage of nodes with that error. 
+    * In eaxmple: if you have a 5 errors over 50 nodes, each with 10 instances of those 5 errors the area of the graph that the error takes up would be equally distributed through out the circle starting at time -0 at 12 o'clock moving clockwise around the circle (ok maybe a tarus now) until a equal number of levels has been reached once the center of the circle or tarus has been reached.
+* View 3 - same as 2 but for warnings (orange).
+* View 4 - same as 2 but for successes or no error (green).
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[The Need for a Replication Provider]]></title>
     <link href="http://yoursite.com/blog/2014/01/03/the-need-to-a-replication-provider/"/>
-    <updated>2014-01-03T09:05:51-08:00</updated>
+    <updated>2014-01-03T10:05:51-07:00</updated>
     <id>http://yoursite.com/blog/2014/01/03/the-need-to-a-replication-provider</id>
     <content type="html"><![CDATA[<h3>Why we need a replication provider for puppet</h3>
 
@@ -423,7 +452,7 @@ The coding for it is far more economical, and we don&rsquo;t have a psudo-bash s
   <entry>
     <title type="html"><![CDATA[Blog Post #1]]></title>
     <link href="http://yoursite.com/blog/2014/01/02/blog-post-number-1/"/>
-    <updated>2014-01-02T10:52:00-08:00</updated>
+    <updated>2014-01-02T11:52:00-07:00</updated>
     <id>http://yoursite.com/blog/2014/01/02/blog-post-number-1</id>
     <content type="html"><![CDATA[<p>Is this thing on?</p>
 ]]></content>
