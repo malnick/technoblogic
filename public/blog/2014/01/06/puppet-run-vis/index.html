@@ -19,3 +19,140 @@
 * View 3 - same as 2 but for warnings (orange).
 * View 4 - same as 2 but for successes or no error (green).
 </code></pre>
+
+<p>Something similar to this: <a href="http://xliberation.com/parse/colortable/parsed3.html">http://xliberation.com/parse/colortable/parsed3.html</a></p>
+
+<p>So the initial view is very simple, it is just a ratio of nodes in three categories of &ldquo;has failures (center, red)&rdquo;, &ldquo;has warnings (mid circle, orange)&rdquo; and &ldquo;has no errors (outter circle, green)&rdquo;.</p>
+
+<p>So, how do we deal with nodes with errors, warnings and successes? We lop them into the lowest common denomenator: if it has successes and warnings it goes to the warning loop; if it has successes warnings and errors it goes to error loop; if it has successes and errors it goes to error.</p>
+
+<p>Our lowest common denomenator is the fact that we are only concerned with nodes that have errors or warnings, if it&rsquo;s successful that&rsquo;s great, we want to see it but errors are the what we are debugging.</p>
+
+<h3>&lsquo;n&rsquo; scalability</h3>
+
+<p>Yeah, it&rsquo;s what needs to happen.</p>
+
+<p>Humans are really bad at abstracting long lists. I mean, &ldquo;node so-and-so had error this-and-that&rdquo; for 10,000,000 lines isn&rsquo;t so helpful. Sure, &ldquo;&mdash;trace&rdquo; or &ldquo;&mdash;debug&rdquo; is helpful, but ITSALOTOFLINESOFCODE&#8221; so wtf do we do?</p>
+
+<p>We have to make it human friendly. Humans can abstract information on way more levels than &ldquo;line 1, 2,3&hellip;.&lsquo;n&rsquo;&rdquo;. We have 5 complete senses (for most of us!) so we should leverage a few more than textual abstractions of code. Color, shapes, area graphs; abstracting the run levels of a puppet run into &ldquo;zooms&rdquo;. These are all available to us.</p>
+
+<h3>D3</h3>
+
+<p>D3 is a javascript lib that talks directly to the DOM to quickly and efficiently create interactive scalable vector graphics. WTF does that mean? It means it can run in the PE console with little overhead, take it&rsquo;s datasets from the parsed YAML in PuppetDB via some savvy js-yaml action and run in basically any browser.</p>
+
+<p>All you need to know is it&rsquo;s super rad.. and more importantly, proven.</p>
+
+<h3>HOW DO WE PARSE THE YAML</h3>
+
+<p>js-yaml, maybe. Or some other YAML to JSON converter that we can get arrays of data out of the YAML from for our JS D3 vis. That isn&rsquo;t so difficult.</p>
+
+<p>Our PuppetDB YAML looks a little like this (for an example, I&rsquo;m using the first couple lines):</p>
+
+<figure class='code'><figcaption><span>last_puppet_run.yaml</span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span> <span class="kt">!ruby</span><span class="l-Scalar-Plain">/object:Puppet::Transaction::Report</span>
+</span><span class='line'><span class="l-Scalar-Plain">metrics</span><span class="p-Indicator">:</span>
+</span><span class='line'><span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="kt">!ruby</span><span class="l-Scalar-Plain">/object:Puppet::Util::Metric</span>
+</span><span class='line'><span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">resources</span>
+</span><span class='line'><span class="l-Scalar-Plain">label</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Resources</span>
+</span><span class='line'><span class="l-Scalar-Plain">values</span><span class="p-Indicator">:</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">total</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Total</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">85</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">skipped</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Skipped</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">failed</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Failed</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">1</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">failed_to_restart</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="s">&quot;Failed</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">restart&quot;</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">restarted</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Restarted</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">changed</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Changed</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">out_of_sync</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="s">&quot;Out</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">sync&quot;</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">1</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">scheduled</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Scheduled</span>
+</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>A converstion of this file to JSON would output something like:</p>
+
+<figure class='code'><figcaption><span>last_puppet_run.json </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;metrics&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;resources&quot;</span><span class="p">:</span> <span class="s2">&quot;!ruby/object:Puppet::Util::Metric&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;!ruby/sym executed_command&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Events&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;values&quot;</span><span class="p">:</span> <span class="p">[</span>
+</span><span class='line'>    <span class="s2">&quot;- total&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s2">&quot;Total&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>    <span class="s2">&quot;- failure&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s2">&quot;Failure&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>    <span class="s2">&quot;- success&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s2">&quot;Success&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="mi">0</span>
+</span><span class='line'>  <span class="p">],</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This was encoded to JSON via: <a href="https://npmjs.org/package/yamljs">https://npmjs.org/package/yamljs</a></p>
+
+<pre><code>yaml2json last_run_report.yaml --pretty
+</code></pre>

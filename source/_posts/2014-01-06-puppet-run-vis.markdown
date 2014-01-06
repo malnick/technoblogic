@@ -51,4 +51,65 @@ All you need to know is it's super rad.. and more importantly, proven.
 
 js-yaml, maybe. Or some other YAML to JSON converter that we can get arrays of data out of the YAML from for our JS D3 vis. That isn't so difficult. 
 
+Our PuppetDB YAML looks a little like this (for an example, I'm using the first couple lines):
+
+{% codeblock lang:yaml last_puppet_run.yaml%}
+--- !ruby/object:Puppet::Transaction::Report
+metrics: 
+resources: !ruby/object:Puppet::Util::Metric
+name: resources
+label: Resources
+values: 
+- - total
+- Total
+- 85
+- - skipped
+- Skipped
+- 0
+- - failed
+- Failed
+- 1
+- - failed_to_restart
+- "Failed to restart"
+- 0
+- - restarted
+- Restarted
+- 0
+- - changed
+- Changed
+- 0
+- - out_of_sync
+- "Out of sync"
+- 1
+- - scheduled
+- Scheduled
+- 0
+{% endcodeblock %}
+
+A converstion of this file to JSON would output something like:
+
+{% codeblock lang:json last_puppet_run.json %}
+{
+  "metrics": null,
+  "resources": "!ruby/object:Puppet::Util::Metric",
+  "name": "!ruby/sym executed_command",
+  "label": "Events",
+  "values": [
+    "- total",
+    "Total",
+    1,
+    "- failure",
+    "Failure",
+    1,
+    "- success",
+    "Success",
+    0
+  ],
+}
+{% endcodeblock %}
+
+This was encoded to JSON via: https://npmjs.org/package/yamljs
+
+	yaml2json last_run_report.yaml --pretty
+
 
