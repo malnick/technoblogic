@@ -9,7 +9,8 @@
   <meta name="author" content="Jeff">
 
   
-  <meta name="description" content="D3 Visualization for a Puppet Run One of the common complaints with puppet, especially puppet enterprise (PE) is that it does not scale as one would &hellip;">
+  <meta name="description" content="This just happened: 1
+INFO | jvm 1 | 2014/03/11 16:12:34 | Exception in thread "ActiveMQ BrokerService[ppm.prod.dc2.adpghs.com] Task-79" Exception in &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +70,538 @@
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/2014/03/12/debugging-activemq-jvm-heap-memory-errors/">Debugging ActiveMQ JVM Heap Memory Errors</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-12T21:08:06-07:00" pubdate data-updated="true">Mar 12<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>This just happened:</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>INFO   | jvm 1    | 2014/03/11 16:12:34 | Exception in thread "ActiveMQ BrokerService[ppm.prod.dc2.adpghs.com] Task-79" Exception in thread "ActiveMQ BrokerService[ppm.prod.dc2.adpghs.com] Task-101" Exception in thread "ActiveMQ BrokerService[ppm.prod.dc2.adpghs.com] Task-87" Exception in thread "ActiveMQ BrokerService[ppm.prod.dc2.adpghs.com] Task-30" Exception in thread "ActiveMQ BrokerService[ppm.prod.dc2.adpghs.com] Task-74" java.lang.OutOfMemoryError: unable to create new native thread</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Since this is on a production server you need to recreate it in a testing environment. Since I&rsquo;m partial to vagrant I stand up 4 agent nodes and a master via pe-build vagrant plugin. My Vagrantfile looks something like this:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># -*- mode: ruby -*-</span>
+</span><span class='line'><span class="c1"># vi: set ft=ruby :</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># Vagrantfile API/syntax version. Don&#39;t touch unless you know what you&#39;re doing!</span>
+</span><span class='line'><span class="no">VAGRANTFILE_API_VERSION</span> <span class="o">=</span> <span class="s2">&quot;2&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="no">VAGRANTFILE_API_VERSION</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="s2">&quot;centos-64-x64-nocm&quot;</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">box_url</span> <span class="o">=</span> <span class="s2">&quot;http://puppet-vagrant-boxes.puppetlabs.com/centos-64-x64-fusion503-nocm.box&quot;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">pe_build</span><span class="o">.</span><span class="n">version</span>       <span class="o">=</span> <span class="s1">&#39;3.1.0&#39;</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">pe_build</span><span class="o">.</span><span class="n">download_root</span> <span class="o">=</span> <span class="s1">&#39;https://s3.amazonaws.com/pe-builds/released&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">## Master</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:master</span> <span class="k">do</span> <span class="o">|</span><span class="n">master</span><span class="o">|</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provider</span> <span class="ss">:vmware_fusion</span> <span class="k">do</span> <span class="o">|</span><span class="n">v</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">v</span><span class="o">.</span><span class="n">vmx</span><span class="o">[</span><span class="s2">&quot;memsize&quot;</span><span class="o">]</span>  <span class="o">=</span> <span class="s2">&quot;4096&quot;</span>
+</span><span class='line'>      <span class="n">v</span><span class="o">.</span><span class="n">vmx</span><span class="o">[</span><span class="s2">&quot;numvcpus&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="s2">&quot;4&quot;</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.100&quot;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="ss">:master</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;service iptables stop&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">## agent 1</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:agent1</span> <span class="k">do</span> <span class="o">|</span><span class="n">agent</span><span class="o">|</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provider</span> <span class="ss">:vmware_fusion</span>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.111&quot;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;agent1.puppetlabs.vm&#39;</span>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span>   <span class="o">=</span>  <span class="ss">:agent</span>
+</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">## agent 2</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:agent2</span> <span class="k">do</span> <span class="o">|</span><span class="n">agent</span><span class="o">|</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provider</span> <span class="ss">:vmware_fusion</span>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.112&quot;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;agent2.puppetlabs.vm&#39;</span>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span>   <span class="o">=</span>  <span class="ss">:agent</span>
+</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">## agent 3</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:agent3</span> <span class="k">do</span> <span class="o">|</span><span class="n">agent</span><span class="o">|</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provider</span> <span class="ss">:vmware_fusion</span>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.113&quot;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;agent3.puppetlabs.vm&#39;</span>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span>   <span class="o">=</span>  <span class="ss">:agent</span>
+</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">## agent 4</span>
+</span><span class='line'>   <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:agent4</span> <span class="k">do</span> <span class="o">|</span><span class="n">agent</span><span class="o">|</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provider</span> <span class="ss">:vmware_fusion</span> <span class="k">do</span> <span class="o">|</span><span class="n">v</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">v</span><span class="o">.</span><span class="n">vmx</span><span class="o">[</span><span class="s2">&quot;memsize&quot;</span><span class="o">]</span>  <span class="o">=</span> <span class="s2">&quot;1024&quot;</span>
+</span><span class='line'>      <span class="n">v</span><span class="o">.</span><span class="n">vmx</span><span class="o">[</span><span class="s2">&quot;numvcpus&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="s2">&quot;2&quot;</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.114&quot;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;agent4.puppetlabs.vm&#39;</span>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="ss">:agent</span>
+</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This error occured on an ActiveMQ install that works as the message que for a 1000 node deployment of puppet agents. To get terminology straight here, we have puppet agents and AMQ agents running on these 1000 nodes. They&rsquo;re all qued from a singular AMQ broker.</p>
+
+<p>My first impression was that this error may be caused by having 1000 agents pinging a single AMQ broker, which is limited to 800 via fds instances.</p>
+
+<p>I check locally on my test master:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master vagrant<span class="o">]</span><span class="c"># pgrep -f pe-activemq</span>
+</span><span class='line'>1271
+</span><span class='line'><span class="o">[</span>root@master vagrant<span class="o">]</span><span class="c"># cat /proc/1271/limits | grep files</span>
+</span><span class='line'>Max open files            1024                 4096                 files
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>My soft limit is 1024 open files, and after rando .jars and logs and stuff that really feels like more around 800. So this is on the money, as far as what the docs say for ActiveMQ servers per broker.</p>
+
+<h3>How am I going to recreate what a 1000 node enviro looks like?</h3>
+
+<p>I&rsquo;m limited to my laptop, 16GB of memory, and I&rsquo;m too lazy to stand up 1000 instances in AWS (and to poor). So an attempt has to be made to recreate this memory error on my 5 nodes running locally.</p>
+
+<p>Given the above information, I start open a shell, and ssh into my master:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master vagrant<span class="o">]</span><span class="c"># echo -n &quot;Max open files=3:3&quot; &gt; /proc/1271/limits</span>
+</span><span class='line'><span class="o">[</span>root@master vagrant<span class="o">]</span><span class="c"># cat /proc/1271/limits | grep files</span>
+</span><span class='line'>Max open files            3                    3                    files
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Why 3? Because:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master vagrant<span class="o">]</span><span class="c"># ls /proc/1271/fd | wc -l</span>
+</span><span class='line'>6
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So a quick &lsquo;service pe-activemq restart&rsquo; and bang&hellip;</p>
+
+<p>Oh shit, new PID, new proc instance. Damnit. I have to figure out something else to fake the resource limits here.</p>
+
+<p>Since ulimit commands are shell-bound I can ssh into the master from another shell and run:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">[</span><span class="n">root</span><span class="vi">@master</span> <span class="n">vagrant</span><span class="o">]</span><span class="c1"># ulimit -n 10</span>
+</span><span class='line'><span class="o">[</span><span class="n">root</span><span class="vi">@master</span> <span class="n">vagrant</span><span class="o">]</span><span class="c1"># service pe-activemq restart</span>
+</span><span class='line'><span class="sr">/etc/ini</span><span class="n">t</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="ss">functions</span><span class="p">:</span> <span class="n">redirection</span> <span class="ss">error</span><span class="p">:</span> <span class="n">cannot</span> <span class="n">duplicate</span> <span class="ss">fd</span><span class="p">:</span> <span class="no">Invalid</span> <span class="n">argument</span>
+</span><span class='line'><span class="no">Stopping</span> <span class="n">pe</span><span class="o">-</span><span class="ss">activemq</span><span class="p">:</span>                                      <span class="o">[</span>  <span class="no">OK</span>  <span class="o">]</span>
+</span><span class='line'><span class="no">Starting</span> <span class="n">pe</span><span class="o">-</span><span class="ss">activemq</span><span class="p">:</span>                                      <span class="o">[</span>  <span class="no">OK</span>  <span class="o">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The trick here is getting close enough to the lowest possible resource limits with out getting the</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>bash: start_pipeline: pgrp pipe: Too many open files
+</span><span class='line'>/bin/sh: error while loading shared libraries: libtinfo.so.5: cannot open shared object file: Error 24</span></code></pre></td></tr></table></div></figure>
+
+
+<p>error.</p>
+
+<p>3 was actually too low, so I ran with 10 and was able to run a restart. You have to account for other files that may be bound to the PID instance, like logs and .jars since this is a bunch of java. And as everyone knows, Java is basically the pig of programming languages.</p>
+
+<p>So 10 fds worked and activemq has restarted. Let&rsquo;s look at my logs to see what I&rsquo;ve got:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>INFO   | jvm 5    | 2014/03/13 04:46:13 | Error: Exception thrown by the agent : java.rmi.server.ExportException: Listen failed on port: 0; nested exception is:
+</span><span class='line'>INFO   | jvm 5    | 2014/03/13 04:46:13 |     java.net.SocketException: Too many open files</span></code></pre></td></tr></table></div></figure>
+
+
+<p>That isn&rsquo;t what I wanted to see. I am looking for heap memory errors&hellip;</p>
+
+<h3>Possible Culprits</h3>
+
+<ol>
+<li><p>The JVM</p>
+
+<ul>
+<li>Consider increasing the total heap memory available to the broker JVM</li>
+<li>Consider reducing the default JVM stack size of each thread using -xss</li>
+<li>If your broker is embedded ensure the hostiong JVM has appropriate heap and stack sizes.</li>
+</ul>
+</li>
+<li><p>The broker</p>
+
+<p> Considerations:</p>
+
+<pre><code> * Broker memory is not JVM memory, it's only a constraint - the broker manages it's own memory. 
+ * Setting appropriate systemUsage memory: http://activemq.apache.org/producer-flow-control.html#ProducerFlowControl-Systemusage
+</code></pre></li>
+</ol>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/01/17/extracting-json-from-puppet-yaml-report/">Extracting JSON From Puppet YAML Report</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-01-17T06:55:04-08:00" pubdate data-updated="true">Jan 17<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>YAML &ndash;> JSON via Puppet Gen&#8217;ed YAML</h3>
+
+<p>In a follow up to the post below, I started thinking about ways to generate a D3 readable JSON on the fly from the puppet generated YAML. I started by using a parser from the node library &lsquo;js-yaml&rsquo;. My YAML format looked like this:</p>
+
+<figure class='code'><figcaption><span>last_puppet_run.yaml</span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">metrics</span><span class="p-Indicator">:</span>
+</span><span class='line'>    <span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="kt">!ruby</span><span class="l-Scalar-Plain">/object:Puppet::Util::Metric</span>
+</span><span class='line'>      <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">resources</span>
+</span><span class='line'>      <span class="l-Scalar-Plain">label</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Resources</span>
+</span><span class='line'>      <span class="l-Scalar-Plain">values</span><span class="p-Indicator">:</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">total</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Total</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">197</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">skipped</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Skipped</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">6</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">failed</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Failed</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">failed_to_restart</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="s">&quot;Failed</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">restart&quot;</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">restarted</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Restarted</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">changed</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Changed</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">out_of_sync</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="s">&quot;Out</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">sync&quot;</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">scheduled</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Scheduled</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'><span class="nn">...</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>My original stab at parsing this YAML failed when using the js-yaml node library. This was due to the fact that this is Puppet YAML &ndash; it was generated by a ruby class denoted at the top of the file:</p>
+
+<figure class='code'><figcaption><span>last_puppet_run.yaml </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="err">   </span><span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="kt">!ruby</span><span class="l-Scalar-Plain">/object:Puppet::Util::Metric</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So the way to parse this file into a JSON would have to be done using a ruby script where I could import the &lsquo;puppet&rsquo; class directly so the YAML lib would know how to read this particular file. I thought this would be as simple as:</p>
+
+<figure class='code'><figcaption><span>test.rb </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">require</span> <span class="s1">&#39;puppet&#39;</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;yaml&#39;</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;json&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">datajson</span> <span class="o">=</span> <span class="s1">&#39;report.json&#39;</span>
+</span><span class='line'><span class="n">datafile</span>  <span class="o">=</span> <span class="s1">&#39;last_run_report.yaml&#39;</span>
+</span><span class='line'><span class="n">yaml</span> <span class="o">=</span> <span class="no">YAML</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span>
+</span><span class='line'><span class="n">json</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">to_json</span>
+</span><span class='line'><span class="no">File</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">datajson</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span> <span class="n">json</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What I didn&rsquo;t count on was serialization.</p>
+
+<h3>Serialization</h3>
+
+<p>What would you expect that output to be? I&rsquo;ll give you one clue, it did look like a JSON&hellip; sorta:</p>
+
+<figure class='code'><figcaption><span>report.json </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span><span class="nt">&quot;metrics&quot;</span><span class="p">:{</span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8cda088&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8cd80f8&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;changes&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8ce1608&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;events&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8ce0eb0&gt;&quot;</span><span class="p">},</span><span class="nt">&quot;logs&quot;</span><span class="p">:[</span><span class="s2">&quot;Finished catalog run in 5.57 seconds&quot;</span><span class="p">],</span><span class="nt">&quot;resource_statuses&quot;</span><span class="p">:{</span><span class="nt">&quot;Schedule[daily]&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Resource::Status:0x007f8fb8ceaaf0&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;Schedule[monthly]&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Resource::Status:0x007f8fb8ce84f8&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;Schedule[hourly]&quot;</span><span class="p">:</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What&rsquo;s happening here? What happened to all our nice data, all of the sudden it&rsquo;s not human friendly anymore. This data is serialized, it&rsquo;s a by-product of using &lsquo;.to_json&rsquo; which is akin to saying &lsquo;JSON::dump(datafile)&rsquo;.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/01/13/test/">Test</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-01-13T09:35:57-08:00" pubdate data-updated="true">Jan 13<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content">
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/2014/01/06/puppet-run-vis/">Puppet Run Vis</a></h1>
     
     
@@ -85,7 +618,7 @@
   
 
 
-<time datetime="2014-01-06T00:00:00-07:00" pubdate data-updated="true"></time>
+<time datetime="2014-01-06T00:00:00-08:00" pubdate data-updated="true"></time>
         
       </p>
     
@@ -527,7 +1060,7 @@
   
 
 
-<time datetime="2014-01-03T10:05:51-07:00" pubdate data-updated="true">Jan 3<span>rd</span>, 2014</time>
+<time datetime="2014-01-03T09:05:51-08:00" pubdate data-updated="true">Jan 3<span>rd</span>, 2014</time>
         
       </p>
     
@@ -961,7 +1494,7 @@ The coding for it is far more economical, and we don&rsquo;t have a psudo-bash s
   
 
 
-<time datetime="2014-01-02T11:52:00-07:00" pubdate data-updated="true">Jan 2<span>nd</span>, 2014</time>
+<time datetime="2014-01-02T10:52:00-08:00" pubdate data-updated="true">Jan 2<span>nd</span>, 2014</time>
         
       </p>
     
