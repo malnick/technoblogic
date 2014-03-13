@@ -188,8 +188,8 @@ That isn't what I wanted to see. I am looking for heap memory errors...
 
 2. The broker
 
-	Considerations:
-		* Broker memory is not JVM memory, it's only a constraint - the broker manages it's own memory. 
-		* Setting appropriate systemUsage memory: http://activemq.apache.org/producer-flow-control.html#ProducerFlowControl-Systemusage
+Considerations:
+	* Broker memory is not JVM memory, it's only a constraint - the broker manages it's own memory. 
+	* Setting appropriate systemUsage memory: http://activemq.apache.org/producer-flow-control.html#ProducerFlowControl-Systemusage
 
 
