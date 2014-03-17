@@ -379,7 +379,7 @@ INFO | jvm 1 | 2014/03/11 16:12:34 | Exception in thread "ActiveMQ BrokerService
 </span><span class='line'>INFO   | jvm 5    | 2014/03/13 04:46:13 |     java.net.SocketException: Too many open files</span></code></pre></td></tr></table></div></figure>
 
 
-<p>That isn&rsquo;t what I wanted to see. I am looking for heap memory errors&hellip;</p>
+<p>That isn&rsquo;t what I wanted to see. I am looking for heap memory errors. So this clearly demonstrates it&rsquo;s not an fds constraint at the filesystem level. Time to move on to other possibilities.</p>
 
 <h3>Possible Culprits</h3>
 
@@ -392,15 +392,62 @@ INFO | jvm 1 | 2014/03/11 16:12:34 | Exception in thread "ActiveMQ BrokerService
 <li>If your broker is embedded ensure the hostiong JVM has appropriate heap and stack sizes.</li>
 </ul>
 </li>
-<li><p>The broker</p></li>
+<li><p>The broker</p>
+
+<ul>
+<li>Broker memory is not JVM memory, it&rsquo;s only a constraint &ndash; the broker manages it&rsquo;s own memory.</li>
+<li>Setting appropriate systemUsage memory: <a href="http://activemq.apache.org/producer-flow-control.html#ProducerFlowControl-Systemusage">http://activemq.apache.org/producer-flow-control.html#ProducerFlowControl-Systemusage</a></li>
+<li>Hard limits exist on the number of agents a single broker can handle due to file descriptors and other hard system resources</li>
+</ul>
+</li>
 </ol>
 
 
-<p>Considerations:</p>
+<h3>Solutions</h3>
 
-<pre><code>* Broker memory is not JVM memory, it's only a constraint - the broker manages it's own memory. 
-* Setting appropriate systemUsage memory: http://activemq.apache.org/producer-flow-control.html#ProducerFlowControl-Systemusage
+<p>Check your log for current JVM heap size:</p>
+
+<pre><code>INFO   | jvm 1    | 2014/02/26 12:47:04 |   Heap sizes: current=506816k  free=487246k  max=506816k
 </code></pre>
+
+<p>Try bumping this up to 1GB in</p>
+
+<pre><code> /etc/puppetlabs/activemq/wrapper.conf
+</code></pre>
+
+<p>If you still get</p>
+
+<pre><code>INFO   | jvm 1    | 2014/02/26 12:47:38 | Exception in thread "ActiveMQBrokerService[ppm.prod.dc2.adpghs.com] Task-58" java.lang.OutOfMemoryError: unable to create new native thread 
+</code></pre>
+
+<p>in your</p>
+
+<pre><code>/var/log/pe-activemq/wrapper.log
+</code></pre>
+
+<p>then throttle up your systemUsage in</p>
+
+<pre><code>/etc/puppetlabs/activemq/activemq.xml
+</code></pre>
+
+<p>per <a href="http://activemq.apache.org/producer-flow-control.html#ProducerFlowControl-Systemusage">this guideline</a></p>
+
+<h3>Hard Limits of AMQ</h3>
+
+<p>If you still get OOM errors you may be at a hard limit for agents per broker. ActiveMQ uses the amqPersistenceAdapter by default for persistent messages. Unfortunately, this persistence adapter (as well as the kahaPersistenceAdapter) opens a file descriptor for each queue. When creating large numbers of queues, you&rsquo;ll quickly run into the limit for your OS.</p>
+
+<p>However, your logs will not register a OOM error as above, they&rsquo;ll show</p>
+
+<pre><code>ERROR  | wrapper  | 2014/03/13 03:32:39 | JVM exited while loading the application.
+INFO   | jvm 4    | 2014/03/13 03:32:39 | Error: Exception thrown by the agent : java.rmi.server.ExportException: Listen failed on port: 0; nested exception is:
+INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many open files
+</code></pre>
+
+<p>If that is your error your could try upping the limit on file descripters per process. You can do something similar to what I did above or <a href="http://tinyurl.com/o9qs2f">Google for your OS</a>.</p>
+
+<p>At this point if none of the above resolved the issues you should try standing up a second broker, especially if you&rsquo;re running more than 1000 agents on a single broker instance.</p>
+
+<p>You can read more about <a href="http://activemq.apache.org/networks-of-brokers.html">standing up networks of brokers</a> and also <a href="http://activemq.apache.org/performance.html">AMQ performance</a>.</p>
 </div>
 
 

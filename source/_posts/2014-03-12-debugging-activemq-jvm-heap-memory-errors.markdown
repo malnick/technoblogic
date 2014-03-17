@@ -176,7 +176,7 @@ INFO   | jvm 5    | 2014/03/13 04:46:13 | Error: Exception thrown by the agent :
 INFO   | jvm 5    | 2014/03/13 04:46:13 | 	java.net.SocketException: Too many open files
 {% endcodeblock %}
 
-That isn't what I wanted to see. I am looking for heap memory errors...
+That isn't what I wanted to see. I am looking for heap memory errors. So this clearly demonstrates it's not an fds constraint at the filesystem level. Time to move on to other possibilities. 
 
 ### Possible Culprits
 
@@ -188,8 +188,46 @@ That isn't what I wanted to see. I am looking for heap memory errors...
 
 2. The broker
 
-Considerations:
 	* Broker memory is not JVM memory, it's only a constraint - the broker manages it's own memory. 
 	* Setting appropriate systemUsage memory: http://activemq.apache.org/producer-flow-control.html#ProducerFlowControl-Systemusage
+	* Hard limits exist on the number of agents a single broker can handle due to file descriptors and other hard system resources
 
+###Solutions
 
+Check your log for current JVM heap size:
+
+	INFO   | jvm 1    | 2014/02/26 12:47:04 |   Heap sizes: current=506816k  free=487246k  max=506816k
+
+Try bumping this up to 1GB in
+
+	 /etc/puppetlabs/activemq/wrapper.conf
+
+If you still get 
+
+	INFO   | jvm 1    | 2014/02/26 12:47:38 | Exception in thread "ActiveMQBrokerService[ppm.prod.dc2.adpghs.com] Task-58" java.lang.OutOfMemoryError: unable to create new native thread 
+
+in your
+
+	/var/log/pe-activemq/wrapper.log
+
+then throttle up your systemUsage in
+
+	/etc/puppetlabs/activemq/activemq.xml
+
+per [this guideline](http://activemq.apache.org/producer-flow-control.html#ProducerFlowControl-Systemusage)	
+
+### Hard Limits of AMQ
+
+If you still get OOM errors you may be at a hard limit for agents per broker. ActiveMQ uses the amqPersistenceAdapter by default for persistent messages. Unfortunately, this persistence adapter (as well as the kahaPersistenceAdapter) opens a file descriptor for each queue. When creating large numbers of queues, you'll quickly run into the limit for your OS.
+
+However, your logs will not register a OOM error as above, they'll show
+
+	ERROR  | wrapper  | 2014/03/13 03:32:39 | JVM exited while loading the application.
+	INFO   | jvm 4    | 2014/03/13 03:32:39 | Error: Exception thrown by the agent : java.rmi.server.ExportException: Listen failed on port: 0; nested exception is:
+	INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many open files
+
+If that is your error your could try upping the limit on file descripters per process. You can do something similar to what I did above or [Google for your OS](http://tinyurl.com/o9qs2f).
+
+At this point if none of the above resolved the issues you should try standing up a second broker, especially if you're running more than 1000 agents on a single broker instance. 
+
+You can read more about [standing up networks of brokers](http://activemq.apache.org/networks-of-brokers.html) and also [AMQ performance](http://activemq.apache.org/performance.html). 
