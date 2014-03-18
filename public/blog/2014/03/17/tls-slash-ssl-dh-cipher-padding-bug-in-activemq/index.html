@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>TLS/SSL DH Cipher Padding Bug in ActiveMQ - A techy blog</title>
+  <meta name="author" content="Jeff">
+
+  
+  <meta name="description" content="In helping a client with an ActiveMQ issue in Puppet Enterprise I recently stumbled across this line in their wrapper log: INFO | jvm 1 | 2014/02/26 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://yoursite.com/blog/2014/03/17/tls-slash-ssl-dh-cipher-padding-bug-in-activemq">
+  <link href="/favicon.ico" rel="icon">
+  
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="A techy blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   class="no-sidebar"  >
+  <header role="banner"><hgroup>
+  <h1>A techy blog</h1>
+  
+    <h2><a href="/">Jeff</a></h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation">
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:yoursite.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/blog/about">aBoUt</a></li>
+  <li><a href="/blog/archives">aRcHiVeS</a></li>
+  <li><a href="/blog/contact">contact</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">TLS/SSL DH Cipher Padding Bug in ActiveMQ</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-17T16:23:11-07:00" pubdate data-updated="true">Mar 17<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>In helping a client with an ActiveMQ issue in Puppet Enterprise I recently stumbled across this line in their wrapper log:</p>
+
+<pre><code>INFO | jvm 1 | 2014/02/26 12:47:20 | WARN | Transport Connection to: tcp://100.64.4.4:49867 failed: javax.net.ssl.SSLHandshake
+Exception: Invalid Padding length: 239
+</code></pre>
+
+<p>The client thought this may have been exacberating a JVM memory problem, however I found it actually is a not related but in and of itself it&rsquo;s own  bug in the Java Security Extensions for Diffe-Helman cipher implementation over SSL.</p>
+
+<p>We have seen similar issues in JDK 1.7x security extensions in other Java-powered backends for Puppet Enterprise such as <a href="http://projects.puppetlabs.com/issues/19884">PuppetDB</a>. It has also been documented on the <a href="https://issues.apache.org/jira/browse/APLO-287">Apache ActiveMQ ticket board</a> and the <a href="https://community.oracle.com/message/11001587">Oracle community</a> board.</p>
+
+<p>The issue is dependant on:</p>
+
+<pre><code>* OpenJDK Runtime Environment (PE Java 1.7.0.19) 
+* Linux OS's (so far my testing is on CentOS 6x) 
+* TLS_DHE_RSA_WITH_AES_128_CBC_SHA Cipher
+* openssl-1.0.0-27.el6_4.2.x86_64
+</code></pre>
+
+<p>To sum up the problem, every few hundred messages that are encrypted over SSL or TLS using DH ciphers the client gets a handshake exception. The exception is caused by a faulty SSL packet.</p>
+
+<h3>Oracle&rsquo;s Solution</h3>
+
+<p><a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8013059">A ticket was submitted</a> to Java bugs and was set &ldquo;resolved&rdquo; on 2013-10-25. However, and this is a big however, their resolution is, &ldquo;In order to have reliable TLS handshakes, Diffie Hellman key exchanges must be disabled.&rdquo;</p>
+
+<p>I personally don&rsquo;t like this resolution since DH keys are sometimes neccessary, and in terms of security is superior to standard RSA ciphers. DH ciphers provide perfect forward secrecy. That means even if the private key is compromised you can not decrypt past data. Ciper suites which use DHE-RSA-AES128-SHA all implement the slower, more secure ephemeral DH crypto &ndash; it&rsquo;s ephemeral since new random numbers that generate the key are used each time. This is also why it&rsquo;s slower. However, it&rsquo;s also harder to run a selected clear text attack on EDH since the private key is used for only authentication and use an independant method to agree on a shared secret &ndash; standard RSA ciphers employ the private key for both auth and encryption for better performance in exchange for not providing perfect forward secrecy.</p>
+
+<p>You may now chime in with your own conspiracy theories as to why Oracle would settle for solving this cyrpto issue by simply using a less secure cipher &ndash; does the NSA not want Java applications, which function as the backbone to a great deal of web traffic, encrypting data with perfect forward secrecy?</p>
+
+<h3>Workaround in AMQ</h3>
+
+<p>Since there is no good way to get around this problem in JDK 1.7x security extensions you have two choices:</p>
+
+<pre><code>1. Live with the error in approx. 5% of the SSL traffic
+2. Run SSL with a non-DH or DHE cipher  
+</code></pre>
+
+<h4>Door #1</h4>
+
+<p>Example, you&rsquo;ve got an AMQ broker administering messaging for 1000+ AMQ agents in a live management setup in Puppet Enterprise you&rsquo;ll see this error a lot, and it may (warning, assumption) degrade live management performance in such a large deployment.</p>
+
+<p>If you can live with either seeing this error 5% of the time or you can live with the hit in performance sticking it out with DH can still work.</p>
+
+<h4>Door #2</h4>
+
+<p>You need the performance or are a stickler for perfect SSL key exchange.</p>
+
+<p>A possible solution would be modifying the transportConnector in /etc/puppetlabs/activemq/activemq.xml:</p>
+
+<pre><code>&lt;transportConnector name="openwire" uri="ssl://0.0.0.0:61616"/&gt;
+&lt;!-- Puppet mcollective_enable_stomp_ssl=true
+&lt;transportConnector name="stomp+ssl" uri="stomp+ssl://0.0.0.0:61613"/&gt;\
+</code></pre>
+
+<p>With the transport.enabledCipherSuites embedded:</p>
+
+<pre><code>ssl://localhost:61616?transport.enabledCipherSuites=SSL_RSA_WITH_3DES_EDE_CBC_SHA
+</code></pre>
+
+<p>The SSL_RSA_WITH_3DES_EDE_CBC_SHA is non-DH cipher versus the  SSL_DH_anon_WITH_3DES_EDE_CBC_SHA which I think is what AMQ currently uses.</p>
+
+<p>Note syntax:</p>
+
+<pre><code>ssl://…?socket.enabledCipherSuites=THE_CIPHER # for agents 
+</code></pre>
+
+<p>and</p>
+
+<pre><code>ssl://…?transport.enabledCipherSuites=THE_CIPHER # for brokers 
+</code></pre>
+
+<p>More information about this can be found on the <a href="https://activemq.apache.org/ssl-transport-reference.html">AMQ reference page</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn"><a href="/about" title="About the author (Jeff)" rel="author">Jeff</a></span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-17T16:23:11-07:00" pubdate data-updated="true">Mar 17<span>th</span>, 2014</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://yoursite.com/blog/2014/03/17/tls-slash-ssl-dh-cipher-padding-bug-in-activemq/" data-via="8bitsofsketch" data-counturl="http://yoursite.com/blog/2014/03/17/tls-slash-ssl-dh-cipher-padding-bug-in-activemq/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/03/12/debugging-activemq-jvm-heap-memory-errors/" title="Previous Post: Debugging ActiveMQ JVM Heap Memory Errors">&laquo; Debugging ActiveMQ JVM Heap Memory Errors</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Jeff -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
