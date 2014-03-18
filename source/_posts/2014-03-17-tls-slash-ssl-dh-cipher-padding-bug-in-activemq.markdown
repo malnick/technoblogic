@@ -7,7 +7,7 @@ categories:
 ---
 In helping a client with an ActiveMQ issue in Puppet Enterprise I recently stumbled across this line in their wrapper log:
 
-	INFO | jvm 1 | 2014/02/26 12:47:20 | WARN | Transport Connection to: tcp://100.64.4.4:49867 failed: javax.net.ssl.SSLHandshake
+	INFO | jvm 1 | 2014/02/26 12:47:20 | WARN | Transport Connection to: tcp://ip.removed:49867 failed: javax.net.ssl.SSLHandshake
 	Exception: Invalid Padding length: 239
 
 The client thought this may have been exacberating a JVM memory problem, however I found it actually is a not related but in and of itself it's own  bug in the Java Security Extensions for Diffe-Helman cipher implementation over SSL. 
