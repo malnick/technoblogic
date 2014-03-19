@@ -5,6 +5,14 @@ date: 2014-03-17 16:23:11 -0700
 comments: true
 categories: 
 ---
+### Update
+
+As of March 18 it appears that Oracle has implemented a fix in their release of [JDK and Java Standard Edition version 8](http://www.oracle.com/technetwork/java/javase/8train-relnotes-latest-2153846.html) and it's assocaited [security extensions](http://docs.oracle.com/javase/8/docs/technotes/guides/security/enhancements-8.html):
+
+"Support stronger ephemeral DH keys in the SunJSSE provider: Make ephemeral DH key match the length of the certificate key during SSL/TLS handshaking in the SunJSSE provider. A new system property, jdk.tls.ephemeralDHKeySize, is defined to customize the ephemeral DH key sizes. The minimum acceptable DH key size is 1024 bits, except for exportable cipher suites or legacy mode (jdk.tls.ephemeralDHKeySize=legacy). See Customizing Size of Ephemeral DH Keys and RFE 6956398."
+
+----------------------
+
 In helping a client with an ActiveMQ issue in Puppet Enterprise I recently stumbled across this line in their wrapper log:
 
 	INFO | jvm 1 | 2014/02/26 12:47:20 | WARN | Transport Connection to: tcp://ip.removed:49867 failed: javax.net.ssl.SSLHandshake

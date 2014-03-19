@@ -9,7 +9,7 @@
   <meta name="author" content="Jeff">
 
   
-  <meta name="description" content="In helping a client with an ActiveMQ issue in Puppet Enterprise I recently stumbled across this line in their wrapper log: INFO | jvm 1 | 2014/02/26 &hellip;">
+  <meta name="description" content="Update As of March 18 it appears that Oracle has implemented a fix in their release of JDK and Java Standard Edition version 8 and it&rsquo;s &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -92,7 +92,15 @@
   </header>
 
 
-  <div class="entry-content"><p>In helping a client with an ActiveMQ issue in Puppet Enterprise I recently stumbled across this line in their wrapper log:</p>
+  <div class="entry-content"><h3>Update</h3>
+
+<p>As of March 18 it appears that Oracle has implemented a fix in their release of <a href="http://www.oracle.com/technetwork/java/javase/8train-relnotes-latest-2153846.html">JDK and Java Standard Edition version 8</a> and it&rsquo;s assocaited <a href="http://docs.oracle.com/javase/8/docs/technotes/guides/security/enhancements-8.html">security extensions</a>:</p>
+
+<p>&ldquo;Support stronger ephemeral DH keys in the SunJSSE provider: Make ephemeral DH key match the length of the certificate key during SSL/TLS handshaking in the SunJSSE provider. A new system property, jdk.tls.ephemeralDHKeySize, is defined to customize the ephemeral DH key sizes. The minimum acceptable DH key size is 1024 bits, except for exportable cipher suites or legacy mode (jdk.tls.ephemeralDHKeySize=legacy). See Customizing Size of Ephemeral DH Keys and RFE 6956398.&rdquo;</p>
+
+<hr />
+
+<p>In helping a client with an ActiveMQ issue in Puppet Enterprise I recently stumbled across this line in their wrapper log:</p>
 
 <pre><code>INFO | jvm 1 | 2014/02/26 12:47:20 | WARN | Transport Connection to: tcp://ip.removed:49867 failed: javax.net.ssl.SSLHandshake
 Exception: Invalid Padding length: 239
