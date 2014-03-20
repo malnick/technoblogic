@@ -135,6 +135,16 @@
 + Rakefile
 </code></pre>
 
+<h3>Installing PE-Specific Gems using PE-Gem Provider</h3>
+
+<p><a href="https://github.com/puppetlabs/puppetlabs-pe_gem">puppetlabs/pe_gem</a> has the provider for pe_gem so you can simply:</p>
+
+<pre><code>package { 'json':
+    ensure   =&gt; present,
+    provider =&gt; pe_gem,
+    }
+</code></pre>
+
 <p>That&rsquo;s it!</p>
 </div>
 

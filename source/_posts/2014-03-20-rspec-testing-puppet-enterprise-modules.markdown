@@ -45,4 +45,13 @@ This should build:
  	+ spec/spec_helper.rb
 	+ Rakefile
 
+### Installing PE-Specific Gems using PE-Gem Provider
+
+[puppetlabs/pe_gem](https://github.com/puppetlabs/puppetlabs-pe_gem) has the provider for pe_gem so you can simply:
+
+	package { 'json':
+ 		ensure   => present,
+  		provider => pe_gem,
+		}
+
 That's it! 
