@@ -27,11 +27,13 @@ Systems administration for distributed high performance optical networks leverag
 
 ###Mad Skills (to name a few)
 
-* Puppet (Certified Puppet Professional) * Git
+* Puppet (Certified Puppet Professional) 
+* Git
 * Bash, sh
 * Ruby
 * Python
-* Once upon a time I knew Perl, and before that Fourth * Vagrant
+* Once upon a time I knew Perl, and before that Fourth 
+* Vagrant
 * VMWare Fusion
 * Nagios w/ Ganglia
 * Nagios w/ Munin
@@ -39,8 +41,6 @@ Systems administration for distributed high performance optical networks leverag
 * MySQL/Postgres
 * (r)spec testing
 * Continuous integration tools like Jenkins
-* Pipeline dev for CI: making Jenkins with with everything else - one click build, test, deploy.
-* Learning quickly: you don’t get what you expect you get what you inspect.
 
 ###School
 
