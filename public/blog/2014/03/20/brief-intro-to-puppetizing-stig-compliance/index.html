@@ -1,0 +1,229 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Brief Intro to Puppetizing STIG Compliance - A techy blog</title>
+  <meta name="author" content="Jeff">
+
+  
+  <meta name="description" content="STIG is a methodology for the implementation of security compliance across heterogeneous operating systems. Every OS has a specific STIG. The STIG &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://yoursite.com/blog/2014/03/20/brief-intro-to-puppetizing-stig-compliance">
+  <link href="/favicon.ico" rel="icon">
+  
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="A techy blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   class="no-sidebar"  >
+  <header role="banner"><hgroup>
+  <h1>A techy blog</h1>
+  
+    <h2><a href="/">Jeff</a></h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation">
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:yoursite.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/blog/about">aBoUt</a></li>
+  <li><a href="/blog/archives">aRcHiVeS</a></li>
+  <li><a href="/blog/contact">contact</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Brief Intro to Puppetizing STIG Compliance</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-20T10:01:05-07:00" pubdate data-updated="true">Mar 20<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>STIG is a methodology for the implementation of security compliance across heterogeneous operating systems. Every OS has a specific STIG. The STIG for a given OS is maintained and distributed by the Defense Information Systems Agency (DISA). Current STIGs can be found on the <a href="http://iase.disa.mil/stigs/">DISA website</a>.</p>
+
+<p>Puppet is an excellent tool for bringing machines into STIG compliance. At my previous job I was in <a href="https://github.com/malnick/do_debian_stig/blob/master/do_debian_stig.sh">shell script hell</a> until we spun up a POS master and started writing a STIG module that worked across all OS&rsquo;s we supported (14 linux distros, 30 territorial sys admins, ~250 nodes).</p>
+
+<p>In doing a STIG module for puppet it’s best to just work from Cat 1 down. 1 &amp; 2 offenses are pretty big, 3 &amp; 4 are usually minor security patches and can be overlooked if you’re time crunched. Staying on top of the false positives and keeping your module up to date with actual security implementation is the biggest hurdle.</p>
+
+<p>This document is a general guideline from my experience in implementing STIG compliance measures.</p>
+
+<h3>Basic STIG Process</h3>
+
+<ol>
+<li><p>Go to the DISA site and download the STIG for the appropriate OS</p></li>
+<li><p>Do some sort of benchmark scan on a base OS:</p>
+
+<ul>
+<li>I used retina (which is awful) scans that were preloaded with the appropriate <a href="http://www.public.navy.mil/spawar/Atlantic/ProductsServices/Pages/SCAP.aspx">Security Content Automation Protocol (SCAP)</a> documents (.xml files, see below).</li>
+<li> You can also get SCAP benchmarks on the DISA site for the appropriate OS listed with the STIG benchmarks (see below on SCAP)</li>
+</ul>
+</li>
+<li><p>Take retina report with categorized vulnerabilities and start writing puppet modules &ndash; oh wait, just kidding! first you’ll need to:</p>
+
+<ol type="a">
+<li> Check for false positives &ndash; in most cases the OS provider is way ahead of the game, and simply running ‘apt-get update’ or ‘yum update’ will take care of 80% of the vulnerabilities on the box. STIG guidelines are notoriously behind the OS and will have LOTS of false positives. Most of your time will be spent accounting for what is actually a vulnerability and what is actually already patched by the OS provider.</li>
+</ol>
+</li>
+<li><p>What vulnerabilities are left after cross correlating with security patches are what you have to develop specified puppet classes for, this is actually the easy part.</p></li>
+</ol>
+
+
+<p>A really good resource for this is the <a href="https://fedorahosted.org/aqueduct/wiki/RhelStigProcess">Aqueduct Project</a> at Fedora. They’re really good about staying on top of the recent STIG process and also maintaining a set puppet module for STIGing RHEL boxes (or at least they used to, not sure what their status is now. A recent look shows they&rsquo;re only on RHEL 5 so&hellip;).</p>
+
+<h3>SCAP</h3>
+
+<p>The Security <a href="http://scap.nist.gov">Content Automation Protocol (SCAP)</a> is a protocol developed by the NSA puppet branch of government known as NIST for implementing IT security measures. Some parts of the protocol can be useful in scanning tools such as retina since the XML format for the vulnerability index are standardized.</p>
+
+<p>For example, when you are on the DISA site looking at the current STIG for a specific OS there will be a download button for &lsquo;SCAP Benchmarks&rsquo;. This is a .zip of several .xml&rsquo;s that contain:</p>
+
+<p><a href="http://scap.nist.gov/specifications/cpe/">Common Platform Enumeration (CPE)</a> files for describing and identifying classes of applications, operating systems, and hardware devices present among an enterprise&rsquo;s computing assets.</p>
+
+<p><a href="http://oval.mitre.org">Open Vulnerability and Assessment Language (OVAL)</a> for assessing and reporting upon the rachine state.</p>
+
+<p><a href="http://scap.nist.gov/specifications/xccdf/index.html">Extensible Configuration Checklist Description Format (XCCDF)</a> which is a structured collection of security configuration rules for some set of target systems.</p>
+
+<p>&hellip; and maybe some other random ones as well.</p>
+
+<p>This is a document in motion so I&rsquo;ll be adding more here, feel free to add as you find information as well.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn"><a href="/about" title="About the author (Jeff)" rel="author">Jeff</a></span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-20T10:01:05-07:00" pubdate data-updated="true">Mar 20<span>th</span>, 2014</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://yoursite.com/blog/2014/03/20/brief-intro-to-puppetizing-stig-compliance/" data-via="8bitsofsketch" data-counturl="http://yoursite.com/blog/2014/03/20/brief-intro-to-puppetizing-stig-compliance/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/03/20/rspec-testing-puppet-enterprise-modules/" title="Previous Post: How To Install Rspec-Puppet on Puppet Enterprise">&laquo; How To Install Rspec-Puppet on Puppet Enterprise</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Jeff -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
