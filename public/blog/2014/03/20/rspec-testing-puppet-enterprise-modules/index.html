@@ -1,0 +1,229 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>How To Install Rspec-Puppet on Puppet Enterprise - A techy blog</title>
+  <meta name="author" content="Jeff">
+
+  
+  <meta name="description" content="If you&rsquo;re getting into rspec testing for your manifests you might already know this: Puppet Enterprise has it&rsquo;s own gem environment. This &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://yoursite.com/blog/2014/03/20/rspec-testing-puppet-enterprise-modules">
+  <link href="/favicon.ico" rel="icon">
+  
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="A techy blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   class="no-sidebar"  >
+  <header role="banner"><hgroup>
+  <h1>A techy blog</h1>
+  
+    <h2><a href="/">Jeff</a></h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation">
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:yoursite.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/blog/about">aBoUt</a></li>
+  <li><a href="/blog/archives">aRcHiVeS</a></li>
+  <li><a href="/blog/contact">contact</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">How to Install Rspec-Puppet on Puppet Enterprise</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-20T09:42:50-07:00" pubdate data-updated="true">Mar 20<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>If you&rsquo;re getting into rspec testing for your manifests you might already know this:  Puppet Enterprise has it&rsquo;s own gem environment. This is a quick post on how to install rspec-puppet to your PE gem environment.</p>
+
+<p>If you&rsquo;re new to rspec-puppet check out <a href="www.rspec-puppet.com">this great site</a> for a brief on installing (except if you&rsquo;re on PE, then follow the install below). rspec-puppet.com also has a great tutorial to get your up and running.</p>
+
+<h3>Installing rspec-puppet on Puppet Enterprise</h3>
+
+<p>If you&rsquo;ve already installed rspec-puppet via system gem you will get this error on rspec-puppet-init:</p>
+
+<pre><code>[root@master users]# rspec-puppet-init 
+/usr/lib/ruby/site_ruby/1.8/rubygems/custom_require.rb:31:in `gem_original_require': no such file to load -- puppet (LoadError)
+</code></pre>
+
+<p>If you&rsquo;ve already installed rspec-puppet vis system gem:</p>
+
+<pre><code>$ /usr/bin/gem uninstall rspec-puppet
+</code></pre>
+
+<p>Once system rspec-puppet is removed:</p>
+
+<pre><code>$ /opt/puppet/bin/gem install rspec-puppet
+</code></pre>
+
+<p>Then to init a new puppet rspec enviro in your $moduledir:</p>
+
+<pre><code>$ /opt/puppet/bin/rspec-puppet-init
+</code></pre>
+
+<p>This should build:</p>
+
+<pre><code>+ spec/
++ spec/classes/
++ spec/defines/
++ spec/functions/
++ spec/hosts/
++ spec/fixtures/
++ spec/fixtures/manifests/
++ spec/fixtures/modules/
++ spec/fixtures/modules/users/
++ spec/fixtures/manifests/site.pp
++ spec/fixtures/modules/users/manifests
++ spec/fixtures/modules/users/lib
++ spec/spec_helper.rb
++ Rakefile
+</code></pre>
+
+<p>That&rsquo;s it!</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn"><a href="/about" title="About the author (Jeff)" rel="author">Jeff</a></span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-20T09:42:50-07:00" pubdate data-updated="true">Mar 20<span>th</span>, 2014</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://yoursite.com/blog/2014/03/20/rspec-testing-puppet-enterprise-modules/" data-via="8bitsofsketch" data-counturl="http://yoursite.com/blog/2014/03/20/rspec-testing-puppet-enterprise-modules/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/03/17/tls-slash-ssl-dh-cipher-padding-bug-in-activemq/" title="Previous Post: TLS/SSL DH Cipher Padding Bug in ActiveMQ">&laquo; TLS/SSL DH Cipher Padding Bug in ActiveMQ</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Jeff -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

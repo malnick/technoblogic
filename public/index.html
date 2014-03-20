@@ -9,7 +9,7 @@
   <meta name="author" content="Jeff">
 
   
-  <meta name="description" content="Update As of March 18 it appears that Oracle has implemented a fix in their release of JDK and Java Standard Edition version 8 and it&rsquo;s &hellip;">
+  <meta name="description" content="If you&rsquo;re getting into rspec testing for your manifests you might already know this: Puppet Enterprise has it&rsquo;s own gem environment. This &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,6 +63,87 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/20/rspec-testing-puppet-enterprise-modules/">How to Install Rspec-Puppet on Puppet Enterprise</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-20T09:42:50-07:00" pubdate data-updated="true">Mar 20<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>If you&rsquo;re getting into rspec testing for your manifests you might already know this:  Puppet Enterprise has it&rsquo;s own gem environment. This is a quick post on how to install rspec-puppet to your PE gem environment.</p>
+
+<p>If you&rsquo;re new to rspec-puppet check out <a href="www.rspec-puppet.com">this great site</a> for a brief on installing (except if you&rsquo;re on PE, then follow the install below). rspec-puppet.com also has a great tutorial to get your up and running.</p>
+
+<h3>Installing rspec-puppet on Puppet Enterprise</h3>
+
+<p>If you&rsquo;ve already installed rspec-puppet via system gem you will get this error on rspec-puppet-init:</p>
+
+<pre><code>[root@master users]# rspec-puppet-init 
+/usr/lib/ruby/site_ruby/1.8/rubygems/custom_require.rb:31:in `gem_original_require': no such file to load -- puppet (LoadError)
+</code></pre>
+
+<p>If you&rsquo;ve already installed rspec-puppet vis system gem:</p>
+
+<pre><code>$ /usr/bin/gem uninstall rspec-puppet
+</code></pre>
+
+<p>Once system rspec-puppet is removed:</p>
+
+<pre><code>$ /opt/puppet/bin/gem install rspec-puppet
+</code></pre>
+
+<p>Then to init a new puppet rspec enviro in your $moduledir:</p>
+
+<pre><code>$ /opt/puppet/bin/rspec-puppet-init
+</code></pre>
+
+<p>This should build:</p>
+
+<pre><code>+ spec/
++ spec/classes/
++ spec/defines/
++ spec/functions/
++ spec/hosts/
++ spec/fixtures/
++ spec/fixtures/manifests/
++ spec/fixtures/modules/
++ spec/fixtures/modules/users/
++ spec/fixtures/manifests/site.pp
++ spec/fixtures/modules/users/manifests
++ spec/fixtures/modules/users/lib
++ spec/spec_helper.rb
++ Rakefile
+</code></pre>
+
+<p>That&rsquo;s it!</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
