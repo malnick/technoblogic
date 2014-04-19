@@ -9,7 +9,7 @@
   <meta name="author" content="Jeff">
 
   
-  <meta name="description" content="STIG is a methodology for the implementation of security compliance across heterogeneous operating systems. Every OS has a specific STIG. The STIG &hellip;">
+  <meta name="description" content="When starting out with Types and Providers for Puppet it&rsquo;s common to misunderstand when something is a Parameter and when something is a &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +64,87 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/19/puppet-types-understanding-parameters-and-properties/">Puppet Types: Understanding Parameters and Properties</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-19T08:30:28-07:00" pubdate data-updated="true">Apr 19<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>When starting out with Types and Providers for Puppet it&rsquo;s common to misunderstand when something is a <em>Parameter</em> and when something is a <em>Property</em>.</p>
+
+<h3><strong>Properties</strong></h3>
+
+<p>Properties are anything that will <strong>modify</strong> a resource. In other words, attributes of a type that will change how that resource type exists on your system. A property is a charactaristic of a resource. A property does not change what a resource is, which is where the confusion usually begins.</p>
+
+<p>For example, let&rsquo;s take the file resource (anyone who has had the opportunity of taking Extending Puppet for Developers might find this redundant).</p>
+
+<pre><code>file {'/tmp/test':
+    ensure   =&gt; file,
+    path     =&gt; '/tmp/test', # $namevar
+    owner    =&gt; 'root',
+    group    =&gt; 'root',
+    checksum =&gt; 'md5',
+    content  =&gt; 'foo',
+    }
+</code></pre>
+
+<p>Any ideas which attributes are parameters and which are properties? Let&rsquo;s start with</p>
+
+<pre><code>ensure =&gt; file,
+</code></pre>
+
+<p>The &lsquo;ensure&rsquo; attribute is actually created by the &lsquo;ensurable&rsquo; method from the Puppet::Type class. Any attribute calling &lsquo;ensurable&rsquo; gets the default &lsquo;present&#8217;and &#8216;absent&rsquo; values telling the type to call from the provider &lsquo;exists?()&rsquo; then based on output from &lsquo;exists?&rsquo; evaluates &lsquo;creates()&rsquo; or &lsquo;destroy()&rsquo;.</p>
+
+<p>Ensure modifies the resource, but does not change the definition of what that resource is to the system, therefore ensure is a property.</p>
+
+<p>Other properties of file are</p>
+
+<pre><code>owner
+group
+content
+</code></pre>
+
+<p>Content? Yes, content. On a file system the content of the file does not define the file, the <em>$path</em> to the file is the definition of a file. Therefore content is just a charactaristic of that file, making that attribute a property as well.</p>
+
+<h3><strong>Parameters</strong></h3>
+
+<p>Parameters are used by Puppet to provision the resource onto the system. Parameters are resource attributes that can be retrieved and are used to create, or define the resource as it exists on the system.</p>
+
+<pre><code>path =&gt; '/tmp/testing',
+</code></pre>
+
+<p>For example, the $namevar of the the file resource is the $path. That&rsquo;s because the $path of a file defines the resource on the system. You can query the path of a file, however if you change the path of a file you define an entierly new file. Therefore, $path is a parameter.</p>
+
+<p>Another parameter of file would the checksum attribute. The checksum type is used when determining whether to replace a file’s contents. If your md5 checksum does not match the md5 checksum of the file on the system your file will be created; if it does match your file will not be updated if it exists; if it doesn&rsquo;t exist if will be provisioned. Checksum defines what the file should look like on the system; it&rsquo;s used by Puppet to provision the file but not stored as part of the file resource.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -737,6 +818,192 @@ INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many ope
 <p>At this point if none of the above resolved the issues you should try standing up a second broker, especially if you&rsquo;re running more than 1000 agents on a single broker instance.</p>
 
 <p>You can read more about <a href="http://activemq.apache.org/networks-of-brokers.html">standing up networks of brokers</a> and also <a href="http://activemq.apache.org/performance.html">AMQ performance</a>.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/01/17/extracting-json-from-puppet-yaml-report/">Extracting JSON From Puppet YAML Report</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-01-17T06:55:04-08:00" pubdate data-updated="true">Jan 17<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>YAML &ndash;> JSON via Puppet Gen&#8217;ed YAML</h3>
+
+<p>In a follow up to the post below, I started thinking about ways to generate a D3 readable JSON on the fly from the puppet generated YAML. I started by using a parser from the node library &lsquo;js-yaml&rsquo;. My YAML format looked like this:</p>
+
+<figure class='code'><figcaption><span>last_puppet_run.yaml</span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">metrics</span><span class="p-Indicator">:</span>
+</span><span class='line'>    <span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="kt">!ruby</span><span class="l-Scalar-Plain">/object:Puppet::Util::Metric</span>
+</span><span class='line'>      <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">resources</span>
+</span><span class='line'>      <span class="l-Scalar-Plain">label</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Resources</span>
+</span><span class='line'>      <span class="l-Scalar-Plain">values</span><span class="p-Indicator">:</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">total</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Total</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">197</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">skipped</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Skipped</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">6</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">failed</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Failed</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">failed_to_restart</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="s">&quot;Failed</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">restart&quot;</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">restarted</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Restarted</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">changed</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Changed</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">out_of_sync</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="s">&quot;Out</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">sync&quot;</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">scheduled</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Scheduled</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'><span class="nn">...</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>My original stab at parsing this YAML failed when using the js-yaml node library. This was due to the fact that this is Puppet YAML &ndash; it was generated by a ruby class denoted at the top of the file:</p>
+
+<figure class='code'><figcaption><span>last_puppet_run.yaml </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="err">   </span><span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="kt">!ruby</span><span class="l-Scalar-Plain">/object:Puppet::Util::Metric</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So the way to parse this file into a JSON would have to be done using a ruby script where I could import the &lsquo;puppet&rsquo; class directly so the YAML lib would know how to read this particular file. I thought this would be as simple as:</p>
+
+<figure class='code'><figcaption><span>test.rb </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">require</span> <span class="s1">&#39;puppet&#39;</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;yaml&#39;</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;json&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">datajson</span> <span class="o">=</span> <span class="s1">&#39;report.json&#39;</span>
+</span><span class='line'><span class="n">datafile</span>  <span class="o">=</span> <span class="s1">&#39;last_run_report.yaml&#39;</span>
+</span><span class='line'><span class="n">yaml</span> <span class="o">=</span> <span class="no">YAML</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span>
+</span><span class='line'><span class="n">json</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">to_json</span>
+</span><span class='line'><span class="no">File</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">datajson</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span> <span class="n">json</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What I didn&rsquo;t count on was serialization.</p>
+
+<h3>Serialization</h3>
+
+<p>What would you expect that output to be? I&rsquo;ll give you one clue, it did look like a JSON&hellip; sorta:</p>
+
+<figure class='code'><figcaption><span>report.json </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span><span class="nt">&quot;metrics&quot;</span><span class="p">:{</span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8cda088&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8cd80f8&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;changes&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8ce1608&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;events&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8ce0eb0&gt;&quot;</span><span class="p">},</span><span class="nt">&quot;logs&quot;</span><span class="p">:[</span><span class="s2">&quot;Finished catalog run in 5.57 seconds&quot;</span><span class="p">],</span><span class="nt">&quot;resource_statuses&quot;</span><span class="p">:{</span><span class="nt">&quot;Schedule[daily]&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Resource::Status:0x007f8fb8ceaaf0&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;Schedule[monthly]&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Resource::Status:0x007f8fb8ce84f8&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;Schedule[hourly]&quot;</span><span class="p">:</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What&rsquo;s happening here? What happened to all our nice data, all of the sudden it&rsquo;s not human friendly anymore. This data is serialized, it&rsquo;s a by-product of using &lsquo;.to_json&rsquo; which is akin to saying &lsquo;JSON::dump(datafile)&rsquo;.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/01/13/test/">Test</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-01-13T09:35:57-08:00" pubdate data-updated="true">Jan 13<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content">
 </div>
   
   

@@ -37,4 +37,11 @@ Other properties of file are
 
 Content? Yes, content. On a file system the content of the file does not define the file, the *$path* to the file is the definition of a file. Therefore content is just a charactaristic of that file, making that attribute a property as well.
 
+###**Parameters**
+Parameters are used by Puppet to provision the resource onto the system. Parameters are resource attributes that can be retrieved and are used to create, or define the resource as it exists on the system. 
 
+	path => '/tmp/testing',
+
+For example, the $namevar of the the file resource is the $path. That's because the $path of a file defines the resource on the system. You can query the path of a file, however if you change the path of a file you define an entierly new file. Therefore, $path is a parameter.
+
+Another parameter of file would the checksum attribute. The checksum type is used when determining whether to replace a file’s contents. If your md5 checksum does not match the md5 checksum of the file on the system your file will be created; if it does match your file will not be updated if it exists; if it doesn't exist if will be provisioned. Checksum defines what the file should look like on the system; it's used by Puppet to provision the file but not stored as part of the file resource. 
