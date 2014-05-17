@@ -2,9 +2,9 @@
 #      Main Configs       #
 # ----------------------- #
 
-url: http://yoursite.com
-title: A techy blog
-subtitle: Jeff 
+url: httpL://www.jeffmalnick.com 
+title: JP 
+subtitle: a techy blog 
 author: Jeff
 simple_search: http://google.com/search
 description: See subtitle. 

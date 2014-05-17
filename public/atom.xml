@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[A techy blog]]></title>
-  <link href="http://yoursite.com/atom.xml" rel="self"/>
-  <link href="http://yoursite.com/"/>
-  <updated>2014-05-16T12:44:29-07:00</updated>
-  <id>http://yoursite.com/</id>
+  <title><![CDATA[JP]]></title>
+  <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
+  <link href="httpL://www.jeffmalnick.com/"/>
+  <updated>2014-05-16T21:31:17-07:00</updated>
+  <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[r10k: Control Repos]]></title>
-    <link href="http://yoursite.com/blog/2014/05/16/r10k-control-repos/"/>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/05/16/r10k-control-repos/"/>
     <updated>2014-05-16T12:34:33-07:00</updated>
-    <id>http://yoursite.com/blog/2014/05/16/r10k-control-repos</id>
+    <id>httpL://www.jeffmalnick.com/blog/2014/05/16/r10k-control-repos</id>
     <content type="html"><![CDATA[<p>This document explains the architecture and deployment of a control repository for syncing multiple puppet environments, their associated puppet code (modules) and their assocaited data (hiera). This document does not review how to deploy r10k, however that is discussed in relevant detail <a href="https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff">here</a>.</p>
 
 <h2>What is a control repo?</h2>
@@ -603,13 +603,11 @@ Puppetfile
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Hiera &amp; r10k]]></title>
-    <link href="http://yoursite.com/blog/2014/05/15/hiera-and-r10k/"/>
+    <title type="html"><![CDATA[Why I don't place a hiera.yaml in my CR]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/05/15/hiera-and-r10k/"/>
     <updated>2014-05-15T16:12:36-07:00</updated>
-    <id>http://yoursite.com/blog/2014/05/15/hiera-and-r10k</id>
-    <content type="html"><![CDATA[<p>I really wanted to call this &ldquo;don&rsquo;t put hiera.yaml in your control repo for r10k.</p>
-
-<p>Here&rsquo;s a really good reason. First off, unless your hiera.yaml is super complicated, then it probably doesn&rsquo;t need to be in version control. However, for a lot of deployments you need it in VC, but not in your control repo (i.e., the one that r10k will access for Puppetfile, hieradata and build our corrosponding enviros for on your master).</p>
+    <id>httpL://www.jeffmalnick.com/blog/2014/05/15/hiera-and-r10k</id>
+    <content type="html"><![CDATA[<p>Here&rsquo;s a really good reason. First off, unless your hiera.yaml is super complicated, then it probably doesn&rsquo;t need to be in version control. However, for a lot of deployments you need it in VC, but not in your control repo (i.e., the one that r10k will access for Puppetfile, hieradata and build our corrosponding enviros for on your master).</p>
 
 <p>No, place that hiera.yaml in it&rsquo;s own VC repo.</p>
 
@@ -691,9 +689,9 @@ Puppetfile
   
   <entry>
     <title type="html"><![CDATA[Continous Integration Hooks with r10k &amp; Puppet]]></title>
-    <link href="http://yoursite.com/blog/2014/05/04/continous-integration-hooks-with-r10k-and-puppet/"/>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/05/04/continous-integration-hooks-with-r10k-and-puppet/"/>
     <updated>2014-05-04T07:47:05-07:00</updated>
-    <id>http://yoursite.com/blog/2014/05/04/continous-integration-hooks-with-r10k-and-puppet</id>
+    <id>httpL://www.jeffmalnick.com/blog/2014/05/04/continous-integration-hooks-with-r10k-and-puppet</id>
     <content type="html"><![CDATA[<p>A week ago I was modifiying a webhook to run r10k on push to a git repository. The goal here was to sync up r10k everytime a push was made to the repo. However, in doing so I found that the <a href="https://github.com/acidprime/r10k/blob/master/templates/usr/local/bin/webhook.erb">current</a> hook didn&rsquo;t take advantage of deploying a specific puppet environmnet, and instead runs a full r10k sync across all topic branchs and thus all puppet environments.</p>
 
 <p>I figured the first place to start was modifying the <a href="https://github.com/acidprime/r10k/blob/master/templates/usr/local/bin/webhook.erb#L35">&lsquo;post&rsquo;</a> method:</p>
@@ -810,9 +808,9 @@ Puppetfile
   
   <entry>
     <title type="html"><![CDATA[Puppet Types: Understanding Parameters and Properties]]></title>
-    <link href="http://yoursite.com/blog/2014/04/19/puppet-types-understanding-parameters-and-properties/"/>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/04/19/puppet-types-understanding-parameters-and-properties/"/>
     <updated>2014-04-19T08:30:28-07:00</updated>
-    <id>http://yoursite.com/blog/2014/04/19/puppet-types-understanding-parameters-and-properties</id>
+    <id>httpL://www.jeffmalnick.com/blog/2014/04/19/puppet-types-understanding-parameters-and-properties</id>
     <content type="html"><![CDATA[<p>When starting out with Types and Providers for Puppet it&rsquo;s common to misunderstand when something is a <em>Parameter</em> and when something is a <em>Property</em>.</p>
 
 <h3><strong>Properties</strong></h3>
@@ -864,9 +862,9 @@ content
   
   <entry>
     <title type="html"><![CDATA[Brief Intro to Puppetizing STIG Compliance]]></title>
-    <link href="http://yoursite.com/blog/2014/03/20/brief-intro-to-puppetizing-stig-compliance/"/>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/03/20/brief-intro-to-puppetizing-stig-compliance/"/>
     <updated>2014-03-20T10:01:05-07:00</updated>
-    <id>http://yoursite.com/blog/2014/03/20/brief-intro-to-puppetizing-stig-compliance</id>
+    <id>httpL://www.jeffmalnick.com/blog/2014/03/20/brief-intro-to-puppetizing-stig-compliance</id>
     <content type="html"><![CDATA[<p>STIG is a methodology for the implementation of security compliance across heterogeneous operating systems. Every OS has a specific STIG. The STIG for a given OS is maintained and distributed by the Defense Information Systems Agency (DISA). Current STIGs can be found on the <a href="http://iase.disa.mil/stigs/">DISA website</a>.</p>
 
 <p>Puppet is an excellent tool for bringing machines into STIG compliance. At my previous job I was in <a href="https://github.com/malnick/do_debian_stig/blob/master/do_debian_stig.sh">shell script hell</a> until we spun up a POS master and started writing a STIG module that worked across all OS&rsquo;s we supported (14 linux distros, 30 territorial sys admins, ~250 nodes).</p>
@@ -918,9 +916,9 @@ content
   
   <entry>
     <title type="html"><![CDATA[How To Install Rspec-Puppet on Puppet Enterprise]]></title>
-    <link href="http://yoursite.com/blog/2014/03/20/rspec-testing-puppet-enterprise-modules/"/>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/03/20/rspec-testing-puppet-enterprise-modules/"/>
     <updated>2014-03-20T09:42:50-07:00</updated>
-    <id>http://yoursite.com/blog/2014/03/20/rspec-testing-puppet-enterprise-modules</id>
+    <id>httpL://www.jeffmalnick.com/blog/2014/03/20/rspec-testing-puppet-enterprise-modules</id>
     <content type="html"><![CDATA[<p>If you&rsquo;re getting into rspec testing for your manifests you might already know this:  Puppet Enterprise has it&rsquo;s own gem environment. This is a quick post on how to install rspec-puppet to your PE gem environment.</p>
 
 <p>If you&rsquo;re new to rspec-puppet check out <a href="www.rspec-puppet.com">this great site</a> for a brief on installing (except if you&rsquo;re on PE, then follow the install below). rspec-puppet.com also has a great tutorial to get your up and running.</p>
@@ -982,9 +980,9 @@ content
   
   <entry>
     <title type="html"><![CDATA[TLS/SSL DH Cipher Padding Bug in ActiveMQ]]></title>
-    <link href="http://yoursite.com/blog/2014/03/17/tls-slash-ssl-dh-cipher-padding-bug-in-activemq/"/>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/03/17/tls-slash-ssl-dh-cipher-padding-bug-in-activemq/"/>
     <updated>2014-03-17T16:23:11-07:00</updated>
-    <id>http://yoursite.com/blog/2014/03/17/tls-slash-ssl-dh-cipher-padding-bug-in-activemq</id>
+    <id>httpL://www.jeffmalnick.com/blog/2014/03/17/tls-slash-ssl-dh-cipher-padding-bug-in-activemq</id>
     <content type="html"><![CDATA[<h3>Update</h3>
 
 <p>As of March 18 it appears that Oracle has implemented a fix in their release of <a href="http://www.oracle.com/technetwork/java/javase/8train-relnotes-latest-2153846.html">JDK and Java Standard Edition version 8</a> and it&rsquo;s assocaited <a href="http://docs.oracle.com/javase/8/docs/technotes/guides/security/enhancements-8.html">security extensions</a>:</p>
@@ -1069,9 +1067,9 @@ Exception: Invalid Padding length: 239
   
   <entry>
     <title type="html"><![CDATA[Debugging ActiveMQ JVM Heap Memory Errors]]></title>
-    <link href="http://yoursite.com/blog/2014/03/12/debugging-activemq-jvm-heap-memory-errors/"/>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/03/12/debugging-activemq-jvm-heap-memory-errors/"/>
     <updated>2014-03-12T21:08:06-07:00</updated>
-    <id>http://yoursite.com/blog/2014/03/12/debugging-activemq-jvm-heap-memory-errors</id>
+    <id>httpL://www.jeffmalnick.com/blog/2014/03/12/debugging-activemq-jvm-heap-memory-errors</id>
     <content type="html"><![CDATA[<h2>This just happened:</h2>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -1435,9 +1433,9 @@ INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many ope
   
   <entry>
     <title type="html"><![CDATA[Extracting JSON from Puppet YAML Report]]></title>
-    <link href="http://yoursite.com/blog/2014/01/17/extracting-json-from-puppet-yaml-report/"/>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/01/17/extracting-json-from-puppet-yaml-report/"/>
     <updated>2014-01-17T06:55:04-08:00</updated>
-    <id>http://yoursite.com/blog/2014/01/17/extracting-json-from-puppet-yaml-report</id>
+    <id>httpL://www.jeffmalnick.com/blog/2014/01/17/extracting-json-from-puppet-yaml-report</id>
     <content type="html"><![CDATA[<h3>YAML &ndash;> JSON via Puppet Gen&#8217;ed YAML</h3>
 
 <p>In a follow up to the post below, I started thinking about ways to generate a D3 readable JSON on the fly from the puppet generated YAML. I started by using a parser from the node library &lsquo;js-yaml&rsquo;. My YAML format looked like this:</p>
@@ -1558,18 +1556,18 @@ INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many ope
   
   <entry>
     <title type="html"><![CDATA[test]]></title>
-    <link href="http://yoursite.com/blog/2014/01/13/test/"/>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/01/13/test/"/>
     <updated>2014-01-13T09:35:57-08:00</updated>
-    <id>http://yoursite.com/blog/2014/01/13/test</id>
+    <id>httpL://www.jeffmalnick.com/blog/2014/01/13/test</id>
     <content type="html"><![CDATA[
 ]]></content>
   </entry>
   
   <entry>
     <title type="html"><![CDATA[Puppet Run Vis]]></title>
-    <link href="http://yoursite.com/blog/2014/01/06/puppet-run-vis/"/>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/01/06/puppet-run-vis/"/>
     <updated>2014-01-06T00:00:00-08:00</updated>
-    <id>http://yoursite.com/blog/2014/01/06/puppet-run-vis</id>
+    <id>httpL://www.jeffmalnick.com/blog/2014/01/06/puppet-run-vis</id>
     <content type="html"><![CDATA[<h3>D3 Visualization for a Puppet Run</h3>
 
 <p>One of the common complaints with puppet, especially puppet enterprise (PE) is that it does not scale as one would hope. In example, the PE console. EVERY NODE must report to the console in PE. So, if, for example, you&rsquo;re a sysadmin working with 10,000+ or even 1,000+ PE nodes you&rsquo;re going to have a crazy busy console.</p>
@@ -1976,15 +1974,15 @@ INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many ope
 
 
 <p>OMG IT&rsquo;S SO AWESOME!
-<img src="http://yoursite.com/images/small_example.tiff" title="awesome" alt="images"></p>
+<img src="httpL://www.jeffmalnick.com/images/small_example.tiff" title="awesome" alt="images"></p>
 ]]></content>
   </entry>
   
   <entry>
     <title type="html"><![CDATA[The Need for a Replication Provider]]></title>
-    <link href="http://yoursite.com/blog/2014/01/03/the-need-to-a-replication-provider/"/>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/01/03/the-need-to-a-replication-provider/"/>
     <updated>2014-01-03T09:05:51-08:00</updated>
-    <id>http://yoursite.com/blog/2014/01/03/the-need-to-a-replication-provider</id>
+    <id>httpL://www.jeffmalnick.com/blog/2014/01/03/the-need-to-a-replication-provider</id>
     <content type="html"><![CDATA[<h3>Why we need a replication provider for puppet</h3>
 
 <p>I&rsquo;ve been using puppet for over a year now. I started using it at the request of a friend who wanted a simple, one-liner command to boot his e-commerce platform on Vagrant VM&rsquo;s for dev and eventually production. I was impressed by the simplicity, the software defined server-state was easy to create through the elegant package, resource, service workflow. It wasn&rsquo;t very long that we found other more advanced needs for Puppet.</p>
@@ -2389,9 +2387,9 @@ The coding for it is far more economical, and we don&rsquo;t have a psudo-bash s
   
   <entry>
     <title type="html"><![CDATA[Blog Post #1]]></title>
-    <link href="http://yoursite.com/blog/2014/01/02/blog-post-number-1/"/>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/01/02/blog-post-number-1/"/>
     <updated>2014-01-02T10:52:00-08:00</updated>
-    <id>http://yoursite.com/blog/2014/01/02/blog-post-number-1</id>
+    <id>httpL://www.jeffmalnick.com/blog/2014/01/02/blog-post-number-1</id>
     <content type="html"><![CDATA[<p>Is this thing on?</p>
 ]]></content>
   </entry>

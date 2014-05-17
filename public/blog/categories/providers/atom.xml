@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: providers | A techy blog]]></title>
-  <link href="http://yoursite.com/blog/categories/providers/atom.xml" rel="self"/>
-  <link href="http://yoursite.com/"/>
-  <updated>2014-05-16T12:44:29-07:00</updated>
-  <id>http://yoursite.com/</id>
+  <title><![CDATA[Category: providers | JP]]></title>
+  <link href="httpL://www.jeffmalnick.com/blog/categories/providers/atom.xml" rel="self"/>
+  <link href="httpL://www.jeffmalnick.com/"/>
+  <updated>2014-05-16T21:31:17-07:00</updated>
+  <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[The Need for a Replication Provider]]></title>
-    <link href="http://yoursite.com/blog/2014/01/03/the-need-to-a-replication-provider/"/>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/01/03/the-need-to-a-replication-provider/"/>
     <updated>2014-01-03T09:05:51-08:00</updated>
-    <id>http://yoursite.com/blog/2014/01/03/the-need-to-a-replication-provider</id>
+    <id>httpL://www.jeffmalnick.com/blog/2014/01/03/the-need-to-a-replication-provider</id>
     <content type="html"><![CDATA[<h3>Why we need a replication provider for puppet</h3>
 
 <p>I&rsquo;ve been using puppet for over a year now. I started using it at the request of a friend who wanted a simple, one-liner command to boot his e-commerce platform on Vagrant VM&rsquo;s for dev and eventually production. I was impressed by the simplicity, the software defined server-state was easy to create through the elegant package, resource, service workflow. It wasn&rsquo;t very long that we found other more advanced needs for Puppet.</p>

@@ -1,12 +1,10 @@
 ---
 layout: post
-title: "Hiera &amp; r10k"
+title: "Why I don't place a hiera.yaml in my CR"
 date: 2014-05-15 16:12:36 -0700
 comments: true
 categories: 
 ---
-I really wanted to call this "don't put hiera.yaml in your control repo for r10k. 
-
 Here's a really good reason. First off, unless your hiera.yaml is super complicated, then it probably doesn't need to be in version control. However, for a lot of deployments you need it in VC, but not in your control repo (i.e., the one that r10k will access for Puppetfile, hieradata and build our corrosponding enviros for on your master).
 
 No, place that hiera.yaml in it's own VC repo. 

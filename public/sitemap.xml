@@ -1,89 +1,105 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
-        <loc>http://yoursite.com/blog/2014/01/02/blog-post-number-1/</loc>
-        <lastmod>2014-01-02T14:35:45-08:00</lastmod>
+        <loc>httpL://www.jeffmalnick.com/blog/2014/01/02/blog-post-number-1/</loc>
+        <lastmod>2014-05-16T20:52:21-07:00</lastmod>
     </url>
     <url>
-        <loc>http://yoursite.com/blog/2014/01/03/the-need-to-a-replication-provider/</loc>
-        <lastmod>2014-03-12T21:12:08-07:00</lastmod>
+        <loc>httpL://www.jeffmalnick.com/blog/2014/01/03/the-need-to-a-replication-provider/</loc>
+        <lastmod>2014-05-16T20:52:21-07:00</lastmod>
     </url>
     <url>
-        <loc>http://yoursite.com/blog/2014/01/06/puppet-run-vis/</loc>
+        <loc>httpL://www.jeffmalnick.com/blog/2014/01/06/puppet-run-vis/</loc>
         <lastmod>2014-01-09T10:36:41-08:00</lastmod>
     </url>
     <url>
-        <loc>http://yoursite.com/blog/2014/01/13/test/</loc>
-        <lastmod>2014-04-02T21:47:06-07:00</lastmod>
-    </url>
-    <url>
-        <loc>http://yoursite.com/blog/2014/01/17/extracting-json-from-puppet-yaml-report/</loc>
-        <lastmod>2014-04-02T21:47:06-07:00</lastmod>
-    </url>
-    <url>
-        <loc>http://yoursite.com/blog/2014/03/12/debugging-activemq-jvm-heap-memory-errors/</loc>
-        <lastmod>2014-03-17T09:48:56-07:00</lastmod>
+        <loc>httpL://www.jeffmalnick.com/blog/2014/01/13/test/</loc>
+        <lastmod>2014-05-16T20:52:21-07:00</lastmod>
     </url>
     <url>
         <loc>
-            http://yoursite.com/blog/2014/03/17/tls-slash-ssl-dh-cipher-padding-bug-in-activemq/
+            httpL://www.jeffmalnick.com/blog/2014/01/17/extracting-json-from-puppet-yaml-report/
         </loc>
-        <lastmod>2014-03-18T19:06:45-07:00</lastmod>
-    </url>
-    <url>
-        <loc>http://yoursite.com/blog/2014/03/20/rspec-testing-puppet-enterprise-modules/</loc>
-        <lastmod>2014-04-18T17:01:07-07:00</lastmod>
-    </url>
-    <url>
-        <loc>http://yoursite.com/blog/2014/03/20/brief-intro-to-puppetizing-stig-compliance/</loc>
-        <lastmod>2014-03-20T10:11:00-07:00</lastmod>
+        <lastmod>2014-05-16T20:52:21-07:00</lastmod>
     </url>
     <url>
         <loc>
-            http://yoursite.com/blog/2014/04/19/puppet-types-understanding-parameters-and-properties/
+            httpL://www.jeffmalnick.com/blog/2014/03/12/debugging-activemq-jvm-heap-memory-errors/
         </loc>
-        <lastmod>2014-04-19T09:02:09-07:00</lastmod>
+        <lastmod>2014-05-16T20:52:21-07:00</lastmod>
     </url>
     <url>
         <loc>
-            http://yoursite.com/blog/2014/05/04/continous-integration-hooks-with-r10k-and-puppet/
+            httpL://www.jeffmalnick.com/blog/2014/03/17/tls-slash-ssl-dh-cipher-padding-bug-in-activemq/
         </loc>
-        <lastmod>2014-05-04T08:38:48-07:00</lastmod>
+        <lastmod>2014-05-16T20:52:21-07:00</lastmod>
     </url>
     <url>
-        <loc>http://yoursite.com/blog/2014/05/15/hiera-and-r10k/</loc>
-        <lastmod>2014-05-15T16:25:11-07:00</lastmod>
+        <loc>
+            httpL://www.jeffmalnick.com/blog/2014/03/20/rspec-testing-puppet-enterprise-modules/
+        </loc>
+        <lastmod>2014-05-16T20:52:21-07:00</lastmod>
     </url>
     <url>
-        <loc>http://yoursite.com/blog/2014/05/16/r10k-control-repos/</loc>
-        <lastmod>2014-05-16T12:44:17-07:00</lastmod>
+        <loc>
+            httpL://www.jeffmalnick.com/blog/2014/03/20/brief-intro-to-puppetizing-stig-compliance/
+        </loc>
+        <lastmod>2014-05-16T20:52:21-07:00</lastmod>
     </url>
     <url>
-        <loc>http://yoursite.com/404.html</loc>
-        <lastmod>2014-01-03T08:22:47-08:00</lastmod>
+        <loc>
+            httpL://www.jeffmalnick.com/blog/2014/04/19/puppet-types-understanding-parameters-and-properties/
+        </loc>
+        <lastmod>2014-05-16T20:52:21-07:00</lastmod>
     </url>
     <url>
-        <loc>http://yoursite.com/blog/about/</loc>
-        <lastmod>2014-05-16T12:44:17-07:00</lastmod>
+        <loc>
+            httpL://www.jeffmalnick.com/blog/2014/05/04/continous-integration-hooks-with-r10k-and-puppet/
+        </loc>
+        <lastmod>2014-05-16T20:52:21-07:00</lastmod>
     </url>
     <url>
-        <loc>http://yoursite.com/blog/archives/</loc>
-        <lastmod>2014-05-16T12:44:17-07:00</lastmod>
+        <loc>httpL://www.jeffmalnick.com/blog/2014/05/15/hiera-and-r10k/</loc>
+        <lastmod>2014-05-16T21:09:19-07:00</lastmod>
     </url>
     <url>
-        <loc>http://yoursite.com/blog/contact/</loc>
-        <lastmod>2014-05-16T12:44:17-07:00</lastmod>
+        <loc>httpL://www.jeffmalnick.com/blog/2014/05/16/r10k-control-repos/</loc>
+        <lastmod>2014-05-16T20:52:21-07:00</lastmod>
     </url>
     <url>
-        <loc>http://yoursite.com/blog/resume/</loc>
-        <lastmod>2014-03-20T10:54:37-07:00</lastmod>
+        <loc>httpL://www.jeffmalnick.com/404.html</loc>
+        <lastmod>2014-05-16T20:52:21-07:00</lastmod>
     </url>
     <url>
-        <loc>http://yoursite.com/</loc>
-        <lastmod>2014-05-16T12:44:17-07:00</lastmod>
+        <loc>httpL://www.jeffmalnick.com/archives/</loc>
+        <lastmod>2014-05-16T21:09:19-07:00</lastmod>
     </url>
     <url>
-        <loc>http://yoursite.com/robots.txt</loc>
-        <lastmod>2014-01-02T14:35:28-08:00</lastmod>
+        <loc>httpL://www.jeffmalnick.com/blog/about/</loc>
+        <lastmod>2014-05-16T21:09:19-07:00</lastmod>
+    </url>
+    <url>
+        <loc>httpL://www.jeffmalnick.com/blog/archives/</loc>
+        <lastmod>2014-05-16T21:09:19-07:00</lastmod>
+    </url>
+    <url>
+        <loc>httpL://www.jeffmalnick.com/blog/contact/</loc>
+        <lastmod>2014-05-16T21:09:19-07:00</lastmod>
+    </url>
+    <url>
+        <loc>httpL://www.jeffmalnick.com/blog/</loc>
+        <lastmod>2014-05-16T21:09:19-07:00</lastmod>
+    </url>
+    <url>
+        <loc>httpL://www.jeffmalnick.com/blog/resume/</loc>
+        <lastmod>2014-05-16T21:25:10-07:00</lastmod>
+    </url>
+    <url>
+        <loc>httpL://www.jeffmalnick.com/</loc>
+        <lastmod>2014-05-16T21:09:19-07:00</lastmod>
+    </url>
+    <url>
+        <loc>httpL://www.jeffmalnick.com/robots.txt</loc>
+        <lastmod>2014-05-16T20:52:21-07:00</lastmod>
     </url>
 </urlset>

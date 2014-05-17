@@ -1,77 +1,105 @@
 
-<!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE HTML>
+<html>
 <head>
-  <meta charset="utf-8">
-  <title>Resume - A techy blog</title>
-  <meta name="author" content="Jeff">
+	<script data-cfasync="false" type="text/javascript" src="//use.typekit.net/axj3cfp.js"></script>
+	<script data-cfasync="false" type="text/javascript">try{Typekit.load();}catch(e){}</script>
+	<meta charset="utf-8">
+	<title>Resume  | JP</title>
 
-  
-  <meta name="description" content="Resume Profile (my left side is definitely my best) Self-taught, efficiency-driven, performance-oriented, heavy ops &amp; light on the dev systems &hellip;">
-  
+<meta name="author" content="Jeff"> 
 
-  <!-- http://t.co/dKP3o1e -->
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="See subtitle."> <meta name="keywords" content="">
 
-  
-  <link rel="canonical" href="http://yoursite.com/blog/resume">
-  <link href="/favicon.ico" rel="icon">
-  
-  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="/javascripts/ender.js"></script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <link href="/atom.xml" rel="alternate" title="A techy blog" type="application/atom+xml">
-  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
-<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  
+	<link href="/atom.xml" rel="alternate" title="JP" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href="/stylesheets/font-awesome.min.css" rel="stylesheet" type="text/css">
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<script type="text/javascript" src="/javascripts/jquery.fancybox.pack.js"></script>
 
+<script language="Javascript" type="text/javascript">
+$(document).ready(
+  function() {
+    (function($) {
+      $(".fancybox[data-content-id]").each(function() {
+        this.href = $(this).data('content-id');
+      });
+      $(".fancybox").fancybox({
+        beforeLoad: function() {
+          var el, 
+              id = $(this.element).data('title-id');
+
+          if (id) {
+            el = $('#' + id);
+
+            if (el.length) {
+              this.title = el.html();
+            }
+          }
+          if ($(this).data('content')) {
+            this.content = $(this).data('content');
+          }
+        },
+        helpers: {
+          title: {
+            type: 'inside'
+          }
+        }
+      });
+    })(jQuery);
+  }
+);
+</script>
+
+	
 </head>
 
-<body   class="no-sidebar"  >
-  <header role="banner"><hgroup>
-  <h1>A techy blog</h1>
-  
-    <h2><a href="/">Jeff</a></h2>
-  
-</hgroup>
+
+
+<body>
+	<header id="header" class="inner"><h1><a href="/">JP</a></h1>
+<h4>a techy blog</h4>
+<nav id="main-nav"><ul>
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/about">About</a></li>
+	<li><a href="/blog/resume">Resume</a></li>
+	<li><a href="/archives">Archive</a></li>
+</ul>
+</nav>
+<nav id="mobile-nav">
+	<div class="alignleft menu">
+		<a class="button">Menu</a>
+		<div class="container"><ul>
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/about">About</a></li>
+	<li><a href="/blog/resume">Resume</a></li>
+	<li><a href="/archives">Archive</a></li>
+</ul>
+</div>
+	</div>
+	<div class="alignright search">
+		<a class="button"></a>
+		<div class="container">
+			<form action="http://google.com/search" method="get">
+				<input type="text" name="q" results="0">
+				<input type="hidden" name="q" value="site:httpL://www.jeffmalnick.com">
+			</form>
+		</div>
+	</div>
+</nav>
+
 
 </header>
-  <nav role="navigation">
-  
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:yoursite.com" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-  
-<ul class="main-navigation">
-  <li><a href="/blog/about">aBoUt</a></li>
-  <li><a href="/blog/archives">aRcHiVeS</a></li>
-  <li><a href="/blog/resume">resume</a></li>
-  <li><a href="/blog/contact">contact</a></li>
-</ul>
 
-</nav>
-  <div id="main">
-    <div id="content">
-      <div>
-<article role="article">
-  
-  <header>
-    <h1 class="entry-title">Resume</h1>
-  </header>
-  
-  <h2>Profile (my left side is definitely my best)</h2>
+	<div id="content" class="inner"><article class="page">
+    <div class="entry-content"><h2>Profile</h2>
 
-<p>Self-taught, efficiency-driven, performance-oriented, heavy ops &amp; light on the dev systems administrator with 7 years of *nix computing experience. Highly proficient in systems configuration using Puppet though also has under the hood experience with chef, ansible and salt. Big on continuous integration &amp; continuoius deployment pipelines. Forward leaning on the DevOps role, learning new skills and rolling code in ruby, bash and python. Plays well with others.</p>
+<p>Systems administrator with 7 years of *nix computing experience. Experience in several $scripting_languages (Ruby [Puppet, Chef, mCollective API, Vagrantfiles, Rakefiles], Bash [automation, systems configuration/management, Makefiles]). Good at troubleshooting other code bases (Java, JavaScript, NodeJS, C, C++) to find out where dev broke ops. Highly proficient in systems configuration using Puppet, also has under the hood experience with chef, ansible and salt. Understanding of continuous integration pipelines; experience deploying continuous delivery pipelines of spec tested code from dev through production. Excellent understanding of use and implementation of git and git workflows. Good understanding of the JVM platform &ndash; in particular, experience tuning the JVM for ActiveMQ messaging brokers/agents. Plays well with others.</p>
 
 <h2>Experience</h2>
 
@@ -81,29 +109,78 @@
 
 <p>Pro services @puppetlabs: Customer-facing problem solving role. Teach the Puppet DSL at various public and private venues. Contribute to the development of Puppet in the areas of rapid deployment/continuous integration; trouble-shooting and QA testing of new puppet-oriented technologies such as R10k; develope respec tests for unit and integration testing of Puppet code. Help deploy Puppet Enterprise to customer sites and consult on customer needs developing Puppet modules and code as needed.</p>
 
+<h3>Cart Logic, Inc. Development &amp; Operations</h3>
+
+<p>March 2013 &ndash; August 2013</p>
+
+<p>Private consulting services at contracting rates for Cart Logic, Inc.</p>
+
+<p>Deployed the Cart Logic e-commerce platform via monolithic puppet manifest and associated module directory. Platform driven by a Python Pyramid framework consisting of over 5000 nose tests. The deployment consisted the monolithic manifest on a clean Ubuntu 12.04 LTS box, passing all nose tests 100% and serving the base html templates in a web browser post puppet run. Deployment testing and configuration were all done in Vagrant. Final deliverable was the monolithic manifest and associated repo of modules plus Vagrantfiles.</p>
+
+<p>Automated the MySQL replication bootstrapping process for new client databases. Wrote a MySQL Replication module that runs a replicate::master defined type (not idempotently) to configure a MySQL master node instance. Slave nodes could have the same module ran on them using the replicate::slave defined type. The objective was to have multiple remote masters with all slave instances running on a single monolithic MySQL slave server &ndash; my module would have to boot a new unique MySQL database/server for each slave instance. I’m currently attempting to turn the replication services in this module into a puppet provider for the puppetlabs/mysql module: <a href="https://github.com/malnick/replication-provider-dev-vm/tree/master/modules/replicate">https://github.com/malnick/replication-provider-dev-vm/tree/master/modules/replicate</a></p>
+
 <h3>Naval Postgraduate School, Research Associate</h3>
 
 <p>December 2007 &ndash; December 2013</p>
 
 <p>Systems administration for distributed high performance optical networks leveraging a local Sun Blade super computer for distributed media streaming and rendering services such as live 4k and 8k video. Developed RHEL and Debian skills. Developed pipelines and workflows for generating, editing and distributing high bandwidth media for live and asynchronous viewing. Contributed to projects in the Space Systems department in rigid body motion capture and helped write a plugin for the Vicon motion capture suite to stream live x,y,z coordinates of moving objects from said system. Wrote scripts for STIGing computers in according with SCAP security requirements mandated by the DoD and eventually helped develop to Puppet modules to automate this task for the 12+ versions of linux under support from the IT department, spanning 20+ systems administrators and 280 *nix nodes.</p>
 
-<h3>Mad Skills (to name a few)</h3>
+<h3>Skills &amp; Tool Shed</h3>
+
+<p><strong>Network Stack Experience</strong></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>HTTP[s] - SNMP - NTP - FTP - DHCP - STOMP - Telnet 
+</span><span class='line'>  \-&gt; TCP - UDP - SCTP
+</span><span class='line'>      \-&gt; IP - ICMP 
+</span><span class='line'>          \-&gt; IEEE 802.2 - ARP
+</span><span class='line'>              \-&gt; Link layer </span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>Skills</strong></p>
 
 <ul>
-<li>Puppet (Certified Puppet Professional)</li>
-<li>Git</li>
-<li>Bash, sh</li>
-<li>Ruby</li>
-<li>Python</li>
-<li>Once upon a time I knew Perl, and before that Fourth</li>
+<li>Config Mgmt: Puppet (Certified Puppet Professional) &ndash; Ansible &ndash; some Chef &amp; Salt</li>
+<li>Orchestration: mCollective &ndash; salt</li>
+<li>Git!</li>
+<li>*nix: RHEL &ndash; Debian &ndash; Ubuntu &ndash; CentOS &ndash; SUSE (ugh, Zypper)</li>
+<li>Message Oriented Middleware: ActiveMQ in Publish/Subscribe framework over STOMP</li>
+<li>Metric gathering &amp; Monitoring: Nagios &ndash; Ganglia &ndash; Munin</li>
+<li>Database: MySQL/HA MySQL &ndash; Postgres &ndash; CouchDB</li>
+<li>Loadbalancing: HA Proxy</li>
+<li>Interchange formats: JSON &ndash; YAML &ndash; XML</li>
+<li>NTP:  to manage SSL certs in a PKI infrastructure &ndash; also used to sync timecode between cameras in streaming of 4k video in a live channel in production.</li>
+<li>SAN: Managed 50TB SAN system for archival of 4k media assets served over 10g backplane to a NTT-developed server for live streaming and recording.</li>
+</ul>
+
+
+<p><strong>Dev</strong></p>
+
+<ul>
+<li>github.com/malnick</li>
+<li>Bash, Sh</li>
+<li>Ruby &ndash; but not as much as Bash.</li>
+<li>Python &ndash; but not as much as ruby.</li>
+<li>Once upon a time I knew Perl, and before that fourth and before that C++.</li>
+</ul>
+
+
+<p><strong>Tools</strong></p>
+
+<ul>
 <li>Vagrant</li>
-<li>VMWare Fusion</li>
-<li>Nagios w/ Ganglia</li>
-<li>Nagios w/ Munin</li>
-<li>RHEL/Debian/Ubuntu/CentOS</li>
-<li>MySQL/Postgres</li>
-<li>&reg;spec testing</li>
-<li>Continuous integration tools like Jenkins</li>
+<li>Wireshark</li>
+<li>Vim</li>
+<li>VMWare (if you include Fusion as an actual tool)</li>
+<li>&reg;spec testing suites (rspec-puppet)</li>
+<li>Continuous integration tools such as Jenkins</li>
+<li>r10k</li>
+<li>git</li>
+<li>O’Reilly books</li>
 </ul>
 
 
@@ -124,47 +201,26 @@
 <p>Photography</p>
 
 <p>I like hacking radios and learning crypto. I don’t read fiction.</p>
-
-  
+</div>
 </article>
 
+
 </div>
+	<footer id="footer" class="inner">Copyright &copy; 2014
 
+    Jeff
 
-    </div>
-  </div>
-  <footer role="contentinfo"><p>
-  Copyright &copy; 2014 - Jeff -
-  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
-</p>
-
+<br>
+Powered by Octopress.
 </footer>
-  
+	<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
 
-
-
-<div id="fb-root"></div>
-<script>(function(d, s, id) {
-  var js, fjs = d.getElementsByTagName(s)[0];
-  if (d.getElementById(id)) {return;}
-  js = d.createElement(s); js.id = id;
-  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
-  fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));</script>
-
-
-
-
-
-  <script type="text/javascript">
-    (function(){
-      var twitterWidgets = document.createElement('script');
-      twitterWidgets.type = 'text/javascript';
-      twitterWidgets.async = true;
-      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
-      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
-    })();
-  </script>
 
 
 
