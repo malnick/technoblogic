@@ -1,3 +1,6 @@
 [submodule ".themes/BlogTheme"]
 	path = .themes/BlogTheme
 	url = https://github.com/rastersize/BlogTheme.git
+[submodule ".themes/cleanpress"]
+	path = .themes/cleanpress
+	url = https://github.com/macjasp/cleanpress
