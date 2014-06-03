@@ -4,7 +4,7 @@
   <title><![CDATA[JP]]></title>
   <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
   <link href="httpL://www.jeffmalnick.com/"/>
-  <updated>2014-06-03T06:52:34-07:00</updated>
+  <updated>2014-06-03T07:57:51-07:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
@@ -14,11 +14,14 @@
 
   
   <entry>
-    <title type="html"><![CDATA[What is this module doing? ]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2014/05/30/what-is-this-module-doing/"/>
-    <updated>2014-05-30T15:58:12-07:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2014/05/30/what-is-this-module-doing</id>
-    <content type="html"><![CDATA[
+    <title type="html"><![CDATA[Continuous Integration with Puppet Code]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/06/03/continuous-integration-with-puppet-code/"/>
+    <updated>2014-06-03T07:54:12-07:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2014/06/03/continuous-integration-with-puppet-code</id>
+    <content type="html"><![CDATA[<iframe src="http://www.slideshare.net/slideshow/embed_code/35435020" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px 1px 0; margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe>
+
+
+<p> <div style="margin-bottom:5px"> <strong> <a href="https://www.slideshare.net/malnick/continuous-integration-withpuppet" title="Continuous integration with_puppet" target="_blank">Continuous integration with_puppet</a> </strong> from <strong><a href="http://www.slideshare.net/malnick" target="_blank">malnick</a></strong> </div></p>
 ]]></content>
   </entry>
   
