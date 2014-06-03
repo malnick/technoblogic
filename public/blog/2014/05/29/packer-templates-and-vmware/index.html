@@ -98,7 +98,33 @@ $(document).ready(
 
 	<div id="content" class="inner"><article class="post">
 	<h2 class="title">Packer Templates &amp; VMWare</h2>
-	<div class="entry-content"><p>This week I was working with a customer to automate the deployment of some VM&rsquo;s to vSphere. This deployment is replaceing some current scripts and manually configured templates. Actually, a lot of scripts and manually configured templates.</p>
+	<div class="entry-content"><h2>tl;dr</h2>
+
+<p>There&rsquo;s not a lot of docs on Packer and the logging can be tricky to find sometimes depending on the vm you&rsquo;re booting (which provider backs it). If you&rsquo;re using VMWare and you&rsquo;re booting centos the <code>guest_os_type</code> key needs to be set appropriatly.</p>
+
+<p>Some people seem to think this can be $anything that sounds reasonable (I did!) and there is no documentation on what should actually go there (as of writing this, Google was sparce). So if you have a doubt on what the <code>guest_os_type</code> value should be the best bet is to <code>$ diff</code> it with an already existing <code>*.your_vm_type</code> (&lsquo;vmx&rsquo;, &lsquo;ovf&rsquo;, et cetera).</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>cat centos65-puppetmaster.json | grep -i guest_os_type
+</span><span class='line'>    <span class="s2">&quot;guest_os_type&quot;</span>: <span class="s2">&quot;centos-65&quot;</span>,
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>However, if I query an already built <code>*.vmx</code> this is incorrect:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>cat master2.vmx | grep -i guestos
+</span><span class='line'>   <span class="nv">guestos</span> <span class="o">=</span> <span class="s2">&quot;redhat&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>For CentOS at least, your <code>guest_os_type</code> value should be set to <code>redhat</code>.</p>
+
+<h2>Back Story</h2>
+
+<p>This week I was working with a customer to automate the deployment of some VM&rsquo;s to vSphere. This deployment is replaceing some current scripts and manually configured templates. Actually, a lot of scripts and manually configured templates.</p>
 
 <p>The long and the short of it, me and my team decided to implement Vagrant and Packer to push out pre-written Packer templates to vSphere via Vagrant&rsquo;s vSphere plugin using the VMWare provider.</p>
 
