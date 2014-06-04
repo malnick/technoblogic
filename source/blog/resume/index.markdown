@@ -16,7 +16,7 @@ Systems administrator with 7 years of *nix computing experience. Experience in s
 
 December 2013 - Present
 
-Pro services @puppetlabs: Customer-facing problem solving role. Teach the Puppet DSL at various public and private venues. Contribute to the development of Puppet in the areas of rapid deployment/continuous integration; trouble-shooting and QA testing of new puppet-oriented technologies such as R10k; develope respec tests for unit and integration testing of Puppet code. Help deploy Puppet Enterprise to customer sites and consult on customer needs developing Puppet modules and code as needed.
+Pro services @puppetlabs: Help deploy Puppet Enterprise to customer sites and consult on customer needs developing Puppet modules and code as needed. Teach the Puppet DSL at various public and private venues. Contribute to the development of Puppet in the areas of rapid deployment/continuous integration; trouble-shooting and QA testing of new puppet-oriented technologies. 
 
 ###Cart Logic, Inc. Development & Operations
 
