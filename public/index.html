@@ -102,6 +102,357 @@ $(document).ready(
     <article class="post">
 	<h2 class="title">
 		
+		<a href="/blog/2014/07/14/managing-git-repos-over-jump-hosts-using-persistant-sockets/">
+		
+			Managing Git Repos Over Jump Hosts Using Persistant Sockets</a>
+	</h2>
+	<div class="entry-content">
+		<p>I was recently helping a customer who had a somewhat complicated git workflow to production. All their Puppet code was in a locally accessible Gitlab server which was used by all the Automation dev&rsquo;s to develop, test and push to.</p>
+
+<p>However, their integration and production environments were located behind a jumphost which also required a custom VPN connection.</p>
+
+<p>The problem was that this deployment relied on <a href="https://github.com/adrienthebo/r10k">r10k</a> and the Puppet master needed access to the Gitlab server to create the local environments in both integration and eventually production.</p>
+
+<p>Enabling a streamlined process to move the Gitlab codebase from our dev area into the corralled VM behind the jumphost was needed.</p>
+
+<p>This workflow involves several steps:</p>
+
+<ol>
+<li>Connect NA Client VPN to Jumphost</li>
+<li>SSH to Jumphost and enter auth credentials</li>
+<li>SSH into yum repo server behind jumphost</li>
+<li>Enter in yum repo auth credentials</li>
+<li>scp your data &ndash; many ways to skin that cat, all are somewhat complicated</li>
+</ol>
+
+
+<h2>Automate with persistant SSH sockets</h2>
+
+<p>I decided to write a SSH script which will do this, and I wanted to ensure we didn&rsquo;t fall into &lsquo;password&rsquo; hell and have to enter in a new password every time. I had heard you could do this by using the &lsquo;ControlMaster&rsquo; SSH param in SSH_config, open a persistant socket, and reuse it as needed. If I could enable this over a jumphost was another question but I gave it a shot.</p>
+
+<ol>
+<li><p>Create a persistant socket to jumphost with tunnel on localhost through the jumphost, pushing traffic from port 22 &ndash;> 5000</p>
+
+<pre><code> ```ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/jump.sock' -N -f -L 5000:[git_repo_ip]:22 root@[jumphost_ip]```
+</code></pre></li>
+<li><p>Create a direct persistant socket to the integration or production Gitlab server on localhost tunnel</p>
+
+<pre><code> ```ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/git.sock' -N -f root@localhost -p 5000```
+</code></pre></li>
+<li><p>CP arbitrary documents easily</p>
+
+<p> <code>scp -o 'ControlPath ~/.ssh/yum.sock' -P 5000 $filepath root@localhost:/tmp/</code></p></li>
+<li><p>SSH (no password required once socket is created!)</p>
+
+<pre><code> ```ssh -S ~/.ssh/yum.sock root@localhost -p 5000```
+</code></pre></li>
+<li><p>To destroy the sockets you need to do the yum repo first and jump second</p>
+
+<pre><code> ```ssh -S ~/.ssh/yum.sock -O exit root@localhost &amp;&amp; ssh -S ~/.ssh/jump.sock -O exit root@172.20.132.3```
+</code></pre></li>
+</ol>
+
+
+<h2>A quick script</h2>
+
+<p>Now that I can create persistant sockets I wrote a script to SSH into the local git, run <code>rake::restore</code>, scp the backup to my host, scp the backup from my host into the integration git over the jumphost connection, and run rake::restore.</p>
+
+<ol>
+<li>Check to ensure I&rsquo;m connected to the correct VPN Gateway</li>
+</ol>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'> <span class="nb">test</span> <span class="o">-</span><span class="n">e</span> <span class="o">~</span><span class="sr">/.ssh || { echo &quot;Create an ssh dir&quot;; exit 1; }</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr"> VPNENV=`echo $(naclient status | awk &#39;NR==4&#39; | cut -d: -f2)`</span>
+</span><span class='line'><span class="sr"> DALLAS=&quot;d4p4&quot;</span>
+</span><span class='line'><span class="sr"> LABGIT=&quot;10.144.36.226&quot;</span>
+</span><span class='line'><span class="sr"> INTGIT=&quot;172.24.3.246&quot;</span>
+</span><span class='line'><span class="sr"> JUMPHOST=&quot;172.20.132.3&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr"> if [ &quot;$VPNENV&quot; == &quot;$DALLAS&quot; ]</span>
+</span><span class='line'><span class="sr"> then</span>
+</span><span class='line'><span class="sr">     echo &quot;Connected to $VPNENV&quot;</span>
+</span><span class='line'><span class="sr"> </span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>Build the sockets</li>
+</ol>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'> <span class="n">echo</span> <span class="s2">&quot;Connecting to git in labs:&quot;</span>
+</span><span class='line'>  <span class="n">ssh</span> <span class="o">-</span><span class="n">o</span> <span class="s1">&#39;ControlMaster auto&#39;</span> <span class="o">-</span><span class="n">o</span> <span class="s1">&#39;ControlPath ~/.ssh/labgit.sock&#39;</span> <span class="o">-</span><span class="n">N</span> <span class="o">-</span><span class="n">f</span> <span class="n">root</span><span class="err">@</span><span class="vg">$LABGIT</span>
+</span><span class='line'>  <span class="n">echo</span> <span class="s2">&quot;Connecting to jumphost:&quot;</span>
+</span><span class='line'>  <span class="n">ssh</span> <span class="o">-</span><span class="n">o</span> <span class="s1">&#39;ControlMaster auto&#39;</span> <span class="o">-</span><span class="n">o</span> <span class="s1">&#39;ControlPath ~/.ssh/jump.sock&#39;</span> <span class="o">-</span><span class="n">N</span> <span class="o">-</span><span class="n">f</span> <span class="o">-</span><span class="n">L</span> <span class="vg">$PORT</span><span class="p">:</span><span class="vg">$INTGIT</span><span class="p">:</span><span class="mi">22</span> <span class="n">root</span><span class="err">@</span><span class="vg">$JUMPHOST</span>
+</span><span class='line'>  <span class="n">echo</span> <span class="s2">&quot;Connecting to git in integration:&quot;</span>
+</span><span class='line'>  <span class="n">ssh</span> <span class="o">-</span><span class="n">o</span> <span class="s1">&#39;ControlMaster auto&#39;</span> <span class="o">-</span><span class="n">o</span> <span class="s1">&#39;ControlPath ~/.ssh/intgit.sock&#39;</span> <span class="o">-</span><span class="n">o</span> <span class="s1">&#39;UserKnownHostsFile /dev/null&#39;</span> <span class="o">-</span><span class="n">N</span> <span class="o">-</span><span class="n">f</span> <span class="n">root</span><span class="vi">@localhost</span> <span class="o">-</span><span class="nb">p</span> <span class="vg">$PORT</span>  
+</span><span class='line'>  
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>Use the sockets for SSH and SCP</li>
+</ol>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'> <span class="n">ssh</span> <span class="o">-</span><span class="n">S</span> <span class="o">~</span><span class="sr">/.ssh/</span><span class="n">labgit</span><span class="o">.</span><span class="n">sock</span> <span class="n">root</span><span class="err">@</span><span class="vg">$LABGIT</span> <span class="n">gitlab</span><span class="o">-</span><span class="n">rake</span> <span class="ss">gitlab</span><span class="p">:</span><span class="ss">backup</span><span class="p">:</span><span class="n">create</span>
+</span><span class='line'>  <span class="n">ssh</span> <span class="o">-</span><span class="n">S</span> <span class="o">~</span><span class="sr">/.ssh/</span><span class="n">labgit</span><span class="o">.</span><span class="n">sock</span> <span class="n">root</span><span class="err">@</span><span class="vg">$LABGIT</span> <span class="s2">&quot;$(typeset -f); stagelatest&quot;</span>
+</span><span class='line'>  
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>A note before moving on about the &lsquo;stagelatest&rsquo; function. I had a complicated command that I didn&rsquo;t want to toss into the SSH line, so I wrote a fuction and ran the <code>$(typeset -f)</code> command to make that function available on the remote SSH shell executing the commands. The function looked like this:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'> <span class="n">stagelatest</span> <span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="no">LATESTBAK</span><span class="o">=</span><span class="err">$</span><span class="p">(</span><span class="n">ls</span> <span class="o">-</span><span class="n">t</span> <span class="sr">/var/o</span><span class="n">pt</span><span class="o">/</span><span class="n">gitlab</span><span class="o">/</span><span class="n">backups</span><span class="o">/</span> <span class="o">|</span> <span class="n">head</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">rm</span> <span class="sr">/tmp/</span><span class="mi">1111111111</span><span class="n">_gitlab_backup</span><span class="o">.</span><span class="n">tar</span>
+</span><span class='line'>  <span class="n">ln</span> <span class="o">-</span><span class="n">s</span> <span class="sr">/var/o</span><span class="n">pt</span><span class="o">/</span><span class="n">gitlab</span><span class="o">/</span><span class="n">backups</span><span class="o">/</span><span class="vg">$LATESTBAK</span> <span class="sr">/tmp/</span><span class="mi">1111111111</span><span class="n">_gitlab_backup</span><span class="o">.</span><span class="n">tar</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Continuing with our SCP and SSH commands:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'> <span class="n">scp</span> <span class="o">-</span><span class="n">o</span> <span class="s1">&#39;ControlPath ~/.ssh/labgit.sock&#39;</span> <span class="n">root</span><span class="err">@</span><span class="vg">$LABGIT</span><span class="ss">:/</span><span class="n">tmp</span><span class="o">/</span><span class="mi">1111111111</span><span class="n">_gitlab_backup</span><span class="o">.</span><span class="n">tar</span> <span class="sr">/tmp/</span>
+</span><span class='line'>  <span class="n">scp</span> <span class="o">-</span><span class="n">o</span> <span class="s1">&#39;ControlPath ~/.ssh/intgit.sock&#39;</span> <span class="o">-</span><span class="n">P</span> <span class="vg">$PORT</span> <span class="sr">/tmp/</span><span class="mi">1111111111</span><span class="n">_gitlab_backup</span><span class="o">.</span><span class="n">tar</span> <span class="n">root</span><span class="vi">@localhost</span><span class="ss">:/</span><span class="n">var</span><span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">gitlab</span><span class="o">/</span><span class="n">backups</span>
+</span><span class='line'>  <span class="n">ssh</span> <span class="o">-</span><span class="n">S</span> <span class="o">~</span><span class="sr">/.ssh/in</span><span class="n">tgit</span><span class="o">.</span><span class="n">sock</span> <span class="n">root</span><span class="vi">@localhost</span> <span class="o">-</span><span class="nb">p</span> <span class="vg">$PORT</span> <span class="no">BACKUP</span><span class="o">=</span><span class="mi">1111111111</span> <span class="n">gitlab</span><span class="o">-</span><span class="n">rake</span> <span class="ss">gitlab</span><span class="p">:</span><span class="ss">backup</span><span class="p">:</span><span class="n">restore</span> <span class="o">&lt;&lt;&lt;</span> <span class="n">yes</span>
+</span><span class='line'>  
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>The final script</h2>
+
+<p>My final script includes a cleanup() function that is exectued via <code>trap</code> and at the end of the script on a good run. Cleaning up the sockets and ensuring nothing is left is always good practice.</p>
+
+<p>I also modified my SSH commands to not use the known_hosts file. This way I could reuse the tunnle on localhost:5000 to other jumphost connections inside the corralled integration or production environments. Had I used the known_hosts file every time and not pipped it to <code>/dev/null</code>, everytime I reused localhost:5000 to tunnel to a new server behind the jumphost the public key would change and SSH would think someone is trying to do something funny.</p>
+
+<p>I also include some more logic to really make sure that the rake::restore should run on the integration/production gitlab server. Nerver hurts to double check!</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1">#!/bin/bash</span>
+</span><span class='line'><span class="n">cleanup</span> <span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="n">echo</span> <span class="s2">&quot;Cleaning up sockets and exiting&quot;</span>
+</span><span class='line'>  <span class="nb">test</span> <span class="o">-</span><span class="n">e</span> <span class="o">~</span><span class="sr">/.ssh/</span><span class="n">labgit</span><span class="o">.</span><span class="n">sock</span> <span class="o">&amp;&amp;</span> <span class="n">ssh</span> <span class="o">-</span><span class="n">S</span> <span class="o">~</span><span class="sr">/.ssh/</span><span class="n">labgit</span><span class="o">.</span><span class="n">sock</span> <span class="o">-</span><span class="n">O</span> <span class="nb">exit</span> <span class="n">root</span><span class="err">@</span><span class="vg">$GITLAB</span>
+</span><span class='line'>  <span class="nb">test</span> <span class="o">-</span><span class="n">e</span> <span class="o">~</span><span class="sr">/.ssh/in</span><span class="n">tgit</span><span class="o">.</span><span class="n">sock</span> <span class="o">&amp;&amp;</span> <span class="n">ssh</span> <span class="o">-</span><span class="n">S</span> <span class="o">~</span><span class="sr">/.ssh/in</span><span class="n">tgit</span><span class="o">.</span><span class="n">sock</span> <span class="o">-</span><span class="n">O</span> <span class="nb">exit</span> <span class="n">root</span><span class="vi">@localhost</span>
+</span><span class='line'>  <span class="nb">test</span> <span class="o">-</span><span class="n">e</span> <span class="o">~</span><span class="sr">/.ssh/</span><span class="n">jump</span><span class="o">.</span><span class="n">sock</span> <span class="o">&amp;&amp;</span> <span class="n">ssh</span> <span class="o">-</span><span class="n">S</span> <span class="o">~</span><span class="sr">/.ssh/</span><span class="n">jump</span><span class="o">.</span><span class="n">sock</span> <span class="o">-</span><span class="n">O</span> <span class="nb">exit</span> <span class="n">root</span><span class="err">@</span><span class="vg">$JUMPHOST</span>
+</span><span class='line'>  <span class="nb">exit</span> <span class="vg">$@</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="nb">trap</span> <span class="n">cleanup</span> <span class="no">SIGHUP</span> <span class="no">SIGINT</span> <span class="no">SIGTERM</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">stagelatest</span> <span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="no">LATESTBAK</span><span class="o">=</span><span class="err">$</span><span class="p">(</span><span class="n">ls</span> <span class="o">-</span><span class="n">t</span> <span class="sr">/var/o</span><span class="n">pt</span><span class="o">/</span><span class="n">gitlab</span><span class="o">/</span><span class="n">backups</span><span class="o">/</span> <span class="o">|</span> <span class="n">head</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">rm</span> <span class="sr">/tmp/</span><span class="mi">1111111111</span><span class="n">_gitlab_backup</span><span class="o">.</span><span class="n">tar</span>
+</span><span class='line'>  <span class="n">ln</span> <span class="o">-</span><span class="n">s</span> <span class="sr">/var/o</span><span class="n">pt</span><span class="o">/</span><span class="n">gitlab</span><span class="o">/</span><span class="n">backups</span><span class="o">/</span><span class="vg">$LATESTBAK</span> <span class="sr">/tmp/</span><span class="mi">1111111111</span><span class="n">_gitlab_backup</span><span class="o">.</span><span class="n">tar</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">getport</span> <span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="no">PORT</span><span class="o">=</span><span class="err">$</span><span class="p">((</span> <span class="vg">$RANDOM</span> <span class="o">%</span> <span class="mi">1000</span> <span class="o">+</span> <span class="mi">5000</span> <span class="p">))</span>
+</span><span class='line'>  <span class="no">CHECK</span><span class="o">=</span><span class="err">$</span><span class="p">(</span><span class="n">netstat</span> <span class="o">-</span><span class="n">an</span> <span class="o">|</span><span class="n">grep</span> <span class="no">LISTEN</span> <span class="o">|</span> <span class="n">egrep</span> <span class="s2">&quot;[.:]${PORT}</span><span class="se">\s</span><span class="s2">&quot;</span> <span class="o">&gt;</span> <span class="sr">/dev/nu</span><span class="n">ll</span><span class="p">;</span> <span class="n">echo</span> <span class="vg">$?</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">while</span> <span class="o">[[</span> <span class="s2">&quot;$CHECK&quot;</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">]]</span>
+</span><span class='line'>  <span class="k">do</span>
+</span><span class='line'>      <span class="n">echo</span> <span class="s2">&quot;Port: $PORT is in use by another process, choosing another port.&quot;</span>
+</span><span class='line'>      <span class="no">PORT</span><span class="o">=</span><span class="err">$</span><span class="p">((</span> <span class="vg">$RANDOM</span> <span class="o">%</span> <span class="mi">1000</span> <span class="o">+</span> <span class="n">port</span> <span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="no">CHECK</span><span class="o">=</span><span class="err">$</span><span class="p">(</span><span class="n">netstat</span> <span class="o">-</span><span class="n">an</span> <span class="o">|</span><span class="n">grep</span> <span class="no">LISTEN</span> <span class="o">|</span> <span class="n">egrep</span> <span class="s2">&quot;[.:]$PORT</span><span class="se">\s</span><span class="s2">&quot;</span> <span class="o">&gt;</span> <span class="sr">/dev/nu</span><span class="n">ll</span><span class="p">;</span> <span class="n">echo</span> <span class="vg">$?</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">done</span>
+</span><span class='line'>  <span class="n">echo</span> <span class="s2">&quot;Setting port to $PORT&quot;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="n">getport</span>
+</span><span class='line'>
+</span><span class='line'><span class="nb">test</span> <span class="o">-</span><span class="n">e</span> <span class="o">~</span><span class="sr">/.ssh || { echo &quot;Create an ssh dir&quot;; exit 1; }</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">VPNENV=`echo $(naclient status | awk &#39;NR==4&#39; | cut -d: -f2)`</span>
+</span><span class='line'><span class="sr">DALLAS=&quot;d4p4&quot;</span>
+</span><span class='line'><span class="sr">LABGIT=&quot;10.144.36.226&quot;</span>
+</span><span class='line'><span class="sr">INTGIT=&quot;172.24.3.246&quot;</span>
+</span><span class='line'><span class="sr">JUMPHOST=&quot;172.20.132.3&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr">if [ &quot;$VPNENV&quot; == &quot;$DALLAS&quot; ]</span>
+</span><span class='line'><span class="sr">then</span>
+</span><span class='line'><span class="sr"> echo &quot;Connected to $VPNENV&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sr"> echo &quot;Connecting to git in labs:&quot;</span>
+</span><span class='line'><span class="sr"> ssh -o &#39;ControlMaster auto&#39; -o &#39;ControlPath ~/</span><span class="o">.</span><span class="n">ssh</span><span class="o">/</span><span class="n">labgit</span><span class="o">.</span><span class="n">sock</span><span class="s1">&#39; -N -f root@$LABGIT </span>
+</span><span class='line'><span class="s1"> echo &quot;Connecting to jumphost:&quot;</span>
+</span><span class='line'><span class="s1"> ssh -o &#39;</span><span class="no">ControlMaster</span> <span class="n">auto</span><span class="s1">&#39; -o &#39;</span><span class="no">ControlPath</span> <span class="o">~</span><span class="sr">/.ssh/</span><span class="n">jump</span><span class="o">.</span><span class="n">sock</span><span class="s1">&#39; -N -f -L $PORT:$INTGIT:22 root@$JUMPHOST</span>
+</span><span class='line'><span class="s1"> echo &quot;Connecting to git in integration:&quot;</span>
+</span><span class='line'><span class="s1"> ssh -o &#39;</span><span class="no">ControlMaster</span> <span class="n">auto</span><span class="s1">&#39; -o &#39;</span><span class="no">ControlPath</span> <span class="o">~</span><span class="sr">/.ssh/in</span><span class="n">tgit</span><span class="o">.</span><span class="n">sock</span><span class="s1">&#39; -o &#39;</span><span class="no">UserKnownHostsFile</span> <span class="sr">/dev/nu</span><span class="n">ll</span><span class="s1">&#39; -N -f root@localhost -p $PORT</span>
+</span><span class='line'>
+</span><span class='line'><span class="s1"> # SSH labgit and run rake backup, scp latest backup to host </span>
+</span><span class='line'><span class="s1"> echo &quot;Running gitlab:backup:create&quot;</span>
+</span><span class='line'><span class="s1"> ssh -S ~/.ssh/labgit.sock root@$LABGIT gitlab-rake gitlab:backup:create</span>
+</span><span class='line'><span class="s1"> echo &quot;Staging backup in /tmp&quot;</span>
+</span><span class='line'><span class="s1"> ssh -S ~/.ssh/labgit.sock root@$LABGIT &quot;$(typeset -f); stagelatest&quot;</span>
+</span><span class='line'><span class="s1"> echo &quot;Copying over from lab git to localhost&quot;</span>
+</span><span class='line'><span class="s1"> scp -o &#39;</span><span class="no">ControlPath</span> <span class="o">~</span><span class="sr">/.ssh/</span><span class="n">labgit</span><span class="o">.</span><span class="n">sock</span><span class="s1">&#39; root@$LABGIT:/tmp/1111111111_gitlab_backup.tar /tmp/</span>
+</span><span class='line'><span class="s1"> echo &quot;Copying lab git backup from localhost to integration git server&quot;</span>
+</span><span class='line'><span class="s1"> scp -o &#39;</span><span class="no">ControlPath</span> <span class="o">~</span><span class="sr">/.ssh/in</span><span class="n">tgit</span><span class="o">.</span><span class="n">sock</span><span class="err">&#39;</span> <span class="o">-</span><span class="n">P</span> <span class="vg">$PORT</span> <span class="sr">/tmp/</span><span class="mi">1111111111</span><span class="n">_gitlab_backup</span><span class="o">.</span><span class="n">tar</span> <span class="n">root</span><span class="vi">@localhost</span><span class="ss">:/</span><span class="n">var</span><span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">gitlab</span><span class="o">/</span><span class="n">backups</span>
+</span><span class='line'>  <span class="n">echo</span> <span class="s2">&quot;Would you like to run restore on the integration server now?&quot;</span>
+</span><span class='line'>  <span class="n">read</span> <span class="n">restore</span>
+</span><span class='line'>  <span class="k">if</span> <span class="o">[[</span> <span class="vg">$restore</span> <span class="o">=~</span> <span class="o">^</span><span class="n">y</span> <span class="o">]]</span>
+</span><span class='line'>  <span class="k">then</span>
+</span><span class='line'>      <span class="n">echo</span> <span class="s2">&quot;Running restore on integration git server&quot;</span>
+</span><span class='line'>      <span class="n">ssh</span> <span class="o">-</span><span class="n">S</span> <span class="o">~</span><span class="sr">/.ssh/in</span><span class="n">tgit</span><span class="o">.</span><span class="n">sock</span> <span class="n">root</span><span class="vi">@localhost</span> <span class="o">-</span><span class="nb">p</span> <span class="vg">$PORT</span> <span class="no">BACKUP</span><span class="o">=</span><span class="mi">1111111111</span> <span class="n">gitlab</span><span class="o">-</span><span class="n">rake</span> <span class="ss">gitlab</span><span class="p">:</span><span class="ss">backup</span><span class="p">:</span><span class="n">restore</span> <span class="o">&lt;&lt;&lt;</span> <span class="n">yes</span>
+</span><span class='line'>  <span class="k">else</span>
+</span><span class='line'>      <span class="n">echo</span> <span class="s2">&quot;Not running restore&quot;</span>
+</span><span class='line'>      <span class="n">echo</span> <span class="s2">&quot;Backup located at /var/opt/gitlab/backups/1111111111_gitlab_backup.tar&quot;</span>
+</span><span class='line'>      <span class="n">echo</span> <span class="s2">&quot;-----&quot;</span>
+</span><span class='line'>      <span class="n">echo</span> <span class="s2">&quot;To backup manually run:&quot;</span>
+</span><span class='line'>      <span class="n">echo</span> <span class="s2">&quot;BACKUP=1111111111_gitlab_backup.tar gitlab-rake gitlab:backup:restore&quot;</span>
+</span><span class='line'>  <span class="n">fi</span>
+</span><span class='line'>  <span class="n">cleanup</span>
+</span><span class='line'><span class="k">else</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">echo</span> <span class="s2">&quot;VPN Enviro not correct, connected to: $VPNENV&quot;</span>
+</span><span class='line'>  <span class="n">echo</span> <span class="s2">&quot;Check VPN connection to d4p4, or start NA Client&quot;</span>
+</span><span class='line'>  <span class="n">cleanup</span> <span class="mi">1</span>
+</span><span class='line'><span class="n">fi</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The final script can be pulled down from <a href="https://github.com/malnick/scripts/blob/master/connect.sh">my github account</a>.</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-07-14T07:09:09-07:00" pubdate data-updated="true">Jul 14<span>th</span>, 2014</time></div>
+	
+
+
+	
+</div></article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
 		<a href="/blog/2014/06/24/a-simple-nagios-docker-plugin/">
 		
 			A Simple Nagios Docker Plugin</a>
@@ -2046,120 +2397,6 @@ content
 
 
 <time datetime="2014-03-20T09:42:50-07:00" pubdate data-updated="true">Mar 20<span>th</span>, 2014</time></div>
-	
-
-
-	
-</div></article>
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2014/03/17/tls-slash-ssl-dh-cipher-padding-bug-in-activemq/">
-		
-			TLS/SSL DH Cipher Padding Bug in ActiveMQ</a>
-	</h2>
-	<div class="entry-content">
-		<h3>Update</h3>
-
-<p>As of March 18 it appears that Oracle has implemented a fix in their release of <a href="http://www.oracle.com/technetwork/java/javase/8train-relnotes-latest-2153846.html">JDK and Java Standard Edition version 8</a> and it&rsquo;s assocaited <a href="http://docs.oracle.com/javase/8/docs/technotes/guides/security/enhancements-8.html">security extensions</a>:</p>
-
-<p>&ldquo;Support stronger ephemeral DH keys in the SunJSSE provider: Make ephemeral DH key match the length of the certificate key during SSL/TLS handshaking in the SunJSSE provider. A new system property, jdk.tls.ephemeralDHKeySize, is defined to customize the ephemeral DH key sizes. The minimum acceptable DH key size is 1024 bits, except for exportable cipher suites or legacy mode (jdk.tls.ephemeralDHKeySize=legacy). See Customizing Size of Ephemeral DH Keys and RFE 6956398.&rdquo;</p>
-
-<hr />
-
-<p>In helping a client with an ActiveMQ issue in Puppet Enterprise I recently stumbled across this line in their wrapper log:</p>
-
-<pre><code>INFO | jvm 1 | 2014/02/26 12:47:20 | WARN | Transport Connection to: tcp://ip.removed:49867 failed: javax.net.ssl.SSLHandshake
-Exception: Invalid Padding length: 239
-</code></pre>
-
-<p>The client thought this may have been exacberating a JVM memory problem, however I found it actually is a not related but in and of itself it&rsquo;s own  bug in the Java Security Extensions for Diffe-Helman cipher implementation over SSL.</p>
-
-<p>We have seen similar issues in JDK 1.7x security extensions in other Java-powered backends for Puppet Enterprise such as <a href="http://projects.puppetlabs.com/issues/19884">PuppetDB</a>. It has also been documented on the <a href="https://issues.apache.org/jira/browse/APLO-287">Apache ActiveMQ ticket board</a> and the <a href="https://community.oracle.com/message/11001587">Oracle community</a> board.</p>
-
-<p>The issue is dependant on:</p>
-
-<pre><code>* OpenJDK Runtime Environment (PE Java 1.7.0.19) 
-* Linux OS's (so far my testing is on CentOS 6x) 
-* TLS_DHE_RSA_WITH_AES_128_CBC_SHA Cipher
-* openssl-1.0.0-27.el6_4.2.x86_64
-</code></pre>
-
-<p>To sum up the problem, every few hundred messages that are encrypted over SSL or TLS using DH ciphers the client gets a handshake exception. The exception is caused by a faulty SSL packet.</p>
-
-<h3>Oracle&rsquo;s Solution</h3>
-
-<p><a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8013059">A ticket was submitted</a> to Java bugs and was set &ldquo;resolved&rdquo; on 2013-10-25. However, and this is a big however, their resolution is, &ldquo;In order to have reliable TLS handshakes, Diffie Hellman key exchanges must be disabled.&rdquo;</p>
-
-<p>I personally don&rsquo;t like this resolution since DH keys are sometimes neccessary, and in terms of security is superior to standard RSA ciphers. DH ciphers provide perfect forward secrecy. That means even if the private key is compromised you can not decrypt past data. Ciper suites which use DHE-RSA-AES128-SHA all implement the slower, more secure ephemeral DH crypto &ndash; it&rsquo;s ephemeral since new random numbers that generate the key are used each time. This is also why it&rsquo;s slower. However, it&rsquo;s also harder to run a selected clear text attack on EDH since the private key is used for only authentication and use an independant method to agree on a shared secret &ndash; standard RSA ciphers employ the private key for both auth and encryption for better performance in exchange for not providing perfect forward secrecy.</p>
-
-<p>You may now chime in with your own conspiracy theories as to why Oracle would settle for solving this cyrpto issue by simply using a less secure cipher &ndash; does the NSA not want Java applications, which function as the backbone to a great deal of web traffic, encrypting data with perfect forward secrecy?</p>
-
-<h3>Workaround in AMQ</h3>
-
-<p>Since there is no good way to get around this problem in JDK 1.7x security extensions you have two choices:</p>
-
-<pre><code>1. Live with the error in approx. 5% of the SSL traffic
-2. Run SSL with a non-DH or DHE cipher  
-</code></pre>
-
-<h4>Door #1</h4>
-
-<p>Example, you&rsquo;ve got an AMQ broker administering messaging for 1000+ AMQ agents in a live management setup in Puppet Enterprise you&rsquo;ll see this error a lot, and it may (warning, assumption) degrade live management performance in such a large deployment.</p>
-
-<p>If you can live with either seeing this error 5% of the time or you can live with the hit in performance sticking it out with DH can still work.</p>
-
-<h4>Door #2</h4>
-
-<p>You need the performance or are a stickler for perfect SSL key exchange.</p>
-
-<p>A possible solution would be modifying the transportConnector in /etc/puppetlabs/activemq/activemq.xml:</p>
-
-<pre><code>&lt;transportConnector name="openwire" uri="ssl://0.0.0.0:61616"/&gt;
-&lt;!-- Puppet mcollective_enable_stomp_ssl=true
-&lt;transportConnector name="stomp+ssl" uri="stomp+ssl://0.0.0.0:61613"/&gt;\
-</code></pre>
-
-<p>With the transport.enabledCipherSuites embedded:</p>
-
-<pre><code>ssl://localhost:61616?transport.enabledCipherSuites=SSL_RSA_WITH_3DES_EDE_CBC_SHA
-</code></pre>
-
-<p>The SSL_RSA_WITH_3DES_EDE_CBC_SHA is non-DH cipher versus the  SSL_DH_anon_WITH_3DES_EDE_CBC_SHA which I think is what AMQ currently uses.</p>
-
-<p>Note syntax:</p>
-
-<pre><code>ssl://…?socket.enabledCipherSuites=THE_CIPHER # for agents 
-</code></pre>
-
-<p>and</p>
-
-<pre><code>ssl://…?transport.enabledCipherSuites=THE_CIPHER # for brokers 
-</code></pre>
-
-<p>More information about this can be found on the <a href="https://activemq.apache.org/ssl-transport-reference.html">AMQ reference page</a></p>
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-03-17T16:23:11-07:00" pubdate data-updated="true">Mar 17<span>th</span>, 2014</time></div>
 	
 
 
