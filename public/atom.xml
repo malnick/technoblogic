@@ -4,7 +4,7 @@
   <title><![CDATA[JP]]></title>
   <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
   <link href="httpL://www.jeffmalnick.com/"/>
-  <updated>2014-07-14T07:49:38-07:00</updated>
+  <updated>2014-07-14T07:52:11-07:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
@@ -44,22 +44,22 @@
 <ol>
 <li><p>Create a persistant socket to jumphost with tunnel on localhost through the jumphost, pushing traffic from port 22 &ndash;> 5000</p>
 
-<pre><code> ```ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/jump.sock' -N -f -L 5000:[git_repo_ip]:22 root@[jumphost_ip]```
+<pre><code> ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/jump.sock' -N -f -L 5000:[git_repo_ip]:22 root@[jumphost_ip]
 </code></pre></li>
 <li><p>Create a direct persistant socket to the integration or production Gitlab server on localhost tunnel</p>
 
-<pre><code> ```ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/git.sock' -N -f root@localhost -p 5000```
+<pre><code> ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/git.sock' -N -f root@localhost -p 5000
 </code></pre></li>
 <li><p>CP arbitrary documents easily</p>
 
-<p> <code>scp -o 'ControlPath ~/.ssh/yum.sock' -P 5000 $filepath root@localhost:/tmp/</code></p></li>
+<p> scp -o &lsquo;ControlPath ~/.ssh/yum.sock&rsquo; -P 5000 $filepath root@localhost:/tmp/</p></li>
 <li><p>SSH (no password required once socket is created!)</p>
 
-<pre><code> ```ssh -S ~/.ssh/yum.sock root@localhost -p 5000```
+<pre><code> ssh -S ~/.ssh/yum.sock root@localhost -p 5000
 </code></pre></li>
 <li><p>To destroy the sockets you need to do the yum repo first and jump second</p>
 
-<pre><code> ```ssh -S ~/.ssh/yum.sock -O exit root@localhost &amp;&amp; ssh -S ~/.ssh/jump.sock -O exit root@172.20.132.3```
+<pre><code> ssh -S ~/.ssh/yum.sock -O exit root@localhost &amp;&amp; ssh -S ~/.ssh/jump.sock -O exit root@172.20.132.3
 </code></pre></li>
 </ol>
 

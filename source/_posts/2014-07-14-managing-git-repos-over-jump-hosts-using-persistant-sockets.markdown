@@ -26,23 +26,23 @@ I decided to write a SSH script which will do this, and I wanted to ensure we di
 
 1. Create a persistant socket to jumphost with tunnel on localhost through the jumphost, pushing traffic from port 22 -> 5000
 
-        ```ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/jump.sock' -N -f -L 5000:[git_repo_ip]:22 root@[jumphost_ip]```
+        ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/jump.sock' -N -f -L 5000:[git_repo_ip]:22 root@[jumphost_ip]
 
 2. Create a direct persistant socket to the integration or production Gitlab server on localhost tunnel
 
-        ```ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/git.sock' -N -f root@localhost -p 5000```
+        ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/git.sock' -N -f root@localhost -p 5000
 
 3. CP arbitrary documents easily
 
-	```scp -o 'ControlPath ~/.ssh/yum.sock' -P 5000 $filepath root@localhost:/tmp/```
+	scp -o 'ControlPath ~/.ssh/yum.sock' -P 5000 $filepath root@localhost:/tmp/
 
 4. SSH (no password required once socket is created!)
 
-        ```ssh -S ~/.ssh/yum.sock root@localhost -p 5000```
+        ssh -S ~/.ssh/yum.sock root@localhost -p 5000
 
 5. To destroy the sockets you need to do the yum repo first and jump second
 
-        ```ssh -S ~/.ssh/yum.sock -O exit root@localhost && ssh -S ~/.ssh/jump.sock -O exit root@172.20.132.3```
+        ssh -S ~/.ssh/yum.sock -O exit root@localhost && ssh -S ~/.ssh/jump.sock -O exit root@172.20.132.3
 
 ## A quick script
 Now that I can create persistant sockets I wrote a script to SSH into the local git, run ```rake::restore```, scp the backup to my host, scp the backup from my host into the integration git over the jumphost connection, and run rake::restore.
