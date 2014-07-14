@@ -42,7 +42,7 @@ I decided to write a SSH script which will do this, and I wanted to ensure we di
 
 5. To destroy the sockets you need to do the yum repo first and jump second
 
-        ssh -S ~/.ssh/yum.sock -O exit root@localhost && ssh -S ~/.ssh/jump.sock -O exit root@172.20.132.3
+        ssh -S ~/.ssh/yum.sock -O exit root@localhost && ssh -S ~/.ssh/jump.sock -O exit root@172.20.100.11
 
 ## A quick script
 Now that I can create persistant sockets I wrote a script to SSH into the local git, run ```rake::restore```, scp the backup to my host, scp the backup from my host into the integration git over the jumphost connection, and run rake::restore.
@@ -53,12 +53,12 @@ Now that I can create persistant sockets I wrote a script to SSH into the local 
 	test -e ~/.ssh || { echo "Create an ssh dir"; exit 1; }
 
 	VPNENV=`echo $(naclient status | awk 'NR==4' | cut -d: -f2)`
-	DALLAS="d4p4"
-	LABGIT="10.144.36.226"
-	INTGIT="172.24.3.246"
-	JUMPHOST="172.20.132.3"
+	VPNREMOTE="data_center"
+	LOCALGIT="10.10.100.100"
+	INTGIT="172.24.100.10"
+	JUMPHOST="172.20.100.11"
 
-	if [ "$VPNENV" == "$DALLAS" ]
+	if [ "$VPNENV" == "$VPNREMOTE" ]
 	then
 		echo "Connected to $VPNENV"
 	{% endcodeblock %}
@@ -66,8 +66,8 @@ Now that I can create persistant sockets I wrote a script to SSH into the local 
 2. Build the sockets
 
 	{% codeblock lang:ruby %}
-	echo "Connecting to git in labs:"
-	ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/labgit.sock' -N -f root@$LABGIT
+	echo "Connecting to local git:"
+	ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/LOCALGIT.sock' -N -f root@$LOCALGIT
 	echo "Connecting to jumphost:"
 	ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/jump.sock' -N -f -L $PORT:$INTGIT:22 root@$JUMPHOST
 	echo "Connecting to git in integration:"
@@ -77,8 +77,8 @@ Now that I can create persistant sockets I wrote a script to SSH into the local 
 3. Use the sockets for SSH and SCP
 
 	{% codeblock lang:ruby %}
-	ssh -S ~/.ssh/labgit.sock root@$LABGIT gitlab-rake gitlab:backup:create
-	ssh -S ~/.ssh/labgit.sock root@$LABGIT "$(typeset -f); stagelatest"
+	ssh -S ~/.ssh/LOCALGIT.sock root@$LOCALGIT gitlab-rake gitlab:backup:create
+	ssh -S ~/.ssh/LOCALGIT.sock root@$LOCALGIT "$(typeset -f); stagelatest"
 	{% endcodeblock %}
 
 A note before moving on about the 'stagelatest' function. I had a complicated command that I didn't want to toss into the SSH line, so I wrote a fuction and ran the ```$(typeset -f)``` command to make that function available on the remote SSH shell executing the commands. The function looked like this:
@@ -94,7 +94,7 @@ A note before moving on about the 'stagelatest' function. I had a complicated co
 Continuing with our SCP and SSH commands:
 
 	{% codeblock lang:ruby %}
-	scp -o 'ControlPath ~/.ssh/labgit.sock' root@$LABGIT:/tmp/1111111111_gitlab_backup.tar /tmp/
+	scp -o 'ControlPath ~/.ssh/LOCALGIT.sock' root@$LOCALGIT:/tmp/1111111111_gitlab_backup.tar /tmp/
 	scp -o 'ControlPath ~/.ssh/intgit.sock' -P $PORT /tmp/1111111111_gitlab_backup.tar root@localhost:/var/opt/gitlab/backups
 	ssh -S ~/.ssh/intgit.sock root@localhost -p $PORT BACKUP=1111111111 gitlab-rake gitlab:backup:restore <<< yes
 	{% endcodeblock %}
@@ -110,7 +110,7 @@ I also include some more logic to really make sure that the rake::restore should
 #!/bin/bash
 cleanup () {
 	echo "Cleaning up sockets and exiting"
-	test -e ~/.ssh/labgit.sock && ssh -S ~/.ssh/labgit.sock -O exit root@$GITLAB
+	test -e ~/.ssh/LOCALGIT.sock && ssh -S ~/.ssh/LOCALGIT.sock -O exit root@$GITLAB
 	test -e ~/.ssh/intgit.sock && ssh -S ~/.ssh/intgit.sock -O exit root@localhost
 	test -e ~/.ssh/jump.sock && ssh -S ~/.ssh/jump.sock -O exit root@$JUMPHOST
 	exit $@
@@ -140,29 +140,29 @@ getport
 test -e ~/.ssh || { echo "Create an ssh dir"; exit 1; }
 
 VPNENV=`echo $(naclient status | awk 'NR==4' | cut -d: -f2)`
-DALLAS="d4p4"
-LABGIT="10.144.36.226"
-INTGIT="172.24.3.246"
-JUMPHOST="172.20.132.3"
+VPNREMOTE="data_center"
+LOCALGIT="10.10.100.100"
+INTGIT="172.24.100.10"
+JUMPHOST="172.20.100.11"
 
-if [ "$VPNENV" == "$DALLAS" ]
+if [ "$VPNENV" == "$VPNREMOTE" ]
 then
 	echo "Connected to $VPNENV"
 
-	echo "Connecting to git in labs:"
-	ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/labgit.sock' -N -f root@$LABGIT 
+	echo "Connecting to local git:"
+	ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/LOCALGIT.sock' -N -f root@$LOCALGIT 
 	echo "Connecting to jumphost:"
 	ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/jump.sock' -N -f -L $PORT:$INTGIT:22 root@$JUMPHOST
 	echo "Connecting to git in integration:"
 	ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/intgit.sock' -o 'UserKnownHostsFile /dev/null' -N -f root@localhost -p $PORT
 
-	# SSH labgit and run rake backup, scp latest backup to host 
+	# SSH LOCALGIT and run rake backup, scp latest backup to host 
 	echo "Running gitlab:backup:create"
-	ssh -S ~/.ssh/labgit.sock root@$LABGIT gitlab-rake gitlab:backup:create
+	ssh -S ~/.ssh/LOCALGIT.sock root@$LOCALGIT gitlab-rake gitlab:backup:create
 	echo "Staging backup in /tmp"
-	ssh -S ~/.ssh/labgit.sock root@$LABGIT "$(typeset -f); stagelatest"
+	ssh -S ~/.ssh/LOCALGIT.sock root@$LOCALGIT "$(typeset -f); stagelatest"
 	echo "Copying over from lab git to localhost"
-	scp -o 'ControlPath ~/.ssh/labgit.sock' root@$LABGIT:/tmp/1111111111_gitlab_backup.tar /tmp/
+	scp -o 'ControlPath ~/.ssh/LOCALGIT.sock' root@$LOCALGIT:/tmp/1111111111_gitlab_backup.tar /tmp/
 	echo "Copying lab git backup from localhost to integration git server"
 	scp -o 'ControlPath ~/.ssh/intgit.sock' -P $PORT /tmp/1111111111_gitlab_backup.tar root@localhost:/var/opt/gitlab/backups
 	echo "Would you like to run restore on the integration server now?" 
@@ -182,7 +182,7 @@ then
 else
 
 	echo "VPN Enviro not correct, connected to: $VPNENV" 
-	echo "Check VPN connection to d4p4, or start NA Client"
+	echo "Check VPN connection to data_center, or start NA Client"
 	cleanup 1
 fi
 {% endcodeblock %}
