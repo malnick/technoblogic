@@ -99,28 +99,34 @@
         <lastmod>2014-08-03T18:16:31-07:00</lastmod>
     </url>
     <url>
+        <loc>
+            httpL://www.jeffmalnick.com/blog/2014/08/31/arbitrary-commandline-functions-for-mco/
+        </loc>
+        <lastmod>2014-08-31T08:36:55-07:00</lastmod>
+    </url>
+    <url>
         <loc>httpL://www.jeffmalnick.com/404.html</loc>
         <lastmod>2014-05-16T20:52:21-07:00</lastmod>
     </url>
     <url>
         <loc>httpL://www.jeffmalnick.com/archives/</loc>
-        <lastmod>2014-08-03T18:16:31-07:00</lastmod>
+        <lastmod>2014-08-31T08:36:55-07:00</lastmod>
     </url>
     <url>
         <loc>httpL://www.jeffmalnick.com/blog/about/</loc>
-        <lastmod>2014-08-03T18:16:31-07:00</lastmod>
+        <lastmod>2014-08-31T08:36:55-07:00</lastmod>
     </url>
     <url>
         <loc>httpL://www.jeffmalnick.com/blog/archives/</loc>
-        <lastmod>2014-08-03T18:16:31-07:00</lastmod>
+        <lastmod>2014-08-31T08:36:55-07:00</lastmod>
     </url>
     <url>
         <loc>httpL://www.jeffmalnick.com/blog/contact/</loc>
-        <lastmod>2014-08-03T18:16:31-07:00</lastmod>
+        <lastmod>2014-08-31T08:36:55-07:00</lastmod>
     </url>
     <url>
         <loc>httpL://www.jeffmalnick.com/blog/</loc>
-        <lastmod>2014-08-03T18:16:31-07:00</lastmod>
+        <lastmod>2014-08-31T08:36:55-07:00</lastmod>
     </url>
     <url>
         <loc>httpL://www.jeffmalnick.com/blog/resume/</loc>
@@ -128,7 +134,7 @@
     </url>
     <url>
         <loc>httpL://www.jeffmalnick.com/</loc>
-        <lastmod>2014-08-03T18:16:31-07:00</lastmod>
+        <lastmod>2014-08-31T08:36:55-07:00</lastmod>
     </url>
     <url>
         <loc>httpL://www.jeffmalnick.com/robots.txt</loc>
