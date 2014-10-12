@@ -102,6 +102,152 @@ $(document).ready(
     <article class="post">
 	<h2 class="title">
 		
+		<a href="/blog/2014/05/04/continous-integration-hooks-with-r10k-and-puppet/">
+		
+			Continous Integration Hooks With R10k &amp; Puppet</a>
+	</h2>
+	<div class="entry-content">
+		<p>A week ago I was modifiying a webhook to run r10k on push to a git repository. The goal here was to sync up r10k everytime a push was made to the repo. However, in doing so I found that the <a href="https://github.com/acidprime/r10k/blob/master/templates/usr/local/bin/webhook.erb">current</a> hook didn&rsquo;t take advantage of deploying a specific puppet environmnet, and instead runs a full r10k sync across all topic branchs and thus all puppet environments.</p>
+
+<p>I figured the first place to start was modifying the <a href="https://github.com/acidprime/r10k/blob/master/templates/usr/local/bin/webhook.erb#L35">&lsquo;post&rsquo;</a> method:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">post</span> <span class="s1">&#39;/payload&#39;</span> <span class="k">do</span>
+</span><span class='line'>      <span class="c1">#protected!</span>
+</span><span class='line'>      <span class="n">deploy</span><span class="p">()</span>
+</span><span class='line'>    <span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p> to parse the json sent by git (in this case I was integrating with gitlab) for the <a href="http://demo.gitlab.com/help/web_hooks">ref branch</a>. So the &lsquo;post&rsquo; hook now looks like <a href="https://github.com/malnick/r10k/blob/master/templates/usr/local/bin/webhook.erb#L52">this</a>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">post</span> <span class="s1">&#39;/payload&#39;</span> <span class="k">do</span>
+</span><span class='line'>    <span class="c1">#protected!</span>
+</span><span class='line'>    <span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">rewind</span>  <span class="c1"># in case someone already read it</span>
+</span><span class='line'>    <span class="n">data</span> <span class="o">=</span> <span class="no">JSON</span><span class="o">.</span><span class="n">parse</span> <span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">read</span>
+</span><span class='line'>    <span class="n">branch</span> <span class="o">=</span> <span class="n">data</span><span class="o">[</span><span class="s1">&#39;ref&#39;</span><span class="o">].</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">last</span>
+</span><span class='line'>    <span class="s2">&quot;ref branch: </span><span class="si">#{</span><span class="n">branch</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>    <span class="c1">#deploy(refs)</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So the #branch effectively is our puppet environment that we want to pass to the r10k mcollective agent so we can deploy a specific puppet enviro and not sync across all topic branches/enviros. This will make it lightweight.</p>
+
+<p>However, I ran into a blocker in the mcollective r10k agent itself. I want to pass this argument to it so I can sync all r10k nodes at once from this hook based on the ref branch the current r10k <a href="https://github.com/acidprime/r10k/blob/master/files/agent/r10k.rb#L28">agent</a> does not accept any arugments and only syncs across all topic branches using the &lsquo;syncronize&rsquo; method.</p>
+
+<p>In order to pass this ref branch in and leverage &lsquo;r10k deploy environmnet #{topic_branch}&rsquo; as I&rsquo;m attempting here the agent will need to be modified to parse the argument.</p>
+
+<p><a href="https://github.com/acidprime/r10k/blob/master/files/agent/r10k.rb#L28">Zach&rsquo;s current r10k agent</a> is pretty good, so we&rsquo;ll stick to modifying that (at this point I handed over the agent writing to a colleague Andrew Brader since I was sent to a training site and he had a week/time to modifying the mco agent):</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'>     <span class="k">def</span> <span class="nf">run_cmd</span><span class="p">(</span><span class="n">action</span><span class="p">,</span><span class="n">path</span><span class="o">=</span><span class="kp">nil</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span class='line'>        <span class="n">git</span>  <span class="o">=</span> <span class="o">[</span><span class="s1">&#39;/usr/bin/env&#39;</span><span class="p">,</span> <span class="s1">&#39;git&#39;</span><span class="o">]</span>
+</span><span class='line'>        <span class="n">r10k</span> <span class="o">=</span> <span class="o">[</span><span class="s1">&#39;/usr/bin/env&#39;</span><span class="p">,</span> <span class="s1">&#39;r10k&#39;</span><span class="o">]</span>
+</span><span class='line'>        <span class="k">case</span> <span class="n">action</span>
+</span><span class='line'>        <span class="k">when</span> <span class="s1">&#39;push&#39;</span><span class="p">,</span><span class="s1">&#39;pull&#39;</span><span class="p">,</span><span class="s1">&#39;status&#39;</span>
+</span><span class='line'>          <span class="n">cmd</span> <span class="o">=</span> <span class="n">git</span>
+</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;push&#39;</span>   <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;push&#39;</span>
+</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;pull&#39;</span>   <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;pull&#39;</span>
+</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;status&#39;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;status&#39;</span>
+</span><span class='line'>          <span class="n">reply</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="ss">:stderr</span> <span class="o">=&gt;</span> <span class="ss">:error</span><span class="p">,</span> <span class="ss">:stdout</span> <span class="o">=&gt;</span> <span class="ss">:output</span><span class="p">,</span> <span class="ss">:chomp</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">:cwd</span> <span class="o">=&gt;</span> <span class="n">path</span> <span class="p">)</span>
+</span><span class='line'>        <span class="k">when</span> <span class="s1">&#39;cache&#39;</span><span class="p">,</span><span class="s1">&#39;environment&#39;</span><span class="p">,</span><span class="s1">&#39;module&#39;</span><span class="p">,</span><span class="s1">&#39;synchronize&#39;</span><span class="p">,</span><span class="s1">&#39;sync&#39;</span><span class="p">,</span> <span class="s1">&#39;deploy_all&#39;</span>
+</span><span class='line'>          <span class="n">cmd</span> <span class="o">=</span> <span class="n">r10k</span>
+</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;cache&#39;</span>       <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;cache&#39;</span>
+</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;synchronize&#39;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;synchronize&#39;</span> <span class="ow">or</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;sync&#39;</span>
+</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;environment&#39;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;environment&#39;</span>
+</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;module&#39;</span>      <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;module&#39;</span>
+</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;deploy&#39;</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;environment&#39;</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;-p&#39;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;deploy_all&#39;</span>
+</span><span class='line'>          <span class="n">reply</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="ss">:stderr</span> <span class="o">=&gt;</span> <span class="ss">:error</span><span class="p">,</span> <span class="ss">:stdout</span> <span class="o">=&gt;</span> <span class="ss">:output</span><span class="p">,</span> <span class="ss">:chomp</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In order to parse the topic branch from the hook we need to add a method, which Andrew did <a href="https://github.com/abrader/r10k/blob/master/files/agent/r10k.rb#L59">here</a>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'>      <span class="k">def</span> <span class="nf">deploy_only_cmd</span><span class="p">(</span><span class="n">r10k_env</span><span class="o">=</span><span class="kp">nil</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span class='line'>        <span class="n">r10k</span> <span class="o">=</span> <span class="o">[</span><span class="s1">&#39;/usr/bin/env&#39;</span><span class="p">,</span> <span class="s1">&#39;r10k&#39;</span><span class="o">]</span>
+</span><span class='line'>        <span class="n">cmd</span> <span class="o">=</span> <span class="n">r10k</span>
+</span><span class='line'>        <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;deploy&#39;</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;environment&#39;</span> <span class="o">&lt;&lt;</span> <span class="n">r10k_env</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;-p&#39;</span>
+</span><span class='line'>        <span class="n">reply</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">deploy_only_cmd</span><span class="p">,</span> <span class="ss">:stderr</span> <span class="o">=&gt;</span> <span class="ss">:error</span><span class="p">,</span> <span class="ss">:stdout</span> <span class="o">=&gt;</span> <span class="ss">:output</span><span class="p">,</span> <span class="ss">:chomp</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span>
+</span><span class='line'>      <span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Testing the new hook &amp; agent</h3>
+
+<p>&hellip; to be updated shortly&hellip;</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-05-04T07:47:05-07:00" pubdate data-updated="true">May 4<span>th</span>, 2014</time></div>
+	
+
+
+	
+</div></article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
 		<a href="/blog/2014/04/19/puppet-types-understanding-parameters-and-properties/">
 		
 			Puppet Types: Understanding Parameters and Properties</a>
@@ -1926,52 +2072,12 @@ The coding for it is far more economical, and we don&rsquo;t have a psudo-bash s
 	
 </div></article>
 
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2014/01/02/blog-post-number-1/">
-		
-			Blog Post #1</a>
-	</h2>
-	<div class="entry-content">
-		<p>Is this thing on?</p>
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-01-02T10:52:00-08:00" pubdate data-updated="true">Jan 2<span>nd</span>, 2014</time></div>
-	
-
-<div class="tags">
-
-	<a class='category' href='/blog/categories/misc/'>Misc</a>
-
-</div>
-
-
-	
-</div></article>
-
 <nav id="pagenavi">
     
         <a href="/" class="prev">Prev</a>
     
+    
+        <a href="/blog/page/3/" class="next">Next</a>
     
     <div class="center"><a href="/archives">Blog Archives</a></div>
 </nav></div>
