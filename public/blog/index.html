@@ -102,6 +102,138 @@ $(document).ready(
     <article class="post">
 	<h2 class="title">
 		
+		<a href="/blog/2014/11/03/hiera-template/">
+		
+			Hiera-template</a>
+	</h2>
+	<div class="entry-content">
+		<p>Every time we create a new profile, or update a profile, we have to update our hiera data. This process is error prone and time consuming. Hiera is in an interchange format that can easily be automated, so a tool to write the profiles for us was an obvious decision.</p>
+
+<p><a href="https://github.com/malnick/hiera-template">hiera-template</a> is still in its infancy, and will eventually become a much larger part of our workflow. The main goal of this tool, however, remains the same: automate the generation of our hiera data files from our profile classes.</p>
+
+<p>hiera-template is up in Rubygems, but be forewarned, it is VERY much still in BETA. Your mileage will vary and your bug reporting is appreciated.</p>
+
+<h3>Install</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>gem install hiera-template</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Usage</h3>
+
+<p>hiera-template accepts a single path to a profile as an argument. It can be a local or fully qualified path.</p>
+
+<p>By default, hiera-template will store all processed yaml&rsquo;s in <code>~/.hiera-template/templates/${profile_name}-${hierarchy_level}-template.yaml</code></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> <span class="nv">$confdir</span>/modules/profiles/manifests
+</span><span class='line'>hiera-template company_frontend.pp
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The above will create a baseline hiera data file from all the explicit hiera() lookups in the profile. Yes, you read that right, it will not work on non-explicit hiera() lookups. That will be a feature down the road. For now, the following like-lines will be parsed:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="vg">$myvar</span> <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::company_frontend::myvar&#39;</span><span class="p">),</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>That line will be written to a yaml file as:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">profiles::company_frontend::myvar</span><span class="p-Indicator">:</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Hierarchy Keys</h3>
+
+<p>hiera-template uses <code>#[keys]</code> in the profile to determine what part of the hierarchy the data resides.</p>
+
+<p>Given the following:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="ss">profiles</span><span class="p">:</span><span class="ss">:csx_frontend_base</span><span class="p">(</span>
+</span><span class='line'>  <span class="c1">#[node]</span>
+</span><span class='line'>  <span class="vg">$csx_db_name</span>                          <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_name&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="vg">$csx_db_user</span>                          <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_user&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="vg">$csx_db_password_hash</span>                 <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_password_hash&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="c1">#[datacenter]</span>
+</span><span class='line'>  <span class="vg">$csx_db_host</span>                          <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_host&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="vg">$csx_db_driverclassname</span>               <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_driverclassname&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="vg">$csx_db_url</span>                           <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_url&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="vg">$csx_db_password</span>                      <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_password&#39;</span><span class="p">),</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>hiera-template will create two yaml files in <code>~/.hiera-template/templates</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">csx_frontend_base</span><span class="o">-</span><span class="n">node</span><span class="o">-</span><span class="n">template</span><span class="o">.</span><span class="n">yaml</span>
+</span><span class='line'><span class="n">csx_frontend_base</span><span class="o">-</span><span class="n">datacenter</span><span class="o">-</span><span class="n">template</span><span class="o">.</span><span class="n">yaml</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Those templates contain all the keys for the given profile. You can <code>cat *-node-template.yaml &gt; my.new.node.yaml</code> or <code>cat *-datacenter-template.yaml &gt;&gt; out_dc.yaml</code> to create or append the keys to data files. Then, all you need to do is fill in your values.</p>
+
+<h3>Upcoming</h3>
+
+<p>Since writing in data can be so error prone, and hiera is by it&rsquo;s nature hard to debug, a tool ensures your data written to your data files is the same as what is declared in your profiles &ndash; on the flip side, it&rsquo;ll propogate your errors from the profile data declarations to the data file. Either way, you&rsquo;re automating it!</p>
+
+<p>To help write the values to the data files I&rsquo;ll up adding a feature to populate, so you don&rsquo;t have to worry about all that new-fangled white space that YAML loves to hate you for. Populate will prompt your for each value and write it in automatically, so you don&rsquo;t have to open vim: you&rsquo;re prompted with the key, and you type in the value. Done deal.</p>
+
+<h3>Debugging</h3>
+
+<p>Currently, this tool is not hardened by any means. And like everyone else, I can&rsquo;t stay on top of everything. So if you&rsquo;re using it, hit me up with bug reports. There is a <code>-D</code> option to run at debugger level, and I tried to make it obvious what is going on. That&rsquo;s no substitution for reading <code>/lib/template.rb</code> if you get a stack trace though. It&rsquo;s a very simple tool, and right now everything lives in <code>template.rb</code> so it should be easy to figure out.</p>
+
+<h3>Known issues:</h3>
+
+<ol>
+<li>It will break if you have other comments in the hiera look up declarations other than keys</li>
+<li>It will not work on implicit lookups, you need hiera()</li>
+<li>It&rsquo;ll probably be buggy, but have fun and support it if you find it useful</li>
+</ol>
+
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-11-03T05:02:03-08:00" pubdate data-updated="true">Nov 3<span>rd</span>, 2014</time></div>
+	
+
+
+	
+</div></article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
 		<a href="/blog/2014/10/07/streamlining-puppet-dev-part-duce-branch-the-enviro/">
 		
 			Streamlining Puppet Dev Part Duce: Branch the Enviro</a>
@@ -3004,6 +3136,42 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
     <article class="post">
 	<h2 class="title">
 		
+		<a href="/blog/2014/05/30/what-is-this-module-doing/">
+		
+			What Is This Module Doing?</a>
+	</h2>
+	<div class="entry-content">
+		
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-05-30T15:58:12-07:00" pubdate data-updated="true">May 30<span>th</span>, 2014</time></div>
+	
+
+
+	
+</div></article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
 		<a href="/blog/2014/05/29/packer-templates-and-vmware/">
 		
 			Packer Templates &amp; VMWare</a>
@@ -3124,734 +3292,6 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
 
 
 <time datetime="2014-05-29T12:19:53-07:00" pubdate data-updated="true">May 29<span>th</span>, 2014</time></div>
-	
-
-
-	
-</div></article>
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2014/05/16/r10k-control-repos/">
-		
-			R10k: Control Repos</a>
-	</h2>
-	<div class="entry-content">
-		<p>This document explains the architecture and deployment of a control repository for syncing multiple puppet environments, their associated puppet code (modules) and their assocaited data (hiera). This document does not review how to deploy r10k, however that is discussed in relevant detail <a href="https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff">here</a>.</p>
-
-<h2>What is a control repo?</h2>
-
-<p>A control repository stores a Puppetfile and hiera data (hiera.yaml and hieradata/).</p>
-
-<h3>What does it contain?</h3>
-
-<pre><code>hieradata/
-Puppetfile
-</code></pre>
-
-<p>It is also common to have a <code>hiera.yaml</code> in the control repo. However <a href="http://www.jeffmalnick.com/blog/2014/05/15/hiera-and-r10k/">for many reasons</a> I don&rsquo;t believe this is a good idea. It can lead to confusing issues with branching of the file that is only consulted once for it&rsquo;s <code>$datadir</code> path and is not used on a per environment basis &ndash; it&rsquo;s loaded once from <code>$confdir</code> during the <em>hiera()</em> call and is not consulted on a per environment basis (e.g. <code>$confdir/environments/$environments/hiera.yaml</code> <strong>is not used</strong> during the <em>hiera()</em> lookup, only <code>$confdir/hiera.yaml</code> is used).</p>
-
-<h2>How does it work?</h2>
-
-<p>The control repo is placed in a monolithic git repository.</p>
-
-<p>The repository can have one or more topic branches that are used by r10k to sync to local Puppet environments.</p>
-
-<h3>Configuration for Puppet code &amp; Hiera data sync via r10k</h3>
-
-<p>Details on how to deploy a gitlab repo and assocaited topic branching for r10k sync are <a href="https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff">here</a>.</p>
-
-<p>Place a Puppetfile in <code>$confdir/Puppetfile</code>.</p>
-
-<p>Populate your Puppetfile with what ever crap you need.</p>
-
-<p>In <code>$confdir</code>:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>git init
-</span><span class='line'>git remote add origin git@whatever.com:your_name/control_repo.git
-</span><span class='line'>git branch -m master production
-</span><span class='line'>git add Puppetfile
-</span><span class='line'>git add hiera.yaml <span class="c"># r10k really doesn&#39;t need this but we&#39;ll add it anyways. </span>
-</span><span class='line'>git add hieradata/
-</span><span class='line'>git push -u origin production:production <span class="c"># or whatever branch, maybe production?</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>Configure hiera.yaml for dynamic environments</h3>
-
-<p><strong>NOTE</strong>: the hiera.yaml is only loaded from <code>$confdir/hiera.yaml</code> on each puppet run, this means even though you&rsquo;ll have a hiera.yaml in <code>$confdir/environments/$environment/</code> those are not actually consulted, only the $confdir hiera.yaml is used &ndash; therefore, <strong><em>you can not have hierarchies per environment</em></strong>. Since the <code>$datadir</code> is environment aware that namespace is filled at run time, and consults the specific environment datadir <code>$confdir/environments/$environment/hieradata/</code>.</p>
-
-<p>Your hiera.yaml needs to have a <code>datadir</code> configured for dynamic lookup so:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
-</span><span class='line'><span class="l-Scalar-Plain">:backends</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">yaml</span>
-</span><span class='line'><span class="l-Scalar-Plain">:hierarchy</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;%{clientcert}&quot;</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;%{environment}&quot;</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">global</span>
-</span><span class='line'>
-</span><span class='line'><span class="l-Scalar-Plain">:yaml</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">:datadir</span><span class="p-Indicator">:</span> <span class="s">&#39;/etc/puppetlabs/puppet/environments/%{::environment}/hieradata&#39;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>Branching your Puppetfile</h3>
-
-<p>For example, assuming you already have a master or production branch:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi Puppetfile
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>&hellip;add some git modules etc&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>git checkout -b development
-</span><span class='line'>git push origin development:development
-</span><span class='line'>git commit -am Puppetfile
-</span><span class='line'>r10k deploy environment -pv
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Now you have a new topic branch &lsquo;development&rsquo; and a new Puppet environment in <code>$confdir/environments/development</code>.</p>
-
-<h3>Branching your hiera data</h3>
-
-<p>Our <code>development</code> branch needs it&rsquo;s own data too:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> <span class="nv">$confdir</span>/hieradata
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>modify K,V&rsquo;s in <code>whatever.yaml</code></li>
-<li>modify other K,V&rsquo;s as needed for your development environment</li>
-</ul>
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>git branch <span class="c"># check your branch, make sure it&#39;s still development</span>
-</span><span class='line'>git commit -am hieradata
-</span><span class='line'>git push
-</span><span class='line'>r10k deploy environment -pv
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Check <code>$confdir/environments/development/hieradata</code></p>
-
-<h2>Testing</h2>
-
-<h3>Configuration files for r10k, hiera, puppet:</h3>
-
-<h4>/etc/r10k.yaml</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>root@master hieradata<span class="o">]</span><span class="c"># cat /etc/r10k.yaml</span>
-</span><span class='line'>:cachedir: /var/cache/r10k
-</span><span class='line'>:sources:
-</span><span class='line'>  puppet:
-</span><span class='line'>    remote: <span class="s2">&quot;git@10.10.100.111:user/control_repo.git&quot;</span>
-</span><span class='line'>    basedir: /etc/puppetlabs/puppet/environments
-</span><span class='line'>    prefix: <span class="nb">false</span>
-</span><span class='line'>:purgedirs:
-</span><span class='line'>  - <span class="s2">&quot;&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>/etc/puppetlabs/puppet/puppet.conf</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> cat /etc/puppetlabs/puppet/puppet.conf
-</span><span class='line'><span class="o">[</span>main<span class="o">]</span>
-</span><span class='line'><span class="nv">certname</span> <span class="o">=</span> master.puppetlabs.vm
-</span><span class='line'><span class="nv">dns_alt_names</span> <span class="o">=</span> master.puppetlabs.vm,puppet
-</span><span class='line'><span class="nv">vardir</span> <span class="o">=</span> /var/opt/lib/pe-puppet
-</span><span class='line'><span class="nv">logdir</span> <span class="o">=</span> /var/log/pe-puppet
-</span><span class='line'><span class="nv">rundir</span> <span class="o">=</span> /var/run/pe-puppet
-</span><span class='line'><span class="nv">modulepath</span> <span class="o">=</span> /etc/puppetlabs/puppet/environments/<span class="nv">$environment</span>/modules:/opt/puppet/share/puppet/modules
-</span><span class='line'><span class="nv">server</span> <span class="o">=</span> master.puppetlabs.vm
-</span><span class='line'><span class="nv">user</span>  <span class="o">=</span> pe-puppet
-</span><span class='line'><span class="nv">group</span> <span class="o">=</span> pe-puppet
-</span><span class='line'><span class="nv">archive_files</span> <span class="o">=</span> <span class="nb">true</span>
-</span><span class='line'><span class="nv">archive_file_server</span> <span class="o">=</span> master.puppetlabs.vm
-</span><span class='line'><span class="c"># cut [master] &amp; [agent] sections, $modulepath above is the important config key here.</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>/etc/puppetlabs/puppet/hiera.yaml</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> cat hiera.yaml
-</span><span class='line'>---
-</span><span class='line'>:backends:
-</span><span class='line'>  - yaml
-</span><span class='line'>:hierarchy:
-</span><span class='line'>  - <span class="s2">&quot;%{clientcert}&quot;</span>
-</span><span class='line'>  - <span class="s2">&quot;%{environment}&quot;</span>
-</span><span class='line'>  - global
-</span><span class='line'>:yaml:
-</span><span class='line'>  :datadir: <span class="s1">&#39;/etc/puppetlabs/puppet/environmets/%{environment}/hieradata&#39;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>/etc/puppetlabs/puppet/Puppetfile</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># cat Puppetfile</span>
-</span><span class='line'><span class="c"># mod, &lt;module name&gt;, &lt;version or tag&gt;, &lt;source&gt;</span>
-</span><span class='line'>forge <span class="s2">&quot;http://forge.puppetlabs.com&quot;</span>
-</span><span class='line'>
-</span><span class='line'><span class="c"># Modules from the Puppet Forge</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/stdlib&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/apache&quot;</span>, <span class="s2">&quot;0.11.0&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/pe_gem&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/mysql&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/firewall&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/vcsrepo&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/git&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/inifile&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;zack/r10k&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;gentoo/portage&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;thias/vsftpd&quot;</span>
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'><span class="c"># Modules from Github using various references</span>
-</span><span class='line'>mod <span class="s2">&quot;wordpress&quot;</span>,
-</span><span class='line'>  :git <span class="o">=</span>&gt; <span class="s2">&quot;git://github.com/hunner/puppet-wordpress.git&quot;</span>,
-</span><span class='line'>  :ref <span class="o">=</span>&gt; <span class="s1">&#39;0.4.0&#39;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>Testing the Puppet Master <code>master.puppetlabs.vm:$confdir/</code>:</h3>
-
-<h4>Our topic branches:</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> git branch
-</span><span class='line'>  development
-</span><span class='line'>* production
-</span><span class='line'>  staging
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>For the given topic branch above, production, let&rsquo;s look at our hieradata in <code>$confdir/hieradata</code>:</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> <span class="nb">pwd</span>
-</span><span class='line'>/etc/puppetlabs/puppet/hieradata
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> ls
-</span><span class='line'>agent1.puppetlabs.vm.yaml  agent2.puppetlabs.vm.yaml  agent3.puppetlabs.vm.yaml  master.puppetlabs.vm.yaml
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>and for each of these files we have the same K,V:</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> cat master.puppetlabs.vm.yaml
-</span><span class='line'>---
-</span><span class='line'>message: <span class="s2">&quot;%{fqdn} is running in environment %{environment}&quot;</span>
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> cat agent1.puppetlabs.vm.yaml
-</span><span class='line'>---
-</span><span class='line'>message: <span class="s2">&quot;%{fqdn} is running in environment %{environment}&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>Now let&rsquo;s switch over to our development branch and compare:</h3>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> git checkout development
-</span><span class='line'>Switched to branch <span class="s1">&#39;development&#39;</span>
-</span><span class='line'>root@master hieradata<span class="o">]</span> <span class="nb">pwd</span>
-</span><span class='line'>/etc/puppetlabs/puppet/hieradata
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> ls
-</span><span class='line'>agent1.puppetlabs.vm.yaml  agent2.puppetlabs.vm.yaml  agent3.puppetlabs.vm.yaml  master.puppetlabs.vm.yaml
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> cat agent1.puppetlabs.vm.yaml
-</span><span class='line'>---
-</span><span class='line'>message: <span class="s2">&quot;%{fqdn} is running in environment %{environment}&quot;</span>
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> cat master.puppetlabs.vm.yaml
-</span><span class='line'>---
-</span><span class='line'>message: <span class="s2">&quot;%{fqdn} is running in environment %{environment}&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Sync everything up with r10k so we can test:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> r10k deploy environment -pv
-</span><span class='line'><span class="o">[</span>R10K::Task::Deployment::DeployEnvironments - INFO<span class="o">]</span> Loading environments from all sources
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment staging
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment production
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying wordpress into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying vsftpd into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying portage into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying r10k into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying inifile into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying git into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying vcsrepo into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying firewall into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying mysql into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying pe_gem into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying apache into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying stdlib into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment master
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment development
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="o">[</span>R10K::Task::Deployment::PurgeEnvironments - INFO<span class="o">]</span> Purging stale environments from /etc/puppetlabs/puppet/environments
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Since there is a <code>%{certname}.yaml</code> for the master we can do a quick check on the command line that we&rsquo;re accessing the correct data:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> git checkout production
-</span><span class='line'>Already on <span class="s1">&#39;production&#39;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> puppet apply -e <span class="s2">&quot;notice(hiera(message))&quot;</span>
-</span><span class='line'>Notice: Scope<span class="o">(</span>Class<span class="o">[</span>main<span class="o">])</span>: master.puppetlabs.vm is running in environment production
-</span><span class='line'>Notice: Compiled catalog <span class="k">for </span>master.puppetlabs.vm in environment production in 0.06 seconds
-</span><span class='line'>Notice: Finished catalog run in 0.24 seconds
-</span><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>The <code>$fqdn</code> and <code>$environment</code> values were correctly filled in. <strong>Note</strong> that this is a poor test since my data files are essentially all the same, <code>$environment</code> will always match it&rsquo;s environment and <code>$fqdn</code> will always match it&rsquo;s fqdn &ndash;  we could be grabbing this value from anywhere. So Let&rsquo;s try with hard coded values:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> <span class="nb">pwd</span>
-</span><span class='line'>/etc/puppetlabs/puppet/hieradata
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> git branch
-</span><span class='line'>  development
-</span><span class='line'>* production
-</span><span class='line'>  staging
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> cat master.puppetlabs.vm.yaml
-</span><span class='line'>---
-</span><span class='line'>message: <span class="s2">&quot;I&#39;m hard coding this value: environment production, master.puppetlabs.vm.yaml&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Now push your new data for production branch up to gitlab</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># git add hieradata/</span>
-</span><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># git commit -m &quot;hieradata hard coded&quot;</span>
-</span><span class='line'><span class="o">[</span>production 3a58e49<span class="o">]</span> hieradata hard coded
-</span><span class='line'> 1 files changed, 1 insertions<span class="o">(</span>+<span class="o">)</span>, 1 deletions<span class="o">(</span>-<span class="o">)</span>
-</span><span class='line'> <span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># git push</span>
-</span><span class='line'> Counting objects: 7, <span class="k">done</span>.
-</span><span class='line'> Delta compression using up to 4 threads.
-</span><span class='line'> Compressing objects: 100% <span class="o">(</span>4/4<span class="o">)</span>, <span class="k">done</span>.
-</span><span class='line'> Writing objects: 100% <span class="o">(</span>4/4<span class="o">)</span>, 399 bytes, <span class="k">done</span>.
-</span><span class='line'> Total 4 <span class="o">(</span>delta 2<span class="o">)</span>, reused 0 <span class="o">(</span>delta 0<span class="o">)</span>
-</span><span class='line'> To git@10.10.100.111:user/control_repo.git
-</span><span class='line'>    1b240c6..3a58e49  production -&gt; production
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>and sync r10k</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># r10k deploy environment -pv</span>
-</span><span class='line'><span class="o">[</span>R10K::Task::Deployment::DeployEnvironments - INFO<span class="o">]</span> Loading environments from all sources
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment staging
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment production
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="c"># ommitting other output ...</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>and test for the correct hard coded K,V</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># puppet apply -e &quot;notice(hiera(message))&quot;</span>
-</span><span class='line'>Notice: Scope<span class="o">(</span>Class<span class="o">[</span>main<span class="o">])</span>: I<span class="err">&#39;</span>m hard coding this value: environment production, master.puppetlabs.vm.yaml
-</span><span class='line'>Notice: Compiled catalog <span class="k">for </span>master.puppetlabs.vm in environment production in 0.05 seconds
-</span><span class='line'>Notice: Finished catalog run in 0.26 seconds
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>YAY!</p>
-
-<h4>And again on the development branch</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> <span class="nb">pwd</span>
-</span><span class='line'>/etc/puppetlabs/puppet/hieradata
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> git branch
-</span><span class='line'>* development
-</span><span class='line'>  production
-</span><span class='line'>  staging
-</span><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> cat hieradata/master.puppetlabs.vm.yaml
-</span><span class='line'>---
-</span><span class='line'>message: <span class="s2">&quot;I&#39;m hard coding this value: environment development, master.puppetlabs.vm.yaml&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Push our new hieradata for <code>development</code> to gitlab:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> git add hieradata/
-</span><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> git commit -m <span class="s2">&quot;hieradata hard coded&quot;</span>
-</span><span class='line'><span class="o">[</span>development 2873db5<span class="o">]</span> hieradata hard coded
-</span><span class='line'> 1 files changed, 1 insertions<span class="o">(</span>+<span class="o">)</span>, 1 deletions<span class="o">(</span>-<span class="o">)</span>
-</span><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> git push
-</span><span class='line'>Counting objects: 7, <span class="k">done</span>.
-</span><span class='line'>Delta compression using up to 4 threads.
-</span><span class='line'>Compressing objects: 100% <span class="o">(</span>4/4<span class="o">)</span>, <span class="k">done</span>.
-</span><span class='line'>Writing objects: 100% <span class="o">(</span>4/4<span class="o">)</span>, 398 bytes, <span class="k">done</span>.
-</span><span class='line'>Total 4 <span class="o">(</span>delta 2<span class="o">)</span>, reused 0 <span class="o">(</span>delta 0<span class="o">)</span>
-</span><span class='line'>To git@10.10.100.111:user/control_repo.git
-</span><span class='line'>   08e249b..2873db5  development -&gt; development
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>andthen sync with r10k</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># r10k deploy environment -pv</span>
-</span><span class='line'><span class="o">[</span>R10K::Task::Deployment::DeployEnvironments - INFO<span class="o">]</span> Loading environments from all sources
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment staging
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment production
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="c"># ommitted the other output...</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>and test with the <code>--environment development</code> switch</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># puppet apply -e &quot;notice(hiera(message))&quot; --environment development</span>
-</span><span class='line'>Notice: Scope<span class="o">(</span>Class<span class="o">[</span>main<span class="o">])</span>: I<span class="err">&#39;</span>m hard coding this value: environment development, master.puppetlabs.vm.yaml
-</span><span class='line'>Notice: Compiled catalog <span class="k">for </span>master.puppetlabs.vm in environment development in 0.05 seconds
-</span><span class='line'>Notice: Finished catalog run in 0.25 seconds
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>`</p>
-
-<p>We can also do a quick one time environment run with the <code>--environment</code> flag:</p>
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-05-16T12:34:33-07:00" pubdate data-updated="true">May 16<span>th</span>, 2014</time></div>
-	
-
-
-	
-</div></article>
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2014/05/15/hiera-and-r10k/">
-		
-			Why I Don&#8217;t Place a hiera.yaml in My CR</a>
-	</h2>
-	<div class="entry-content">
-		<p>Here&rsquo;s a really good reason. First off, unless your hiera.yaml is super complicated, then it probably doesn&rsquo;t need to be in version control. However, for a lot of deployments you need it in VC, but not in your control repo (i.e., the one that r10k will access for Puppetfile, hieradata and build our corrosponding enviros for on your master).</p>
-
-<p>No, place that hiera.yaml in it&rsquo;s own VC repo.</p>
-
-<p>I had a control repo with:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>Puppetfile
-</span><span class='line'>hieradata/
-</span><span class='line'>hiera.yaml</span></code></pre></td></tr></table></div></figure>
-
-
-<p>and I kept running in to this:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master hieradata]# puppet apply -e "notice(hiera(message))"
-</span><span class='line'>Error: Could not find data item message in any Hiera data file and no default supplied at line 1 on node master.puppetlabs.vm</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This was a very simple test to see if my <code>production</code> environment was grabbing the correct data via a message K,V in <code>$confdir/environments/production/hieradata/master.puppetlabs.vm.yaml</code> .</p>
-
-<p>Check out the &mdash;debug</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>Debug: hiera(): Hiera YAML backend starting
-</span><span class='line'>Debug: hiera(): Looking up message in YAML backend
-</span><span class='line'>Debug: hiera(): Looking for data source master.puppetlabs.vm
-</span><span class='line'>Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/master.puppetlabs.vm.yaml, skipping
-</span><span class='line'>Debug: hiera(): Looking for data source production
-</span><span class='line'>Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/production.yaml, skipping
-</span><span class='line'>Debug: hiera(): Looking for data source global
-</span><span class='line'>Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/global.yaml, skipping</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So I copied the <code>datafile</code> path and redirected it to a diff along with a &#8220;`$(pwd) while in the /etc/puppetlabs/puppet/environments/production/hieradata directory:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master hieradata]# diff &lt;(echo "/etc/puppetlabs/puppet/environmets/production/hieradata/") &lt;(echo "$(pwd)")
-</span><span class='line'>1c1
-</span><span class='line'>&lt; /etc/puppetlabs/puppet/environmets/production/hieradata/
-</span><span class='line'>---
-</span><span class='line'>&gt; /etc/puppetlabs/puppet/environments/production/hieradata</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So the <code>$datadir</code> path in hiera.yaml</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master puppet]# cat hiera.yaml | grep datadir
-</span><span class='line'>  :datadir: '/etc/puppetlabs/puppet/environmets/%{environment}/hieradata'</span></code></pre></td></tr></table></div></figure>
-
-
-<p>is indeed missing that f-ing &lsquo;n&rsquo;. Why? Because this was the second time this happened to me today.</p>
-
-<p>Really? The second time? Really. The second fucking time.</p>
-
-<p>I previously committed hiera.yaml along with hieradata/ and my Puppetfile to branch production. I tested it and came across this problem. Did the same test to figure out the correct path and updated hiera.yaml.</p>
-
-<p>However, hiera.yaml was also in my development and staging branches. I didn&rsquo;t update those. So here I was again doing tests on development data for Puppet and <strong>boom</strong> my shit&rsquo;s broken again.</p>
-
-<p>Since hiera.yaml is only used singularly on a puppet run, i.e., it&rsquo;s not consulted on a per environment basis, you only need one copy of it, and that&rsquo;s the one in your puppet $confdir. Having it scattered to the winds with r10k in the control repo does not give you any extra functionality (yet, someday we might make it enviro aware, but currently is not the case).</p>
-
-<p>So if you&rsquo;re going to run your hiera.yaml into a VCS then do it in it&rsquo;s own monolithic repo. You can symlink it into the $confdir for Puppet.</p>
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-05-15T16:12:36-07:00" pubdate data-updated="true">May 15<span>th</span>, 2014</time></div>
 	
 
 
