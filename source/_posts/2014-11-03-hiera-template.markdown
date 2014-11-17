@@ -5,7 +5,7 @@ date: 2014-11-03 05:02:03 -0800
 comments: true
 categories: 
 ---
-Every time we create a new profile, or update a profile, we have to update our hiera data. This process is error prone and time consuming. Hiera is in an interchange format that can easily be automated, so a tool to write the profiles for us was an obvious decision. 
+Every time we create a new profile, or update a profile, we have to update our hiera data. This process is error prone and time consuming. Hiera leverages almost any data interchange format (in fact I'd bet if you can write the backend for it, it'll support it). The writing of that data can easily be automated, so a tool to write the data files for us was an obvious decision. 
 
 [hiera-template](https://github.com/malnick/hiera-template) is still in its infancy, and will eventually become a much larger part of our workflow. The main goal of this tool, however, remains the same: automate the generation of our hiera data files from our profile classes. 
 
