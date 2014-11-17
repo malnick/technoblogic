@@ -4,7 +4,7 @@
   <title><![CDATA[JP]]></title>
   <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
   <link href="httpL://www.jeffmalnick.com/"/>
-  <updated>2014-10-23T11:03:13-07:00</updated>
+  <updated>2014-11-03T05:25:34-08:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
@@ -12,6 +12,111 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[hiera-template]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/11/03/hiera-template/"/>
+    <updated>2014-11-03T05:02:03-08:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2014/11/03/hiera-template</id>
+    <content type="html"><![CDATA[<p>Every time we create a new profile, or update a profile, we have to update our hiera data. This process is error prone and time consuming. Hiera is in an interchange format that can easily be automated, so a tool to write the profiles for us was an obvious decision.</p>
+
+<p><a href="https://github.com/malnick/hiera-template">hiera-template</a> is still in its infancy, and will eventually become a much larger part of our workflow. The main goal of this tool, however, remains the same: automate the generation of our hiera data files from our profile classes.</p>
+
+<p>hiera-template is up in Rubygems, but be forewarned, it is VERY much still in BETA. Your mileage will vary and your bug reporting is appreciated.</p>
+
+<h3>Install</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>gem install hiera-template</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Usage</h3>
+
+<p>hiera-template accepts a single path to a profile as an argument. It can be a local or fully qualified path.</p>
+
+<p>By default, hiera-template will store all processed yaml&rsquo;s in <code>~/.hiera-template/templates/${profile_name}-${hierarchy_level}-template.yaml</code></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> <span class="nv">$confdir</span>/modules/profiles/manifests
+</span><span class='line'>hiera-template company_frontend.pp
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The above will create a baseline hiera data file from all the explicit hiera() lookups in the profile. Yes, you read that right, it will not work on non-explicit hiera() lookups. That will be a feature down the road. For now, the following like-lines will be parsed:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="vg">$myvar</span> <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::company_frontend::myvar&#39;</span><span class="p">),</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>That line will be written to a yaml file as:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">profiles::company_frontend::myvar</span><span class="p-Indicator">:</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Hierarchy Keys</h3>
+
+<p>hiera-template uses <code>#[keys]</code> in the profile to determine what part of the hierarchy the data resides.</p>
+
+<p>Given the following:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="ss">profiles</span><span class="p">:</span><span class="ss">:csx_frontend_base</span><span class="p">(</span>
+</span><span class='line'>  <span class="c1">#[node]</span>
+</span><span class='line'>  <span class="vg">$csx_db_name</span>                          <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_name&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="vg">$csx_db_user</span>                          <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_user&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="vg">$csx_db_password_hash</span>                 <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_password_hash&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="c1">#[datacenter]</span>
+</span><span class='line'>  <span class="vg">$csx_db_host</span>                          <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_host&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="vg">$csx_db_driverclassname</span>               <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_driverclassname&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="vg">$csx_db_url</span>                           <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_url&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="vg">$csx_db_password</span>                      <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_password&#39;</span><span class="p">),</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>hiera-template will create two yaml files in <code>~/.hiera-template/templates</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">csx_frontend_base</span><span class="o">-</span><span class="n">node</span><span class="o">-</span><span class="n">template</span><span class="o">.</span><span class="n">yaml</span>
+</span><span class='line'><span class="n">csx_frontend_base</span><span class="o">-</span><span class="n">datacenter</span><span class="o">-</span><span class="n">template</span><span class="o">.</span><span class="n">yaml</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Those templates contain all the keys for the given profile. You can <code>cat *-node-template.yaml &gt; my.new.node.yaml</code> or <code>cat *-datacenter-template.yaml &gt;&gt; out_dc.yaml</code> to create or append the keys to data files. Then, all you need to do is fill in your values.</p>
+
+<h3>Upcoming</h3>
+
+<p>Since writing in data can be so error prone, and hiera is by it&rsquo;s nature hard to debug, a tool ensures your data written to your data files is the same as what is declared in your profiles &ndash; on the flip side, it&rsquo;ll propogate your errors from the profile data declarations to the data file. Either way, you&rsquo;re automating it!</p>
+
+<p>To help write the values to the data files I&rsquo;ll up adding a feature to populate, so you don&rsquo;t have to worry about all that new-fangled white space that YAML loves to hate you for. Populate will prompt your for each value and write it in automatically, so you don&rsquo;t have to open vim: you&rsquo;re prompted with the key, and you type in the value. Done deal.</p>
+
+<h3>Debugging</h3>
+
+<p>Currently, this tool is not hardened by any means. And like everyone else, I can&rsquo;t stay on top of everything. So if you&rsquo;re using it, hit me up with bug reports. There is a <code>-D</code> option to run at debugger level, and I tried to make it obvious what is going on. That&rsquo;s no substitution for reading <code>/lib/template.rb</code> if you get a stack trace though. It&rsquo;s a very simple tool, and right now everything lives in <code>template.rb</code> so it should be easy to figure out.</p>
+
+<h3>Known issues:</h3>
+
+<ol>
+<li>It will break if you have other comments in the hiera look up declarations other than keys</li>
+<li>It will not work on implicit lookups, you need hiera()</li>
+<li>It&rsquo;ll probably be buggy, but have fun and support it if you find it useful</li>
+</ol>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Streamlining Puppet Dev Part Duce: Branch the enviro]]></title>
@@ -2727,6 +2832,15 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
   </entry>
   
   <entry>
+    <title type="html"><![CDATA[What is this module doing? ]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/05/30/what-is-this-module-doing/"/>
+    <updated>2014-05-30T15:58:12-07:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2014/05/30/what-is-this-module-doing</id>
+    <content type="html"><![CDATA[
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[Packer Templates &amp; VMWare]]></title>
     <link href="httpL://www.jeffmalnick.com/blog/2014/05/29/packer-templates-and-vmware/"/>
     <updated>2014-05-29T12:19:53-07:00</updated>
@@ -2826,6 +2940,760 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
 
 
 <p>After changing the k,v in the json template and running <code>packer build</code> the vmrun command ran successfully.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[r10k: Control Repos]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/05/16/r10k-control-repos.markdown/"/>
+    <updated>2014-05-16T12:34:33-07:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2014/05/16/r10k-control-repos.markdown</id>
+    <content type="html"><![CDATA[This document explains the architecture and deployment of a control repository for syncing multiple puppet environments, their associated puppet code (modules) and their assocaited data (hiera). This document does not review how to deploy r10k, however that is discussed in relevant detail [here](https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff).
+
+##What is a control repo?
+
+A control repository stores a Puppetfile and hiera data (hiera.yaml and hieradata/).
+
+###What does it contain?
+
+	hieradata/
+	Puppetfile
+
+It is also common to have a ```hiera.yaml``` in the control repo. However [for many reasons](http://www.jeffmalnick.com/blog/2014/05/15/hiera-and-r10k/) I don't believe this is a good idea. It can lead to confusing issues with branching of the file that is only consulted once for it's ```$datadir``` path and is not used on a per environment basis - it's loaded once from ```$confdir``` during the *hiera()* call and is not consulted on a per environment basis (e.g. ```$confdir/environments/$environments/hiera.yaml``` **is not used** during the *hiera()* lookup, only ```$confdir/hiera.yaml``` is used). 
+##How does it work?
+
+The control repo is placed in a monolithic git repository. 
+
+The repository can have one or more topic branches that are used by r10k to sync to local Puppet environments. 
+
+###Configuration for Puppet code & Hiera data sync via r10k
+
+Details on how to deploy a gitlab repo and assocaited topic branching for r10k sync are [here](https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff). 
+
+Place a Puppetfile in ```$confdir/Puppetfile```.
+
+Populate your Puppetfile with what ever crap you need. 
+
+In ```$confdir```:
+
+```bash
+git init
+git remote add origin git@whatever.com:your_name/control_repo.git
+git branch -m master production
+git add Puppetfile
+git add hiera.yaml[root@master puppet] r10k really doesn't need this but we'll add it anyways. 
+git add hieradata/
+git push -u origin production:production[root@master puppet] or whatever branch, maybe production?
+```
+
+###Configure hiera.yaml for dynamic environments
+
+**NOTE**: the hiera.yaml is only loaded from ```$confdir/hiera.yaml``` on each puppet run, this means even though you'll have a hiera.yaml in ```$confdir/environments/$environment/``` those are not actually consulted, only the $confdir hiera.yaml is used - therefore, ***you can not have hierarchies per environment***. Since the ```$datadir``` is environment aware that namespace is filled at run time, and consults the specific environment datadir ```$confdir/environments/$environment/hieradata/```. 
+
+Your hiera.yaml needs to have a ```datadir``` configured for dynamic lookup so:
+
+```yaml
+---
+:backends:
+  - yaml
+:hierarchy:
+  - "%{clientcert}"
+  - "%{environment}"
+  - global
+
+:yaml:
+  :datadir: '/etc/puppetlabs/puppet/environments/%{::environment}/hieradata'
+```
+
+###Branching your Puppetfile
+For example, assuming you already have a master or production branch:
+
+```bash
+vi Puppetfile
+```
+...add some git modules etc...
+
+```bash
+git checkout -b development
+git push origin development:development
+git commit -am Puppetfile
+r10k deploy environment -pv
+```
+Now you have a new topic branch 'development' and a new Puppet environment in ```$confdir/environments/development```.
+
+###Branching your hiera data
+
+Our ```development``` branch needs it's own data too:
+
+```bash
+cd $confdir/hieradata
+```
+
+* modify K,V's in ```whatever.yaml```
+* modify other K,V's as needed for your development environment
+
+
+```bash
+git branch[root@master puppet] check your branch, make sure it's still development
+git commit -am hieradata
+git push 
+r10k deploy environment -pv
+```
+
+Check ```$confdir/environments/development/hieradata```
+
+##Testing
+###Configuration files for r10k, hiera, puppet:
+
+####/etc/r10k.yaml
+```bash
+root@master hieradata]# cat /etc/r10k.yaml
+:cachedir: /var/cache/r10k
+:sources:
+  puppet:
+    remote: "git@10.10.100.111:user/control_repo.git"
+    basedir: /etc/puppetlabs/puppet/environments
+    prefix: false
+:purgedirs:
+  - ""
+```
+####/etc/puppetlabs/puppet/puppet.conf
+```bash
+[root@master hieradata] cat /etc/puppetlabs/puppet/puppet.conf
+[main]
+certname = master.puppetlabs.vm
+dns_alt_names = master.puppetlabs.vm,puppet
+vardir = /var/opt/lib/pe-puppet
+logdir = /var/log/pe-puppet
+rundir = /var/run/pe-puppet
+modulepath = /etc/puppetlabs/puppet/environments/$environment/modules:/opt/puppet/share/puppet/modules
+server = master.puppetlabs.vm
+user  = pe-puppet
+group = pe-puppet
+archive_files = true
+archive_file_server = master.puppetlabs.vm
+# cut [master] & [agent] sections, $modulepath above is the important config key here.
+```
+####/etc/puppetlabs/puppet/hiera.yaml
+```bash
+[root@master puppet] cat hiera.yaml
+---
+:backends:
+  - yaml
+:hierarchy:
+  - "%{clientcert}"
+  - "%{environment}"
+  - global
+:yaml:
+  :datadir: '/etc/puppetlabs/puppet/environmets/%{environment}/hieradata'
+```
+####/etc/puppetlabs/puppet/Puppetfile
+```bash
+[root@master puppet]# cat Puppetfile
+# mod, <module name>, <version or tag>, <source>
+forge &#8220;http://forge.puppetlabs.com&#8221;
+
+# Modules from the Puppet Forge
+mod &#8220;puppetlabs/stdlib&#8221;
+mod &#8220;puppetlabs/apache&#8221;, &#8220;0.11.0&#8221;
+mod &#8220;puppetlabs/pe_gem&#8221;
+mod &#8220;puppetlabs/mysql&#8221;
+mod &#8220;puppetlabs/firewall&#8221;
+mod &#8220;puppetlabs/vcsrepo&#8221;
+mod &#8220;puppetlabs/git&#8221;
+mod &#8220;puppetlabs/inifile&#8221;
+mod &#8220;zack/r10k&#8221;
+mod &#8220;gentoo/portage&#8221;
+mod &#8220;thias/vsftpd&#8221;
+
+
+# Modules from Github using various references
+mod &#8220;wordpress&#8221;,
+  :git => &#8220;git://github.com/hunner/puppet-wordpress.git&#8221;,
+  :ref => &#8216;0.4.0&#8217;
+&#8220;`
+###Testing the Puppet Master &#8220;`master.puppetlabs.vm:$confdir/&#8220;`:
+
+####Our topic branches:
+
+&#8220;`bash
+[root@master puppet] git branch
+  development
+* production
+  staging
+&#8220;`
+
+####For the given topic branch above, production, let&#8217;s look at our hieradata in &#8220;`$confdir/hieradata&#8220;`:
+
+&#8220;`bash
+[root@master hieradata] pwd
+/etc/puppetlabs/puppet/hieradata
+[root@master hieradata] ls
+agent1.puppetlabs.vm.yaml  agent2.puppetlabs.vm.yaml  agent3.puppetlabs.vm.yaml  master.puppetlabs.vm.yaml
+&#8220;`
+
+####and for each of these files we have the same K,V:
+
+&#8220;`bash
+[root@master hieradata] cat master.puppetlabs.vm.yaml
+&#8212;
+message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
+[root@master hieradata] cat agent1.puppetlabs.vm.yaml
+&#8212;
+message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
+&#8220;`
+
+###Now let&#8217;s switch over to our development branch and compare:
+
+&#8220;`bash
+[root@master puppet] git checkout development
+Switched to branch &#8216;development&#8217;
+root@master hieradata] pwd
+/etc/puppetlabs/puppet/hieradata
+[root@master hieradata] ls
+agent1.puppetlabs.vm.yaml  agent2.puppetlabs.vm.yaml  agent3.puppetlabs.vm.yaml  master.puppetlabs.vm.yaml
+[root@master hieradata] cat agent1.puppetlabs.vm.yaml
+&#8212;
+message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
+[root@master hieradata] cat master.puppetlabs.vm.yaml
+&#8212;
+message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
+&#8220;`
+
+Sync everything up with r10k so we can test:
+
+&#8220;`bash
+[root@master puppet] r10k deploy environment -pv
+[R10K::Task::Deployment::DeployEnvironments - INFO] Loading environments from all sources
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment staging
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment production
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+[R10K::Task::Module::Sync - INFO] Deploying wordpress into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying vsftpd into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying portage into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying r10k into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying inifile into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying git into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying vcsrepo into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying firewall into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying mysql into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying pe_gem into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying apache into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying stdlib into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment master
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment development
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+[R10K::Task::Deployment::PurgeEnvironments - INFO] Purging stale environments from /etc/puppetlabs/puppet/environments
+&#8220;`
+
+
+Since there is a &#8220;`%{certname}.yaml&#8220;` for the master we can do a quick check on the command line that we&#8217;re accessing the correct data:
+
+&#8220;`bash
+[root@master puppet] git checkout production
+Already on &#8216;production&#8217;
+
+[root@master puppet] puppet apply -e &#8220;notice(hiera(message))&#8221;
+Notice: Scope(Class[main]): master.puppetlabs.vm is running in environment production
+Notice: Compiled catalog for master.puppetlabs.vm in environment production in 0.06 seconds
+Notice: Finished catalog run in 0.24 seconds
+[root@master puppet]
+&#8220;`
+
+The &#8220;`$fqdn&#8220;` and &#8220;`$environment&#8220;` values were correctly filled in. **Note** that this is a poor test since my data files are essentially all the same, &#8220;`$environment&#8220;` will always match it&#8217;s environment and &#8220;`$fqdn&#8220;` will always match it&#8217;s fqdn -  we could be grabbing this value from anywhere. So Let&#8217;s try with hard coded values:
+
+&#8220;`bash
+[root@master hieradata] pwd
+/etc/puppetlabs/puppet/hieradata
+[root@master hieradata] git branch
+  development
+* production
+  staging
+[root@master hieradata] cat master.puppetlabs.vm.yaml
+&#8212;
+message: &#8220;I&#8217;m hard coding this value: environment production, master.puppetlabs.vm.yaml&#8221;
+&#8220;`
+
+Now push your new data for production branch up to gitlab
+
+&#8220;`
+[root@master puppet]# git add hieradata/
+[root@master puppet]# git commit -m &#8220;hieradata hard coded&#8221;
+[production 3a58e49] hieradata hard coded
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+ [root@master puppet]# git push
+ Counting objects: 7, done.
+ Delta compression using up to 4 threads.
+ Compressing objects: 100% (4/4), done.
+ Writing objects: 100% (4/4), 399 bytes, done.
+ Total 4 (delta 2), reused 0 (delta 0)
+ To git@10.10.100.111:user/control_repo.git
+    1b240c6..3a58e49  production -> production
+&#8220;`
+
+and sync r10k
+
+&#8220;`
+[root@master puppet]# r10k deploy environment -pv
+[R10K::Task::Deployment::DeployEnvironments - INFO] Loading environments from all sources
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment staging
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment production
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+# ommitting other output &#8230;
+&#8220;`
+
+and test for the correct hard coded K,V
+
+&#8220;`
+[root@master puppet]# puppet apply -e &#8220;notice(hiera(message))&#8221;
+Notice: Scope(Class[main]): I&#8217;m hard coding this value: environment production, master.puppetlabs.vm.yaml
+Notice: Compiled catalog for master.puppetlabs.vm in environment production in 0.05 seconds
+Notice: Finished catalog run in 0.26 seconds
+&#8220;`
+
+YAY!
+
+####And again on the development branch
+&#8220;`bash
+[root@master hieradata] pwd
+/etc/puppetlabs/puppet/hieradata
+[root@master hieradata] git branch
+* development
+  production
+  staging
+[root@master puppet] cat hieradata/master.puppetlabs.vm.yaml
+&#8212;
+message: &#8220;I&#8217;m hard coding this value: environment development, master.puppetlabs.vm.yaml&#8221;
+&#8220;`
+
+Push our new hieradata for &#8220;`development&#8220;` to gitlab:
+
+&#8220;`bash
+[root@master puppet] git add hieradata/
+[root@master puppet] git commit -m &#8220;hieradata hard coded&#8221;
+[development 2873db5] hieradata hard coded
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+[root@master puppet] git push
+Counting objects: 7, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 398 bytes, done.
+Total 4 (delta 2), reused 0 (delta 0)
+To git@10.10.100.111:user/control_repo.git
+   08e249b..2873db5  development -> development
+&#8220;`
+
+andthen sync with r10k 
+
+&#8220;`
+[root@master puppet]# r10k deploy environment -pv
+[R10K::Task::Deployment::DeployEnvironments - INFO] Loading environments from all sources
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment staging
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment production
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+# ommitted the other output&#8230;
+&#8220;`
+
+and test with the &#8220;`&#8211;environment development&#8220;` switch
+
+&#8220;`
+[root@master puppet]# puppet apply -e &#8220;notice(hiera(message))&#8221; &#8211;environment development
+Notice: Scope(Class[main]): I&#8217;m hard coding this value: environment development, master.puppetlabs.vm.yaml
+Notice: Compiled catalog for master.puppetlabs.vm in environment development in 0.05 seconds
+Notice: Finished catalog run in 0.25 seconds
+&#8220;&#8220;
+
+
+We can also do a quick one time environment run with the &#8220;`&#8211;environment&#8220;` flag:
+
+
+
+
+
+
+
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[r10k: Control Repos]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/05/16/r10k-control-repos.markdown/"/>
+    <updated>2014-05-16T12:34:33-07:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2014/05/16/r10k-control-repos.markdown</id>
+    <content type="html"><![CDATA[This document explains the architecture and deployment of a control repository for syncing multiple puppet environments, their associated puppet code (modules) and their assocaited data (hiera). This document does not review how to deploy r10k, however that is discussed in relevant detail [here](https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff).
+
+##What is a control repo?
+
+A control repository stores a Puppetfile and hiera data (hiera.yaml and hieradata/).
+
+###What does it contain?
+
+	hieradata/
+	Puppetfile
+
+It is also common to have a ```hiera.yaml``` in the control repo. However [for many reasons](http://www.jeffmalnick.com/blog/2014/05/15/hiera-and-r10k/) I don't believe this is a good idea. It can lead to confusing issues with branching of the file that is only consulted once for it's ```$datadir``` path and is not used on a per environment basis - it's loaded once from ```$confdir``` during the *hiera()* call and is not consulted on a per environment basis (e.g. ```$confdir/environments/$environments/hiera.yaml``` **is not used** during the *hiera()* lookup, only ```$confdir/hiera.yaml``` is used). 
+##How does it work?
+
+The control repo is placed in a monolithic git repository. 
+
+The repository can have one or more topic branches that are used by r10k to sync to local Puppet environments. 
+
+###Configuration for Puppet code & Hiera data sync via r10k
+
+Details on how to deploy a gitlab repo and assocaited topic branching for r10k sync are [here](https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff). 
+
+Place a Puppetfile in ```$confdir/Puppetfile```.
+
+Populate your Puppetfile with what ever crap you need. 
+
+In ```$confdir```:
+
+```bash
+git init
+git remote add origin git@whatever.com:your_name/control_repo.git
+git branch -m master production
+git add Puppetfile
+git add hiera.yaml # r10k really doesn't need this but we'll add it anyways. 
+git add hieradata/
+git push -u origin production:production # or whatever branch, maybe production?
+```
+
+###Configure hiera.yaml for dynamic environments
+
+**NOTE**: the hiera.yaml is only loaded from ```$confdir/hiera.yaml``` on each puppet run, this means even though you'll have a hiera.yaml in ```$confdir/environments/$environment/``` those are not actually consulted, only the $confdir hiera.yaml is used - therefore, ***you can not have hierarchies per environment***. Since the ```$datadir``` is environment aware that namespace is filled at run time, and consults the specific environment datadir ```$confdir/environments/$environment/hieradata/```. 
+
+Your hiera.yaml needs to have a ```datadir``` configured for dynamic lookup so:
+
+```yaml
+---
+:backends:
+  - yaml
+:hierarchy:
+  - "%{clientcert}"
+  - "%{environment}"
+  - global
+
+:yaml:
+  :datadir: '/etc/puppetlabs/puppet/environments/%{::environment}/hieradata'
+```
+
+###Branching your Puppetfile
+For example, assuming you already have a master or production branch:
+
+```bash
+vi Puppetfile
+```
+...add some git modules etc...
+
+```bash
+git checkout -b development
+git push origin development:development
+git commit -am Puppetfile
+r10k deploy environment -pv
+```
+Now you have a new topic branch 'development' and a new Puppet environment in ```$confdir/environments/development```.
+
+###Branching your hiera data
+
+Our ```development``` branch needs it's own data too:
+
+```bash
+cd $confdir/hieradata
+```
+
+* modify K,V's in ```whatever.yaml```
+* modify other K,V's as needed for your development environment
+
+
+```bash
+git branch # check your branch, make sure it's still development
+git commit -am hieradata
+git push 
+r10k deploy environment -pv
+```
+
+Check ```$confdir/environments/development/hieradata```
+
+##Testing
+###Configuration files for r10k, hiera, puppet:
+
+####/etc/r10k.yaml
+```bash
+root@master hieradata]# cat /etc/r10k.yaml
+:cachedir: /var/cache/r10k
+:sources:
+  puppet:
+    remote: "git@10.10.100.111:user/control_repo.git"
+    basedir: /etc/puppetlabs/puppet/environments
+    prefix: false
+:purgedirs:
+  - ""
+```
+####/etc/puppetlabs/puppet/puppet.conf
+```bash
+[root@master hieradata] cat /etc/puppetlabs/puppet/puppet.conf
+[main]
+certname = master.puppetlabs.vm
+dns_alt_names = master.puppetlabs.vm,puppet
+vardir = /var/opt/lib/pe-puppet
+logdir = /var/log/pe-puppet
+rundir = /var/run/pe-puppet
+modulepath = /etc/puppetlabs/puppet/environments/$environment/modules:/opt/puppet/share/puppet/modules
+server = master.puppetlabs.vm
+user  = pe-puppet
+group = pe-puppet
+archive_files = true
+archive_file_server = master.puppetlabs.vm
+# cut [master] & [agent] sections, $modulepath above is the important config key here.
+```
+####/etc/puppetlabs/puppet/hiera.yaml
+```bash
+[root@master puppet] cat hiera.yaml
+---
+:backends:
+  - yaml
+:hierarchy:
+  - "%{clientcert}"
+  - "%{environment}"
+  - global
+:yaml:
+  :datadir: '/etc/puppetlabs/puppet/environmets/%{environment}/hieradata'
+```
+####/etc/puppetlabs/puppet/Puppetfile
+```bash
+[root@master puppet]# cat Puppetfile
+# mod, <module name>, <version or tag>, <source>
+forge &#8220;http://forge.puppetlabs.com&#8221;
+
+# Modules from the Puppet Forge
+mod &#8220;puppetlabs/stdlib&#8221;
+mod &#8220;puppetlabs/apache&#8221;, &#8220;0.11.0&#8221;
+mod &#8220;puppetlabs/pe_gem&#8221;
+mod &#8220;puppetlabs/mysql&#8221;
+mod &#8220;puppetlabs/firewall&#8221;
+mod &#8220;puppetlabs/vcsrepo&#8221;
+mod &#8220;puppetlabs/git&#8221;
+mod &#8220;puppetlabs/inifile&#8221;
+mod &#8220;zack/r10k&#8221;
+mod &#8220;gentoo/portage&#8221;
+mod &#8220;thias/vsftpd&#8221;
+
+
+# Modules from Github using various references
+mod &#8220;wordpress&#8221;,
+  :git => &#8220;git://github.com/hunner/puppet-wordpress.git&#8221;,
+  :ref => &#8216;0.4.0&#8217;
+&#8220;`
+###Testing the Puppet Master &#8220;`master.puppetlabs.vm:$confdir/&#8220;`:
+
+####Our topic branches:
+
+&#8220;`bash
+[root@master puppet] git branch
+  development
+* production
+  staging
+&#8220;`
+
+####For the given topic branch above, production, let&#8217;s look at our hieradata in &#8220;`$confdir/hieradata&#8220;`:
+
+&#8220;`bash
+[root@master hieradata] pwd
+/etc/puppetlabs/puppet/hieradata
+[root@master hieradata] ls
+agent1.puppetlabs.vm.yaml  agent2.puppetlabs.vm.yaml  agent3.puppetlabs.vm.yaml  master.puppetlabs.vm.yaml
+&#8220;`
+
+####and for each of these files we have the same K,V:
+
+&#8220;`bash
+[root@master hieradata] cat master.puppetlabs.vm.yaml
+&#8212;
+message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
+[root@master hieradata] cat agent1.puppetlabs.vm.yaml
+&#8212;
+message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
+&#8220;`
+
+###Now let&#8217;s switch over to our development branch and compare:
+
+&#8220;`bash
+[root@master puppet] git checkout development
+Switched to branch &#8216;development&#8217;
+root@master hieradata] pwd
+/etc/puppetlabs/puppet/hieradata
+[root@master hieradata] ls
+agent1.puppetlabs.vm.yaml  agent2.puppetlabs.vm.yaml  agent3.puppetlabs.vm.yaml  master.puppetlabs.vm.yaml
+[root@master hieradata] cat agent1.puppetlabs.vm.yaml
+&#8212;
+message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
+[root@master hieradata] cat master.puppetlabs.vm.yaml
+&#8212;
+message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
+&#8220;`
+
+Sync everything up with r10k so we can test:
+
+&#8220;`bash
+[root@master puppet] r10k deploy environment -pv
+[R10K::Task::Deployment::DeployEnvironments - INFO] Loading environments from all sources
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment staging
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment production
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+[R10K::Task::Module::Sync - INFO] Deploying wordpress into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying vsftpd into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying portage into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying r10k into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying inifile into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying git into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying vcsrepo into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying firewall into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying mysql into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying pe_gem into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying apache into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Module::Sync - INFO] Deploying stdlib into /etc/puppetlabs/puppet/environments/production/modules
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment master
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment development
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+[R10K::Task::Deployment::PurgeEnvironments - INFO] Purging stale environments from /etc/puppetlabs/puppet/environments
+&#8220;`
+
+
+Since there is a &#8220;`%{certname}.yaml&#8220;` for the master we can do a quick check on the command line that we&#8217;re accessing the correct data:
+
+&#8220;`bash
+[root@master puppet] git checkout production
+Already on &#8216;production&#8217;
+
+[root@master puppet] puppet apply -e &#8220;notice(hiera(message))&#8221;
+Notice: Scope(Class[main]): master.puppetlabs.vm is running in environment production
+Notice: Compiled catalog for master.puppetlabs.vm in environment production in 0.06 seconds
+Notice: Finished catalog run in 0.24 seconds
+[root@master puppet]
+&#8220;`
+
+The &#8220;`$fqdn&#8220;` and &#8220;`$environment&#8220;` values were correctly filled in. **Note** that this is a poor test since my data files are essentially all the same, &#8220;`$environment&#8220;` will always match it&#8217;s environment and &#8220;`$fqdn&#8220;` will always match it&#8217;s fqdn -  we could be grabbing this value from anywhere. So Let&#8217;s try with hard coded values:
+
+&#8220;`bash
+[root@master hieradata] pwd
+/etc/puppetlabs/puppet/hieradata
+[root@master hieradata] git branch
+  development
+* production
+  staging
+[root@master hieradata] cat master.puppetlabs.vm.yaml
+&#8212;
+message: &#8220;I&#8217;m hard coding this value: environment production, master.puppetlabs.vm.yaml&#8221;
+&#8220;`
+
+Now push your new data for production branch up to gitlab
+
+&#8220;`
+[root@master puppet]# git add hieradata/
+[root@master puppet]# git commit -m &#8220;hieradata hard coded&#8221;
+[production 3a58e49] hieradata hard coded
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+ [root@master puppet]# git push
+ Counting objects: 7, done.
+ Delta compression using up to 4 threads.
+ Compressing objects: 100% (4/4), done.
+ Writing objects: 100% (4/4), 399 bytes, done.
+ Total 4 (delta 2), reused 0 (delta 0)
+ To git@10.10.100.111:user/control_repo.git
+    1b240c6..3a58e49  production -> production
+&#8220;`
+
+and sync r10k
+
+&#8220;`
+[root@master puppet]# r10k deploy environment -pv
+[R10K::Task::Deployment::DeployEnvironments - INFO] Loading environments from all sources
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment staging
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment production
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+# ommitting other output &#8230;
+&#8220;`
+
+and test for the correct hard coded K,V
+
+&#8220;`
+[root@master puppet]# puppet apply -e &#8220;notice(hiera(message))&#8221;
+Notice: Scope(Class[main]): I&#8217;m hard coding this value: environment production, master.puppetlabs.vm.yaml
+Notice: Compiled catalog for master.puppetlabs.vm in environment production in 0.05 seconds
+Notice: Finished catalog run in 0.26 seconds
+&#8220;`
+
+YAY!
+
+####And again on the development branch
+&#8220;`bash
+[root@master hieradata] pwd
+/etc/puppetlabs/puppet/hieradata
+[root@master hieradata] git branch
+* development
+  production
+  staging
+[root@master puppet] cat hieradata/master.puppetlabs.vm.yaml
+&#8212;
+message: &#8220;I&#8217;m hard coding this value: environment development, master.puppetlabs.vm.yaml&#8221;
+&#8220;`
+
+Push our new hieradata for &#8220;`development&#8220;` to gitlab:
+
+&#8220;`bash
+[root@master puppet] git add hieradata/
+[root@master puppet] git commit -m &#8220;hieradata hard coded&#8221;
+[development 2873db5] hieradata hard coded
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+[root@master puppet] git push
+Counting objects: 7, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 398 bytes, done.
+Total 4 (delta 2), reused 0 (delta 0)
+To git@10.10.100.111:user/control_repo.git
+   08e249b..2873db5  development -> development
+&#8220;`
+
+andthen sync with r10k 
+
+&#8220;`
+[root@master puppet]# r10k deploy environment -pv
+[R10K::Task::Deployment::DeployEnvironments - INFO] Loading environments from all sources
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment staging
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+[R10K::Task::Environment::Deploy - NOTICE] Deploying environment production
+[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
+# ommitted the other output&#8230;
+&#8220;`
+
+and test with the &#8220;`&#8211;environment development&#8220;` switch
+
+&#8220;`
+[root@master puppet]# puppet apply -e &#8220;notice(hiera(message))&#8221; &#8211;environment development
+Notice: Scope(Class[main]): I&#8217;m hard coding this value: environment development, master.puppetlabs.vm.yaml
+Notice: Compiled catalog for master.puppetlabs.vm in environment development in 0.05 seconds
+Notice: Finished catalog run in 0.25 seconds
+&#8220;&#8220;
+
+
+We can also do a quick one time environment run with the &#8220;`&#8211;environment&#8220;` flag:
+
+
+
+
+
+
+
+
 ]]></content>
   </entry>
   
@@ -4244,960 +5112,6 @@ INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many ope
 <p>At this point if none of the above resolved the issues you should try standing up a second broker, especially if you&rsquo;re running more than 1000 agents on a single broker instance.</p>
 
 <p>You can read more about <a href="http://activemq.apache.org/networks-of-brokers.html">standing up networks of brokers</a> and also <a href="http://activemq.apache.org/performance.html">AMQ performance</a>.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Extracting JSON from Puppet YAML Report]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2014/01/17/extracting-json-from-puppet-yaml-report/"/>
-    <updated>2014-01-17T06:55:04-08:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2014/01/17/extracting-json-from-puppet-yaml-report</id>
-    <content type="html"><![CDATA[<h3>YAML &ndash;> JSON via Puppet Gen&#8217;ed YAML</h3>
-
-<p>In a follow up to the post below, I started thinking about ways to generate a D3 readable JSON on the fly from the puppet generated YAML. I started by using a parser from the node library &lsquo;js-yaml&rsquo;. My YAML format looked like this:</p>
-
-<figure class='code'><figcaption><span>last_puppet_run.yaml</span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">metrics</span><span class="p-Indicator">:</span>
-</span><span class='line'>    <span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="kt">!ruby</span><span class="l-Scalar-Plain">/object:Puppet::Util::Metric</span>
-</span><span class='line'>      <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">resources</span>
-</span><span class='line'>      <span class="l-Scalar-Plain">label</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Resources</span>
-</span><span class='line'>      <span class="l-Scalar-Plain">values</span><span class="p-Indicator">:</span>
-</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">total</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Total</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">197</span>
-</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">skipped</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Skipped</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">6</span>
-</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">failed</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Failed</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
-</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">failed_to_restart</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="s">&quot;Failed</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">restart&quot;</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
-</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">restarted</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Restarted</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
-</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">changed</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Changed</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
-</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">out_of_sync</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="s">&quot;Out</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">sync&quot;</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
-</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">scheduled</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Scheduled</span>
-</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
-</span><span class='line'><span class="nn">...</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>My original stab at parsing this YAML failed when using the js-yaml node library. This was due to the fact that this is Puppet YAML &ndash; it was generated by a ruby class denoted at the top of the file:</p>
-
-<figure class='code'><figcaption><span>last_puppet_run.yaml </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="err">   </span><span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="kt">!ruby</span><span class="l-Scalar-Plain">/object:Puppet::Util::Metric</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So the way to parse this file into a JSON would have to be done using a ruby script where I could import the &lsquo;puppet&rsquo; class directly so the YAML lib would know how to read this particular file. I thought this would be as simple as:</p>
-
-<figure class='code'><figcaption><span>test.rb </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">require</span> <span class="s1">&#39;puppet&#39;</span>
-</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;yaml&#39;</span>
-</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;json&#39;</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">datajson</span> <span class="o">=</span> <span class="s1">&#39;report.json&#39;</span>
-</span><span class='line'><span class="n">datafile</span>  <span class="o">=</span> <span class="s1">&#39;last_run_report.yaml&#39;</span>
-</span><span class='line'><span class="n">yaml</span> <span class="o">=</span> <span class="no">YAML</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span>
-</span><span class='line'><span class="n">json</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">to_json</span>
-</span><span class='line'><span class="no">File</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">datajson</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span> <span class="n">json</span> <span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>What I didn&rsquo;t count on was serialization.</p>
-
-<h3>Serialization</h3>
-
-<p>What would you expect that output to be? I&rsquo;ll give you one clue, it did look like a JSON&hellip; sorta:</p>
-
-<figure class='code'><figcaption><span>report.json </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span><span class="nt">&quot;metrics&quot;</span><span class="p">:{</span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8cda088&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8cd80f8&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;changes&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8ce1608&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;events&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8ce0eb0&gt;&quot;</span><span class="p">},</span><span class="nt">&quot;logs&quot;</span><span class="p">:[</span><span class="s2">&quot;Finished catalog run in 5.57 seconds&quot;</span><span class="p">],</span><span class="nt">&quot;resource_statuses&quot;</span><span class="p">:{</span><span class="nt">&quot;Schedule[daily]&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Resource::Status:0x007f8fb8ceaaf0&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;Schedule[monthly]&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Resource::Status:0x007f8fb8ce84f8&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;Schedule[hourly]&quot;</span><span class="p">:</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>What&rsquo;s happening here? What happened to all our nice data, all of the sudden it&rsquo;s not human friendly anymore. This data is serialized, it&rsquo;s a by-product of using &lsquo;.to_json&rsquo; which is akin to saying &lsquo;JSON::dump(datafile)&rsquo;.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[test]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2014/01/13/test/"/>
-    <updated>2014-01-13T09:35:57-08:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2014/01/13/test</id>
-    <content type="html"><![CDATA[
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Puppet Run Vis]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2014/01/06/puppet-run-vis/"/>
-    <updated>2014-01-06T00:00:00-08:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2014/01/06/puppet-run-vis</id>
-    <content type="html"><![CDATA[<h3>D3 Visualization for a Puppet Run</h3>
-
-<p>One of the common complaints with puppet, especially puppet enterprise (PE) is that it does not scale as one would hope. In example, the PE console. EVERY NODE must report to the console in PE. So, if, for example, you&rsquo;re a sysadmin working with 10,000+ or even 1,000+ PE nodes you&rsquo;re going to have a crazy busy console.</p>
-
-<p>To make this problem more managable a visualization is necessary &ndash; until humans start developing USB ports for their brains. Here I propose one such way to manage this using D3 as the visualization tool and the post-run YAML log from PuppetDB.</p>
-
-<p>The main issue here is in developing such a debugging tool I would hope to alliviate and not add to the already cumbersome way console manages 1000&rsquo;s of nodes. The tool should scale to &lsquo;n&rsquo; number of nodes &ndash; if there are 10 or 10,000,000 nodes I want this tool to be able to help the user troubleshoot errors on three axes:</p>
-
-<pre><code>* Time - the time the error occured in the context of the run
-* Error type - red for failure, orange for warning, green for successful
-* Resource Invovled - the resource that either failued, generated warning or was successful. 
-</code></pre>
-
-<p>So in my mind, I have this layout which actually involved a couple layers:</p>
-
-<pre><code>* View 1 - Circular graph; inner circle represents precentage of nodes with failures in red; mid circle is percentage of nodes with warnings in orange; outer circle is percentage of nodes with no errors in green.
-* View 2 - Click on red area of graph; transition to new circular graph of same circumfrance; starting at 12 o'clock and moving clockwise around the graph is time, each 360 rotation starts a new level; each level is denoted by the number of failures; each failure's area or degrees of circumfrance is the precentage of nodes with that error. 
-    * In eaxmple: if you have a 5 errors over 50 nodes, each with 10 instances of those 5 errors the area of the graph that the error takes up would be equally distributed through out the circle starting at time -0 at 12 o'clock moving clockwise around the circle (ok maybe a tarus now) until a equal number of levels has been reached once the center of the circle or tarus has been reached.
-* View 3 - same as 2 but for warnings (orange).
-* View 4 - same as 2 but for successes or no error (green).
-</code></pre>
-
-<p>Something similar to this: <a href="http://xliberation.com/parse/colortable/parsed3.html">http://xliberation.com/parse/colortable/parsed3.html</a></p>
-
-<p>The initial view is simple, it is a ratio of nodes in three categories of &ldquo;has failures (center, red)&rdquo;, &ldquo;has warnings (mid circle, orange)&rdquo; and &ldquo;has no errors (outter circle, green)&rdquo;.</p>
-
-<p>How do we deal with nodes with errors, warnings and successes? We lop them into the lowest common denomenator: if it has successes and warnings it goes to the warning loop; if it has successes warnings and errors it goes to error loop; if it has successes and errors it goes to error.</p>
-
-<p>Our lowest common denomenator is the fact that we are only concerned with nodes that have errors or warnings, if it&rsquo;s successful that&rsquo;s great, we want to see it but errors are the what we are debugging.</p>
-
-<h3>&lsquo;n&rsquo; scalability</h3>
-
-<p>It needs to happen.</p>
-
-<p>Humans are bad at abstracting long lists. I mean, &ldquo;node so-and-so had error this-and-that&rdquo; for 10,000,000 lines isn&rsquo;t so helpful. Sure, &ldquo;&mdash;trace&rdquo; or &ldquo;&mdash;debug&rdquo; is helpful, but ITSALOTOFLINESOFCODE&#8221;.</p>
-
-<p>Humans can abstract information on more levels than &ldquo;line 1, 2,3&hellip;.&lsquo;n&rsquo;&rdquo;. We have 5 complete senses (for most of us!) so we should leverage a few more than textual abstractions of code. Color, shapes, area graphs; abstracting the run levels of a puppet run into &ldquo;zooms&rdquo;. These are all available to us.</p>
-
-<h3>D3</h3>
-
-<p>D3 is a javascript lib that talks directly to the DOM to quickly and efficiently create interactive scalable vector graphics.</p>
-
-<p>What?</p>
-
-<p>It means it can run in the PE console with little overhead, take it&rsquo;s datasets from the parsed YAML in PuppetDB via some savvy js-yaml action and run in basically any browser.</p>
-
-<p>All you need to know is it&rsquo;s super rad.. and more importantly, proven.</p>
-
-<h3>HOW DO WE PARSE THE YAML</h3>
-
-<p>js-yaml, maybe. Or some other YAML to JSON converter that we can get arrays of data out of the YAML from for our JS D3 vis. That isn&rsquo;t so difficult.</p>
-
-<p>Our PuppetDB YAML looks a little like this (for an example, I&rsquo;m using the first couple lines):</p>
-
-<figure class='code'><figcaption><span>last_puppet_run.yaml</span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span> <span class="kt">!ruby</span><span class="l-Scalar-Plain">/object:Puppet::Transaction::Report</span>
-</span><span class='line'><span class="l-Scalar-Plain">metrics</span><span class="p-Indicator">:</span>
-</span><span class='line'><span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="kt">!ruby</span><span class="l-Scalar-Plain">/object:Puppet::Util::Metric</span>
-</span><span class='line'><span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">resources</span>
-</span><span class='line'><span class="l-Scalar-Plain">label</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Resources</span>
-</span><span class='line'><span class="l-Scalar-Plain">values</span><span class="p-Indicator">:</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">total</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Total</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">85</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">skipped</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Skipped</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">failed</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Failed</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">1</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">failed_to_restart</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="s">&quot;Failed</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">restart&quot;</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">restarted</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Restarted</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">changed</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Changed</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">out_of_sync</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="s">&quot;Out</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">sync&quot;</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">1</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">scheduled</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Scheduled</span>
-</span><span class='line'><span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>A converstion of this file to JSON would output something like:</p>
-
-<figure class='code'><figcaption><span>last_puppet_run.json </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="nt">&quot;metrics&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
-</span><span class='line'>  <span class="nt">&quot;resources&quot;</span><span class="p">:</span> <span class="s2">&quot;!ruby/object:Puppet::Util::Metric&quot;</span><span class="p">,</span>
-</span><span class='line'>  <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;!ruby/sym executed_command&quot;</span><span class="p">,</span>
-</span><span class='line'>  <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Events&quot;</span><span class="p">,</span>
-</span><span class='line'>  <span class="nt">&quot;values&quot;</span><span class="p">:</span> <span class="p">[</span>
-</span><span class='line'>    <span class="s2">&quot;- total&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="s2">&quot;Total&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="mi">1</span><span class="p">,</span>
-</span><span class='line'>    <span class="s2">&quot;- failure&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="s2">&quot;Failure&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="mi">1</span><span class="p">,</span>
-</span><span class='line'>    <span class="s2">&quot;- success&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="s2">&quot;Success&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="mi">0</span>
-</span><span class='line'>  <span class="p">],</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This was encoded to JSON via: <a href="https://npmjs.org/package/yamljs">https://npmjs.org/package/yamljs</a></p>
-
-<pre><code>yaml2json last_run_report.yaml --pretty
-</code></pre>
-
-<h3>First steps to building the vis</h3>
-
-<p>Start with an NGINX server running on localhost:8888 serving up the /www directory from my github.com/puppetlabs/banyan.</p>
-
-<p>Then I start with figuring out how the heck D3 works. Well, luckily for me it&rsquo;s pretty simple. You start by defining some CSS elements for the vis. In my case, I wanted to simply see how I would grab data from the YAML, parsed to JSON and push it into D3.</p>
-
-<p>Let&rsquo;s start small:</p>
-
-<figure class='code'><figcaption><span>index.html </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="cp">&lt;!DOCTYPE html&gt;</span>
-</span><span class='line'><span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">&quot;en&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;head&gt;</span>
-</span><span class='line'>        <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">&quot;utf-8&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>        <span class="nt">&lt;title&gt;</span>D3 Test Visualization for PE Run<span class="nt">&lt;/title&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;/head&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">&quot;utf-8&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;style&gt;</span>
-</span><span class='line'>  <span class="nc">.chart</span> <span class="nt">div</span> <span class="p">{</span>
-</span><span class='line'>  <span class="k">font</span><span class="o">:</span> <span class="m">10px</span> <span class="k">sans-serif</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">background-color</span><span class="o">:</span> <span class="nb">steelblue</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">text-align</span><span class="o">:</span> <span class="k">right</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">padding</span><span class="o">:</span> <span class="m">3px</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">margin</span><span class="o">:</span> <span class="m">1px</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">color</span><span class="o">:</span> <span class="nb">white</span><span class="p">;</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>  <span class="nt">&lt;/style&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This initializes a bar chart and the colors, alignment and all the other CSS crap that will be used over and over again in the SVG. I&rsquo;ll use .chart as a CSS div element below.</p>
-
-<p>Then we need to tell the DOM that we&rsquo;re going to be using D3.js in our HTML script tags:</p>
-
-<figure class='code'><figcaption><span>index.html </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;http://d3js.org/d3.v3.min.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Ok, phew, that was rough right? Right. Because I&rsquo;m an ops guy and this dev shit is for the&hellip;</p>
-
-<p>Anyways back to the meat of the index.html, our D3 script.</p>
-
-<p>Let&rsquo;s declare the script tags and initialize some vars that we&rsquo;ll use in the test code:</p>
-
-<figure class='code'><figcaption><span>index.html </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'> <span class="nt">&lt;body&gt;</span>
-</span><span class='line'>        <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>        var data;
-</span><span class='line'>        var eval_time;
-</span><span class='line'>        var draw_this = new Array();
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Now lets parse that JSON I created from before via the YAML puppet_run_report. D3 is SO RAD that it ships with a nice JSON importer called &lsquo;d3.json&rsquo;. We&rsquo;re going to use it here to grab the &lsquo;evaluation_time&rsquo; metric from the parsed YAML (now a JSON) and push it into an array that we will eventually use to draw a bar representing this metric.</p>
-
-<figure class='code'><figcaption><span>index.html </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'>d3.json(&quot;last_run_report.json&quot;, function(error,json){
-</span><span class='line'>          data = json;
-</span><span class='line'>          eval_time = data.evaluation_time;
-</span><span class='line'>          draw_this.push(eval_time);
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Yep, that easy. Pretty rad right? Right.</p>
-
-<p>Now the fun part, let&rsquo;s draw some scalable vector graphics (from here on out referred to by their much less type consuming name &lsquo;svg&rsquo;):</p>
-
-<figure class='code'><figcaption><span>index.html </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'>         var x = d3.scale.linear()
-</span><span class='line'>              .domain([0, d3.max(draw_this)])
-</span><span class='line'>              .range([0, 420]);
-</span><span class='line'>
-</span><span class='line'>          d3.select(&quot;.chart&quot;)
-</span><span class='line'>              .selectAll(&quot;div&quot;)
-</span><span class='line'>              .data(draw_this)
-</span><span class='line'>              .enter().append(&quot;div&quot;)
-</span><span class='line'>              .style(&quot;width&quot;, function(d) { return x(d) + &quot;px&quot;; })
-</span><span class='line'>              .text(&quot;Evaluation Time&quot;);
-</span><span class='line'>              //.text(function(d) { return d; });
-</span><span class='line'>      });         
-</span><span class='line'>        <span class="nt">&lt;/script&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>I start by telling D3 to scale the graph along the &lsquo;x&rsquo; axis because eventually I&rsquo;ll have other bars and I don&rsquo;t want this thing getting out of control, since I am a control freak.</p>
-
-<p>Then we use the ever-so-awesome d3.select. The .select method is great, you could basically script an entire index.html with .select. What&rsquo;s actually happening here is .select is D3&rsquo;s way of saying, &ldquo;Hey DOM, here&rsquo;s a CSS selector, give me the first element match&rdquo;.</p>
-
-<p>You can do .select(&ldquo;body&rdquo;), .select(&ldquo;marquee&rdquo;) (if you&rsquo;re hella adventurous) or if you want to have access to all the DOM elements .selectAll().</p>
-
-<p>I selected my div.chart that I defined earlier, as this is the CSS style I want to push onto my silly bar graph. So all data elements iterated over in .data() will use this style. Notice how .style is automagically added to the DOM for .select() to use down here? That&rsquo;s super cool.</p>
-
-<p>Then we pass my earlier defined array draw_this to .data(). .data is a holder for our soon to be iterated stuff. The magic happens when we use .enter, and wrap our div append in it.</p>
-
-<p>Anytime you bind data to an element (in this case we&rsquo;re binding the array draw_this) you need to use .enter(). We don&rsquo;t actually have any DOM elements for div yet, but we need a placeholder for our data (or whatever data-element binding you might have). .enter() makes this placeholder &ndash; it says, &ldquo;hey I have this data, does the DOM have this data?&rdquo;. If the DOM is like, &ldquo;hell no I have no such data.&rdquo; Then .enter() creates a placeholder for that data.</p>
-
-<p>Don&rsquo;t conflate data with DOM elements. In this example we&rsquo;re passing 1 data value (there only exists one data value in draw_this for now). .enter() will make sure we have placeholder <div> elements to put our data into since they do not exist. So .enter() in this example is making one <div> element PLACEHOLDER (all problems in computer science can be solved by enough levels of abstraction!).</p>
-
-<p>It passes a REFERENCE of this placeholder to the next thing in the chain, in this case an append of <div> which actually inserts our elements into the DOM. We then apply our CSS style to a bar that we defined earlier and does some scaling math so when we have more bars later it won&rsquo;t get out of control and bang, we have a DIV representing our data.</p>
-
-<p>So far our index.html looks like this:</p>
-
-<figure class='code'><figcaption><span>index.html </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="cp">&lt;!DOCTYPE html&gt;</span>
-</span><span class='line'><span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">&quot;en&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;head&gt;</span>
-</span><span class='line'>        <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">&quot;utf-8&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>        <span class="nt">&lt;title&gt;</span>D3 Test Visualization for PE Run<span class="nt">&lt;/title&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;/head&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">&quot;utf-8&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;style&gt;</span>
-</span><span class='line'>  <span class="nc">.chart</span> <span class="nt">div</span> <span class="p">{</span>
-</span><span class='line'>  <span class="k">font</span><span class="o">:</span> <span class="m">10px</span> <span class="k">sans-serif</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">background-color</span><span class="o">:</span> <span class="nb">steelblue</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">text-align</span><span class="o">:</span> <span class="k">right</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">padding</span><span class="o">:</span> <span class="m">3px</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">margin</span><span class="o">:</span> <span class="m">1px</span><span class="p">;</span>
-</span><span class='line'>  <span class="k">color</span><span class="o">:</span> <span class="nb">white</span><span class="p">;</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>  <span class="nt">&lt;/style&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;chart&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
-</span><span class='line'>  
-</span><span class='line'>  <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;http://d3js.org/d3.v3.min.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;body&gt;</span>
-</span><span class='line'>        <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>      
-</span><span class='line'>        <span class="kd">var</span> <span class="nx">data</span><span class="p">;</span>
-</span><span class='line'>        <span class="kd">var</span> <span class="nx">eval_time</span><span class="p">;</span>
-</span><span class='line'>        <span class="kd">var</span> <span class="nx">draw_this</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Array</span><span class="p">();</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="nx">d3</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="s2">&quot;last_run_report.json&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">,</span><span class="nx">json</span><span class="p">){</span>
-</span><span class='line'>          <span class="nx">data</span> <span class="o">=</span> <span class="nx">json</span><span class="p">;</span>
-</span><span class='line'>          <span class="nx">eval_time</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">evaluation_time</span><span class="p">;</span>
-</span><span class='line'>          <span class="c1">//alert(eval_time);</span>
-</span><span class='line'>          <span class="nx">draw_this</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">eval_time</span><span class="p">);</span>
-</span><span class='line'>          
-</span><span class='line'>          <span class="c1">//draw something</span>
-</span><span class='line'>          <span class="kd">var</span> <span class="nx">x</span> <span class="o">=</span> <span class="nx">d3</span><span class="p">.</span><span class="nx">scale</span><span class="p">.</span><span class="nx">linear</span><span class="p">()</span>
-</span><span class='line'>              <span class="p">.</span><span class="nx">domain</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="nx">d3</span><span class="p">.</span><span class="nx">max</span><span class="p">(</span><span class="nx">draw_this</span><span class="p">)])</span>
-</span><span class='line'>              <span class="p">.</span><span class="nx">range</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">420</span><span class="p">]);</span>
-</span><span class='line'>
-</span><span class='line'>          <span class="nx">d3</span><span class="p">.</span><span class="nx">select</span><span class="p">(</span><span class="s2">&quot;.chart&quot;</span><span class="p">)</span>
-</span><span class='line'>              <span class="p">.</span><span class="nx">selectAll</span><span class="p">(</span><span class="s2">&quot;div&quot;</span><span class="p">)</span>
-</span><span class='line'>              <span class="p">.</span><span class="nx">data</span><span class="p">(</span><span class="nx">draw_this</span><span class="p">)</span>
-</span><span class='line'>              <span class="p">.</span><span class="nx">enter</span><span class="p">().</span><span class="nx">append</span><span class="p">(</span><span class="s2">&quot;div&quot;</span><span class="p">)</span>
-</span><span class='line'>              <span class="p">.</span><span class="nx">style</span><span class="p">(</span><span class="s2">&quot;width&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">x</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;px&quot;</span><span class="p">;</span> <span class="p">})</span>
-</span><span class='line'>              <span class="p">.</span><span class="nx">text</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">d</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="nx">d</span><span class="p">;</span> <span class="p">});</span>
-</span><span class='line'>      <span class="p">});</span>          
-</span><span class='line'>        <span class="nt">&lt;/script&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;/body&gt;</span>
-</span><span class='line'><span class="nt">&lt;/html&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>OMG IT&rsquo;S SO AWESOME!
-<img src="httpL://www.jeffmalnick.com/images/small_example.tiff" title="awesome" alt="images"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[The Need for a Replication Provider]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2014/01/03/the-need-to-a-replication-provider/"/>
-    <updated>2014-01-03T09:05:51-08:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2014/01/03/the-need-to-a-replication-provider</id>
-    <content type="html"><![CDATA[<h3>Why we need a replication provider for puppet</h3>
-
-<p>I&rsquo;ve been using puppet for over a year now. I started using it at the request of a friend who wanted a simple, one-liner command to boot his e-commerce platform on Vagrant VM&rsquo;s for dev and eventually production. I was impressed by the simplicity, the software defined server-state was easy to create through the elegant package, resource, service workflow. It wasn&rsquo;t very long that we found other more advanced needs for Puppet.</p>
-
-<p>One of these needs was booting multiple MySQL server slaves on a single host machine to replicate various MySQL masters. The masters were any one of the customers currently using this e-commerce platform. The distributed nature of the servers and the cost-benefit of running a single slave server (a beefy host nonetheless) for all of them presented a few challenges.</p>
-
-<p>First off, nobody wants to be a sysadmin. This company was small in terms of manpower and everyone was already in a DevOps role, but who wants to sit around running &ldquo;CHANGE MASTER TO&rdquo;&hellip; all day? Not your python dev that&rsquo;s for sure. So we decided it was best to build out a Puppet module that can run on the slave and master hosts that would:</p>
-
-<ol>
-<li>Boot multiple MySQL slaves on one host</li>
-<li>Dump the master MySQL DB and scp to the slave (once the slave was provisioned)</li>
-<li>Import the scp&#8217;ed DB to the slave and start replication from the correct binlog position</li>
-</ol>
-
-
-<p>Simple right? Yeah&hellip; right.</p>
-
-<p>Let&rsquo;s cut the chase: how many lines of puppet code did it take for me to write a unique mysql slave instance onto a host?</p>
-
-<p>167</p>
-
-<p>For each slave I needed to provision:</p>
-
-<ul>
-<li>/var/lib/mysql_instance#</li>
-<li>/var/log/mysql_instance#</li>
-<li>/etc/mysql_instance#</li>
-<li>/etc/mysql_instance#/my.cnf</li>
-<li>Customize that my.cnf for the instance</li>
-</ul>
-
-
-<p>Which looks like standard Puppet fun:</p>
-
-<figure class='code'><figcaption><span>slave.pp </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># All SQL instances get their own directories:</span>
-</span><span class='line'><span class="n">file</span> <span class="p">{</span> <span class="s2">&quot;/var/lib/mysql${slave_server_id}&quot;</span><span class="p">:</span>
-</span><span class='line'>      <span class="k">ensure</span>        <span class="o">=&gt;</span> <span class="n">directory</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">recurse</span>        <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">owner</span>        <span class="o">=&gt;</span> <span class="s1">&#39;mysql&#39;</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">group</span>        <span class="o">=&gt;</span> <span class="s1">&#39;mysql&#39;</span><span class="p">,</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'><span class="n">file</span> <span class="p">{</span> <span class="s2">&quot;/var/log/mysql${slave_server_id}&quot;</span><span class="p">:</span>
-</span><span class='line'>      <span class="k">ensure</span>        <span class="o">=&gt;</span> <span class="n">directory</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">recurse</span>        <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">owner</span>        <span class="o">=&gt;</span> <span class="s1">&#39;mysql&#39;</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">group</span>        <span class="o">=&gt;</span> <span class="s1">&#39;mysql&#39;</span><span class="p">,</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># All SQL instances get their own /etc and cnf:</span>
-</span><span class='line'><span class="n">file</span> <span class="p">{</span> <span class="s2">&quot;/etc/mysql${slave_server_id}&quot;</span><span class="p">:</span>
-</span><span class='line'>      <span class="k">ensure</span>        <span class="o">=&gt;</span> <span class="n">directory</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">recurse</span>        <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">owner</span>        <span class="o">=&gt;</span> <span class="s1">&#39;mysql&#39;</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">group</span>        <span class="o">=&gt;</span> <span class="s1">&#39;mysql&#39;</span><span class="p">,</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'><span class="n">file</span> <span class="p">{</span> <span class="s2">&quot;my${slave_server_id}.cnf&quot;</span><span class="p">:</span>
-</span><span class='line'>      <span class="k">ensure</span>         <span class="o">=&gt;</span> <span class="n">file</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">path</span>        <span class="o">=&gt;</span> <span class="s2">&quot;/etc/mysql${slave_server_id}/my${slave_server_id}.cnf&quot;</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">mode</span>        <span class="o">=&gt;</span> <span class="mo">0644</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">owner</span>         <span class="o">=&gt;</span> <span class="s1">&#39;mysql&#39;</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">group</span>         <span class="o">=&gt;</span> <span class="s1">&#39;mysql&#39;</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">content</span>        <span class="o">=&gt;</span> <span class="n">template</span><span class="p">(</span><span class="s1">&#39;replicate/my.cnf.multi.erb&#39;</span><span class="p">),</span>
-</span><span class='line'>      <span class="nb">require</span>        <span class="o">=&gt;</span> <span class="no">File</span><span class="o">[</span><span class="s2">&quot;/etc/mysql${slave_server_id}&quot;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>      <span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Then I needed to boot a DB with the datadir, and from that point on it was, well, you know, a bash script basically with a million exec statements:</p>
-
-<figure class='code'><figcaption><span>slave.pp </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># Prepare DB:</span>
-</span><span class='line'><span class="nb">exec</span> <span class="p">{</span> <span class="s2">&quot;${name} Initialize Database&quot;</span><span class="p">:</span>
-</span><span class='line'>      <span class="n">path</span>        <span class="o">=&gt;</span> <span class="s1">&#39;/usr/bin:/bin&#39;</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">command</span>        <span class="o">=&gt;</span> <span class="s2">&quot;mysql_install_db --user=mysql --datadir=/var/lib/mysql${slave_server_id}&quot;</span><span class="p">,</span>
-</span><span class='line'>      <span class="nb">require</span>        <span class="o">=&gt;</span> <span class="o">[</span><span class="no">File</span><span class="o">[</span><span class="s2">&quot;/var/lib/mysql${slave_server_id}&quot;</span><span class="o">]</span><span class="p">,</span><span class="no">File</span><span class="o">[</span><span class="s2">&quot;/var/log/mysql${slave_server_id}&quot;</span><span class="o">]]</span><span class="p">,</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># Start SQL instance:</span>
-</span><span class='line'><span class="nb">exec</span>  <span class="p">{</span> <span class="s2">&quot;$ {name} Spin up SQL Server&quot;</span> <span class="p">:,</span><span class="n">ca</span>
-</span><span class='line'>      <span class="n">path</span>        <span class="o">=&gt;</span> <span class="s1">&#39;/bin:/usr/bin:&#39;</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">command</span>        <span class="o">=&gt;</span> <span class="s2">&quot;mysqld_safe --defaults-file=/etc/mysql${slave_server_id}/my${slave_server_id}.cnf &amp;&quot;</span><span class="p">,</span>
-</span><span class='line'>      <span class="nb">require</span>        <span class="o">=&gt;</span> <span class="o">[</span><span class="no">Exec</span><span class="o">[</span><span class="s2">&quot;${name} Initialize Database&quot;</span><span class="o">]</span><span class="p">,</span><span class="no">File</span><span class="o">[</span><span class="s2">&quot;my${slave_server_id}.cnf&quot;</span><span class="o">]]</span><span class="p">,</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># Execute CHANGE MASTER TO - TODO: add if conditional for with password mysql commands</span>
-</span><span class='line'><span class="c1"># Grant slave user priviledges if without password:</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">if</span> <span class="vg">$mysql_root_password</span> <span class="o">==</span> <span class="s2">&quot;false&quot;</span><span class="p">{</span>
-</span><span class='line'>      <span class="nb">exec</span>  <span class="p">{</span> <span class="s2">&quot;$ {name} grant privledges&quot;</span> <span class="p">:,</span><span class="n">ca</span>
-</span><span class='line'>              <span class="n">command</span>                <span class="o">=&gt;</span> <span class="s2">&quot;$mysql_cmd_root_without_pwd $mysql_socket --execute=</span><span class="se">\&quot;</span><span class="s2">GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO &#39;$mysql_replication_user&#39;@&#39;$slave_ip&#39; IDENTIFIED BY &#39;$mysql_replication_password&#39;;</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span class='line'>              <span class="no">Require</span>                 <span class="o">=&gt;</span>  <span class="no">Exec</span> <span class="o">[</span> <span class="s2">&quot;$ {name} Spin up SQL server&quot;</span> <span class="o">]</span><span class="p">,</span><span class="n">ca</span>
-</span><span class='line'>              <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'>      <span class="nb">exec</span> <span class="p">{</span><span class="s2">&quot;stop ${name}&quot;</span><span class="p">:</span>
-</span><span class='line'>              <span class="n">command</span>                <span class="o">=&gt;</span> <span class="s2">&quot;$mysql_cmd_root_without_pwd $mysql_socket --execute=</span><span class="se">\&quot;</span><span class="s2">STOP SLAVE;</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span class='line'>              <span class="nb">require</span>                <span class="o">=&gt;</span> <span class="no">Exec</span><span class="o">[</span><span class="s2">&quot;grant ${name} privledges&quot;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>              <span class="p">}</span>
-</span><span class='line'>      <span class="nb">exec</span> <span class="p">{</span><span class="s2">&quot;master info for ${name}&quot;</span><span class="p">:</span>
-</span><span class='line'>              <span class="n">command</span>        <span class="o">=&gt;</span> <span class="s2">&quot;$mysql_cmd_root_without_pwd $mysql_socket --execute=</span><span class="se">\&quot;</span><span class="s2">CHANGE MASTER TO MASTER_HOST=&#39;$master_host&#39;,MASTER_USER=&#39;$mysql_replication_user&#39;,MASTER_PASSWORD=&#39;$mysql_replication_password&#39;,MASTER_LOG_FILE=&#39;$master_log_file&#39;,MASTER_LOG_POS=$master_log_pos;</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span class='line'>              <span class="nb">require</span>        <span class="o">=&gt;</span> <span class="no">Exec</span><span class="o">[</span><span class="s2">&quot;stop ${name}&quot;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>              <span class="p">}</span>
-</span><span class='line'>      <span class="nb">exec</span> <span class="p">{</span><span class="s2">&quot;start ${name} instnace on server&quot;</span><span class="p">:</span>
-</span><span class='line'>              <span class="n">command</span>                <span class="o">=&gt;</span> <span class="s2">&quot;$mysql_cmd_root_without_pwd $mysql_socket --execute=</span><span class="se">\&quot;</span><span class="s2">START SLAVE;</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span class='line'>              <span class="nb">require</span>                <span class="o">=&gt;</span> <span class="no">Exec</span><span class="o">[</span><span class="s2">&quot;master info for ${name}&quot;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>              <span class="p">}</span>
-</span><span class='line'>      <span class="nb">exec</span>  <span class="p">{</span> <span class="s2">&quot;$ {name} restart server&quot;</span> <span class="p">:,</span><span class="n">ca</span>
-</span><span class='line'>              <span class="n">command</span>        <span class="o">=&gt;</span> <span class="s2">&quot;/usr/bin/mysqladmin -S /var/run/mysqld/mysqld${slave_server_id}.sock stop;</span>
-</span><span class='line'><span class="s2">                                     /usr/bin/mysqladmin -S /var/run/mysqld/mysqld${slave_server_id}.sock start&quot;</span><span class="p">,</span>
-</span><span class='line'>              <span class="nb">require</span>        <span class="o">=&gt;</span> <span class="no">Exec</span><span class="o">[</span><span class="s2">&quot;start ${name} instnace on server&quot;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>              <span class="n">notify</span>        <span class="o">=&gt;</span> <span class="ss">Replicate</span><span class="p">:</span><span class="ss">:Import</span><span class="o">[</span><span class="s2">&quot;Import ${import} onto ${name}&quot;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>              <span class="p">}</span>
-</span><span class='line'>   <span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>But WHAT IF THEY&rsquo;RE CRAZY AND HAVE NO PASSWORD????</p>
-
-<p>I made other commands for that too&hellip;</p>
-
-<figure class='code'><figcaption><span>slave.pp </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">if</span> <span class="vg">$mysql_root_password</span> <span class="o">!=</span> <span class="s2">&quot;false&quot;</span><span class="p">{</span>
-</span><span class='line'><span class="nb">exec</span>  <span class="p">{</span> <span class="s2">&quot;$ {name} grant privledges&quot;</span> <span class="p">:,</span><span class="n">ca</span>
-</span><span class='line'>      <span class="n">command</span>                <span class="o">=&gt;</span> <span class="s2">&quot;$mysql_cmd_root_with_pwd $mysql_socket --execute=</span><span class="se">\&quot;</span><span class="s2">GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO &#39;$mysql_replication_user&#39;@&#39;$slave_ip&#39; IDENTIFIED BY &#39;$mysql_replication_password&#39;;</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span class='line'>      <span class="no">Require</span>                 <span class="o">=&gt;</span>  <span class="no">Exec</span> <span class="o">[</span> <span class="s2">&quot;$ {name} Spin up SQL server&quot;</span> <span class="o">]</span><span class="p">,</span><span class="n">ca</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="nb">exec</span> <span class="p">{</span><span class="s2">&quot;stop ${name}&quot;</span><span class="p">:</span>
-</span><span class='line'>      <span class="n">command</span>                <span class="o">=&gt;</span> <span class="s2">&quot;$mysql_cmd_root_with_pwd $mysql_socket --execute=</span><span class="se">\&quot;</span><span class="s2">STOP SLAVE;</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span class='line'>      <span class="nb">require</span>                <span class="o">=&gt;</span> <span class="no">Exec</span><span class="o">[</span><span class="s2">&quot;grant ${name} privledges&quot;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'><span class="nb">exec</span> <span class="p">{</span><span class="s2">&quot;master info for ${name}&quot;</span><span class="p">:</span>
-</span><span class='line'>      <span class="n">command</span>        <span class="o">=&gt;</span> <span class="s2">&quot;$mysql_cmd_root_with_pwd $mysql_socket --execute=</span><span class="se">\&quot;</span><span class="s2">CHANGE MASTER TO MASTER_HOST=&#39;$master_host&#39;,MASTER_USER=&#39;$mysql_replication_user&#39;,MASTER_PASSWORD=&#39;$mysql_replication_password&#39;,MASTER_LOG_FILE=&#39;$master_log_file&#39;,MASTER_LOG_POS=$master_log_pos;</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span class='line'>      <span class="nb">require</span>        <span class="o">=&gt;</span> <span class="no">Exec</span><span class="o">[</span><span class="s2">&quot;stop ${name}&quot;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'><span class="nb">exec</span> <span class="p">{</span><span class="s2">&quot;start ${name} instnace on server&quot;</span><span class="p">:</span>
-</span><span class='line'>      <span class="n">command</span>                <span class="o">=&gt;</span> <span class="s2">&quot;$mysql_cmd_root_with_pwd $mysql_socket --execute=</span><span class="se">\&quot;</span><span class="s2">START SLAVE;</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span class='line'>      <span class="nb">require</span>                <span class="o">=&gt;</span> <span class="no">Exec</span><span class="o">[</span><span class="s2">&quot;master info for ${name}&quot;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'><span class="nb">exec</span>  <span class="p">{</span> <span class="s2">&quot;$ {name} restart server&quot;</span> <span class="p">:,</span><span class="n">ca</span>
-</span><span class='line'>      <span class="n">command</span>        <span class="o">=&gt;</span> <span class="s2">&quot;/usr/bin/mysqladmin -S /var/run/mysqld/mysqld${slave_server_id}.sock stop;</span>
-</span><span class='line'><span class="s2">                             /usr/bin/mysqladmin -S /var/run/mysqld/mysqld${slave_server_id}.sock start&quot;</span><span class="p">,</span>
-</span><span class='line'>      <span class="nb">require</span>        <span class="o">=&gt;</span> <span class="no">Exec</span><span class="o">[</span><span class="s2">&quot;start ${name} instnace on server&quot;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>      <span class="n">notify</span>        <span class="o">=&gt;</span> <span class="ss">Replicate</span><span class="p">:</span><span class="ss">:Import</span><span class="o">[</span><span class="s2">&quot;Import ${import} onto ${name}&quot;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>SO MANY COMMANDS!!!</p>
-
-<p>Any post where you need to exclaim this much in caps says a lot about the code you&rsquo;re writing right? Right. That&rsquo;s a principle.</p>
-
-<p>So this is where providers come in. In Puppet you could write this code to do this work. And I mean, that&rsquo;s what Puppet is for right? Provisioning. Yes,
-that&rsquo;s true, but this isn&rsquo;t really* Puppet code, this is a bunch of exec statements, which is basically a bash script. This isn&rsquo;t very economical, it&rsquo;s
-not very elegant, it&rsquo;s a lot of coding. Would it be nice if we could just:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">replicate_server</span> <span class="p">{</span> <span class="s1">&#39;master&#39;</span><span class="p">:</span>
-</span><span class='line'>  <span class="n">hostname</span>             <span class="o">=&gt;</span> <span class="vg">$:</span><span class="ss">:hostname</span><span class="p">,</span>
-</span><span class='line'>  <span class="n">mysql_repl_password</span> <span class="o">=&gt;</span> <span class="s2">&quot;1234&quot;</span><span class="p">,</span>
-</span><span class='line'>  <span class="n">mysql_repl_user</span>      <span class="o">=&gt;</span> <span class="s2">&quot;repl&quot;</span><span class="p">,</span>
-</span><span class='line'>  <span class="n">server_id</span>            <span class="o">=&gt;</span> <span class="mi">21</span><span class="p">,</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>&hellip; in our provisioning manifest and not have to write this crazy defined type for each SQL slave? Because right now as it stands my slave.pp for the replicate class is
-167 lines. There are, umm, a lot of other subclasses there to enable this to work. Like the master.pp, my params, some crap about dumping DB&rsquo;s and blowing out
-the old ib_log files and holy shit that&rsquo;s a lot of puppeteering.</p>
-
-<p>I would much rather have a provider that&rsquo;s pure ruby which can provision this for me. (WARNING PSUDO PROVIDER COMING).</p>
-
-<p>Something like this for the commands (of which, as you can see from above, are crazy nuts since it&rsquo;s puppet telling bash telling mysql telling mysql instance&hellip;):</p>
-
-<figure class='code'><figcaption><span>/ modules / replicate / lib / puppet / provider / replicate / replication.rb </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="ss">Puppet</span><span class="p">:</span><span class="ss">:Type</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="ss">:replicate</span><span class="p">)</span><span class="o">.</span><span class="n">provide</span><span class="p">(</span><span class="ss">:replication</span><span class="p">)</span> <span class="k">do</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="c1">#confine :osfamily =&gt; [:debian, :redhat]</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># Commands </span>
-</span><span class='line'>
-</span><span class='line'>        <span class="n">commands</span>         <span class="ss">:mysql</span>             <span class="o">=&gt;</span> <span class="s2">&quot;/usr/bin/mysql&quot;</span>
-</span><span class='line'>        <span class="n">commands</span>         <span class="ss">:mysqladmin</span>        <span class="o">=&gt;</span> <span class="s2">&quot;/usr/bin/mysqladmin&quot;</span>
-</span><span class='line'>        <span class="n">commands</span>         <span class="ss">:service</span>           <span class="o">=&gt;</span> <span class="s2">&quot;/etc/init.d/mysql&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Ahhhh, ok that&#8217; better than:</p>
-
-<figure class='code'><figcaption><span>slave.pp </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="vg">$mysql_cmd_root_without_pwd</span> <span class="o">=</span> <span class="s2">&quot;/usr/bin/mysql --user=$mysql_root_user --database=$mysql_database --host=$mysql_root_local_host&quot;</span>
-</span><span class='line'><span class="vg">$mysql_cmd_root_with_pwd</span>    <span class="o">=</span> <span class="s2">&quot;/usr/bin/mysql --user=$mysql_root_user --database=$mysql_database --host=$mysql_root_local_host --password=$mysql_root_password&quot;</span>
-</span><span class='line'><span class="vg">$mysql_cmd_repl_with_pwd</span>    <span class="o">=</span> <span class="s2">&quot;/usr/bin/mysql --user=$mysql_replication_user --database=$mysql_database --host=$mysql_root_local_host --password=$mysql_replication_password&quot;</span>
-</span><span class='line'><span class="vg">$mysql_cmd_repl_slave</span>       <span class="o">=</span> <span class="s2">&quot;/usr/bin/mysql --user=$mysql_replication_user --database=$mysql_database --host=$mysql_master_ip_address --password=$mysql_replication_password&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Then we could write a out a single provider and corresponding type which defines the instance based on &ldquo;roles&rdquo; of &ldquo;master&rdquo; or &ldquo;slave&rdquo;. The provider would figure out if this host
-already has a master or slave instance running on it, which my replication module &hellip; does not do .. which, you guessed it, could break a lot of stuff if you run it twice.</p>
-
-<p>Which brings us to&hellip;</p>
-
-<h4>A provider, when done correctly is idempotent!</h4>
-
-<p>&hellip; and that&rsquo;s not all, if the replication provider is built-in we can use &lsquo;puppet resource replicate&rsquo; on the command line for all things replication related.</p>
-
-<p>Let&rsquo;s say we wanted to query the master SQL instances
-on this host, we could:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>$ puppet resource replicate role=master </span></code></pre></td></tr></table></div></figure>
-
-
-<p>and get something like:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>replicate {"master":
-</span><span class='line'>  ensure =&gt; present,
-</span><span class='line'>  }</span></code></pre></td></tr></table></div></figure>
-
-
-<p>if this host has a master instance running on it.</p>
-
-<p>This is of course provided by the magic of self.instances in the provider. Here&rsquo;s some more psudo ruby of what that might look like:</p>
-
-<figure class='code'><figcaption><span>Psudo-Provider </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">instances</span>
-</span><span class='line'>  <span class="n">get_master_instances</span><span class="p">()</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">get_master_instances</span><span class="p">()</span>
-</span><span class='line'>  <span class="n">desc</span> <span class="s2">&quot;get master info&quot;</span>
-</span><span class='line'>  <span class="n">mstr_info</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span class='line'>  <span class="k">begin</span>
-</span><span class='line'>          <span class="n">output</span> <span class="o">=</span> <span class="sb">`mysql -NBe &quot;show master status&quot;`</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:strip</span><span class="p">)</span>
-</span><span class='line'>  <span class="k">rescue</span> <span class="ss">Puppet</span><span class="p">:</span><span class="ss">:ExecutionFailure</span> <span class="o">=&gt;</span> <span class="n">e</span>
-</span><span class='line'>              <span class="k">raise</span> <span class="ss">Puppet</span><span class="p">:</span><span class="ss">:Error</span><span class="p">,</span> <span class="s2">&quot;Oh no, execution of &#39;show master status&#39; for MySQL failed&quot;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="n">mstr_info</span><span class="o">[</span><span class="ss">:ensure</span><span class="o">]</span> <span class="o">=</span> <span class="n">output</span> <span class="o">==</span> <span class="kp">nil</span> <span class="p">?</span> <span class="ss">:absent</span> <span class="p">:</span> <span class="ss">:present</span>
-</span><span class='line'>  <span class="n">mstr_info</span><span class="o">[</span><span class="ss">:log_position</span><span class="o">]</span> <span class="o">=</span> <span class="n">output</span><span class="o">[</span><span class="mi">1</span><span class="o">].</span><span class="n">empty?</span> <span class="p">?</span> <span class="kp">nil</span> <span class="p">:</span> <span class="n">output</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span>
-</span><span class='line'>  <span class="n">mstr_info</span><span class="o">[</span><span class="ss">:binlog_do_db</span><span class="o">]</span> <span class="o">=</span> <span class="n">output</span><span class="o">[</span><span class="mi">2</span><span class="o">].</span><span class="n">empty?</span> <span class="p">?</span> <span class="kp">nil</span> <span class="p">:</span> <span class="n">output</span><span class="o">[</span><span class="mi">2</span><span class="o">]</span>
-</span><span class='line'>  <span class="c1">#mstr_info[:provider] = :ruby</span>
-</span><span class='line'>  <span class="n">mstr_info</span><span class="o">[</span><span class="ss">:name</span><span class="o">]</span> <span class="o">=</span> <span class="ss">:binlog_do_db</span>
-</span><span class='line'>  <span class="n">mstr_info</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>And return the instances.</p>
-
-<p>Now the provider would have to be written with the duel nature of master/slave replication in mind. Unless you want to have multiple providers, one for each of the roles of master or slave.
-However I think it would be easier to write it into a single provider that discriminates based on the &lsquo;role&rsquo; parameter in the type.</p>
-
-<p>But I digress, let&rsquo;s get back to the meat of this thing.</p>
-
-<p>The awesome thing about having a provider do this work for us is that we don&rsquo;t have to worry about all the module-related debugging, platform dependancies and none-idempotent nature of a standalone replication
-module (*cough .. my replication module, which I did not write with idempotentcy in mind). We have better integration with puppet through the use of &lsquo;puppet resource&rsquo; &ndash; it inherently is far more extendable than a standalone module  and integrates well with most puppet platform distributions.
-The coding for it is far more economical, and we don&rsquo;t have a psudo-bash script written into our Puppet code via exec!</p>
-
-<p>You get to write your puppet code to do puppet stuff and let the provider/type ruby magic do it&rsquo;s work for you. It&rsquo;s a win win, now all we need to do is actually write this thing&hellip;</p>
 ]]></content>
   </entry>
   
