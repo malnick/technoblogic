@@ -26,7 +26,7 @@ Pro services @puppetlabs: Customer­facing with Puppet Enterprise customers, con
 ￼
 Teach the Puppet DSL at various public and private venues. Contribute to the development of the Puppet Enterprise rapid deployment product which leverages FOSS continuous integration tools to generate puppet development pipeline for greenfield customers.
 
-###Cart Logic, Inc. Development & Operations
+###Cart Logic, Inc. Infrastructure Engineering Consultant, Part-Time Contract 
 
 March 2013 - August 2013
 
