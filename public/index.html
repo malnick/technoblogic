@@ -195,6 +195,8 @@ $(document).ready(
 
 <p>Now, whoever got on your subnet with your puppet master can easily pull down your application node&rsquo;s configuration. SSH keys, private keys, whatever other private information you might have as part of the configuration for this node.</p>
 
+<p>(Ok, maybe not quite as simple as that if you don&rsquo;t auto-authenticate your nodes. However, if one node in the infrastructure that is authenticated to the Puppet Master CA get&rsquo;s taken over a smart attacker could do a puppet run with the role type for every other node in the infrastructure and get a lot of data out of it.)</p>
+
 <h3>The fix</h3>
 
 <p>The best way to fix this issue is to get the DNS TXT resource using a secure fact like $::clientcert. Then pass this fact into a function that will execute on the master to do the DNS lookup for you.</p>
