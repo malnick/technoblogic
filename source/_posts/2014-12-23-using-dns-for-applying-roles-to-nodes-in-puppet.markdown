@@ -5,17 +5,13 @@ date: 2014-12-23 16:49:37 -0800
 comments: true
 categories: 
 ---
-A common theme in configuration management is the idea of 'roles'. The term 'roles' is thrown around in Puppet lingo quite a bit: roles & profiles pattern, node roles, role-based authentication, blah blah blah. In this post I want to talk about roles in the context of node classification. In any deployment specific nodes serve a specific role. In puppet, we abstract that 'role' to a single module in the roles and profiles we develop. However, what if you want to have a specific hiera layer for role-level data? 
+The first place you'd probably look for developing a role-based hiera layer is probably a fact-based role. Facts are great, they allow you to execute code on a node and generate dynamic information about your infrastructure. You could go ahead and do this very easily if you have solid domain naming mechanisms. 
 
-For example, you'd like to have data specifically for Sumo Logic sources or logrotate rules. These sources and rules change by node role. The load balancer has a specific set of logs to track as does the application node(s) as does the database node(s). 
+For example, your load balancer might always start with ```lb-p-dc.domain.prd.int``` and your app nodes might always start with ```app-p-dc.domain.prd.int``` or something like that. 
 
-The first place you'd look for developing this role is probably a fact-based role. Facts are great, they allow you to execute code on a node and generate dynamic information about your infrastructure. You could go ahead and do this very easily if you have solid domain naming mechanisms. 
+But in reality, domain names are never really this elegant. So the reality is you need to have a better, more resolute way to figure out what role each node has. 
 
-Your load balancer might always start with ```lb-p-dc.domain.prd.int``` and your app nodes might always start with ```app-p-dc.domain.prd.int``` or something like that. 
-
-But in reality, domain names are never really this simple, just ask the guys at AWS. So the reality is you need to have a better, more resolute way to figure out what role each node has. 
-
-You could, at this point, go the route of external facts. External facts are cool because they can be provisioned via a pxe-boot script as a simple txt file with key value pairs. However, now you have to manage and ensure this ***very important*** piece of infrastructure code is in place properly on each node. If someone deletes this fact, you have to have some configuration management magic to ensure it gets put back in place since external facts don't pluginsync. 
+You could, at this point, go the route of external facts. External facts are cool because they can be provisioned via a pxe-boot script as a simple txt file with key value pairs. However, now you have to manage and ensure this **very important** piece of infrastructure code is in place properly on each node. If someone deletes this fact, you have to have some configuration management magic to ensure it gets put back in place since external facts don't pluginsync. 
 
 ### DNS-based role classification
 You can however implement some DNS magic. DNS has specific resources that include more than just a mapping of IP addresses to domains. Domains can have TXT resources associated with them. So let's assume your load balancer, ```lb-p-dc.domain.prd.int```, has a TXT resource associated with it in DNS. Now we can write a fact that looks up that TXT resource. 
