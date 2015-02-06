@@ -361,6 +361,76 @@ $(document).ready(
 
 <h3>&hellip;back to the point &hellip;</h3>
 
+<p>So now we have this webhook running on our Puppet Master. The webhook accepts a route at <code>http://mymaster.com:6969/kick_haproxy_app_internal</code> and upon receiving a GET request it will execute an mCollective command to <code>puppet runonce</code> on the node whose <code>$::role</code> fact matches <code>haproxy_app_internal</code>. If you guessed that <code>haproxy_app_internal</code> is the role for our internal loadbalancer then congrats, you&rsquo;ve won nothing but please come back and play again.</p>
+
+<p>At the end of our role manifest for the node which will be a <code>balancermember</code> behind this loadbalancer we have set up a run stage that excutes last, which leverages the <code>http</code> resource, ensured to GET at the specified route to the webhook running on our master. Now, when nodes assined that role <code>haproxy_member_backend_service</code> come up, they kick our webhook on the master which generates an asynchronous call on mCollective to hick the loadbalancer which pulls down the exported <code>balancermember</code> resources.</p>
+
+<p>THIS IS AMAZING IF YOU&rsquo;RE RUNNING AWS AUTOSCALING GROUPS</p>
+
+<p>I&rsquo;m not sure why that needed to be in all caps. Maybe you&rsquo;ll understand if you have haproxy running in front of an autoscaling group, you&rsquo;ll realize why I&rsquo;M SO EXCITED.</p>
+
+<h3>Where I&rsquo;m going to take this&hellip;</h3>
+
+<p>I&rsquo;m going to add the above mentioned route for Jenkins as an optional default. That route is the glue that ties in how we execute puppet runs via MCO when new builds are pushed down the pipeline. The flow would look something like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">On</span> <span class="n">my</span><span class="o">.</span><span class="n">jenkins</span><span class="o">.</span><span class="n">com</span><span class="p">,</span> <span class="n">final</span> <span class="n">build</span> <span class="n">process</span> <span class="ss">is</span><span class="p">:</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="no">POST</span> <span class="n">my</span><span class="o">.</span><span class="n">puppetmaster</span><span class="o">.</span><span class="n">com</span> <span class="p">{</span>
+</span><span class='line'>        <span class="s1">&#39;environment&#39;</span>   <span class="o">=</span> <span class="s1">&#39;production&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s1">&#39;role           = &#39;</span><span class="n">some_micro_service_backend</span><span class="s1">&#39;,</span>
+</span><span class='line'><span class="s1">        &#39;</span><span class="n">version</span>        <span class="o">=</span> <span class="s1">&#39;2.1.4&#39;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="no">On</span> <span class="n">my</span><span class="o">.</span><span class="n">puppetmaster</span><span class="o">.</span><span class="n">com</span><span class="p">,</span> <span class="n">upon</span> <span class="n">receiving</span> <span class="no">POST</span> <span class="n">from</span> <span class="n">my</span><span class="o">.</span><span class="n">jenkins</span><span class="o">.</span><span class="n">com</span> <span class="n">with</span> <span class="n">the</span> <span class="n">above</span> <span class="ss">JSON</span><span class="p">:</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="mi">1</span><span class="o">.</span> <span class="no">Update</span> <span class="n">hieradata</span> <span class="n">at</span> <span class="sr">/etc/</span><span class="n">puppetlabs</span><span class="o">/</span><span class="n">puppet</span><span class="o">/</span><span class="n">environments</span><span class="o">/</span><span class="c1">#{environment}/roles/#{role}.yaml </span>
+</span><span class='line'>    <span class="n">with</span> <span class="n">the</span> <span class="n">correct</span> <span class="c1">#{version} from jenkins.</span>
+</span><span class='line'>    <span class="mi">2</span><span class="o">.</span> <span class="no">Commit</span> <span class="n">the</span> <span class="kp">new</span> <span class="n">version</span> <span class="ow">and</span> <span class="n">push</span> <span class="n">back</span> <span class="n">up</span> <span class="n">to</span> <span class="n">our</span> <span class="n">control</span> <span class="n">repo</span> <span class="n">where</span> <span class="n">hieradata</span> <span class="n">dir</span> <span class="n">actually</span> <span class="n">resides</span><span class="o">.</span>
+</span><span class='line'>    <span class="mi">3</span><span class="o">.</span> <span class="ss">Execute</span><span class="p">:</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">mco</span> <span class="n">puppet</span> <span class="n">runonce</span> <span class="o">-</span><span class="n">F</span> <span class="s1">&#39;role=#{role}&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Boom, we just implemented and end-to-end CI chain from our Jenkins build process, which updated our Puppet Master with the new version of the micro service, which pushed the version to git, and ran puppet on the node whose role matches the micro service being updated.</p>
+
+<p>In our infrastructure the profile for the micro service executes a <code>s3file</code> resource to pull down the build which matches:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">s3file</span> <span class="p">{</span> <span class="s1">&#39;micro_service_${version}:</span>
+</span><span class='line'><span class="s1">    path    =&gt; &#39;</span><span class="o">/</span><span class="n">some</span><span class="o">/</span><span class="n">bucket</span><span class="o">/</span><span class="err">&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="k">ensure</span>  <span class="o">=&gt;</span> <span class="n">latest</span><span class="p">,</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>When the node consuming the <code>mco puppet runonce</code> publication runs puppet, that profile ensures we get the latest revision of our code. d</p>
+
+<p>&#8220;`puppet-webhook&#8220;&#8220; is available at:</p>
+
+<p>github.com/malnick/puppet-webhook.git</p>
+
+<p>^^ your milage may vary.</p>
+
 		
 		
 	</div>
