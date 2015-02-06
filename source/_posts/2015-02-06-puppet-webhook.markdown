@@ -159,4 +159,52 @@ With a route like that you can setup a CI hook from your build environment in Je
 
 ### ...back to the point ...
 
+So now we have this webhook running on our Puppet Master. The webhook accepts a route at ```http://mymaster.com:6969/kick_haproxy_app_internal``` and upon receiving a GET request it will execute an mCollective command to ```puppet runonce``` on the node whose ```$::role``` fact matches ```haproxy_app_internal```. If you guessed that ```haproxy_app_internal``` is the role for our internal loadbalancer then congrats, you've won nothing but please come back and play again.
+
+At the end of our role manifest for the node which will be a ```balancermember``` behind this loadbalancer we have set up a run stage that excutes last, which leverages the ```http``` resource, ensured to GET at the specified route to the webhook running on our master. Now, when nodes assined that role ```haproxy_member_backend_service``` come up, they kick our webhook on the master which generates an asynchronous call on mCollective to hick the loadbalancer which pulls down the exported ```balancermember``` resources. 
+
+THIS IS AMAZING IF YOU'RE RUNNING AWS AUTOSCALING GROUPS
+
+I'm not sure why that needed to be in all caps. Maybe you'll understand if you have haproxy running in front of an autoscaling group, you'll realize why I'M SO EXCITED.
+
+### Where I'm going to take this...
+I'm going to add the above mentioned route for Jenkins as an optional default. That route is the glue that ties in how we execute puppet runs via MCO when new builds are pushed down the pipeline. The flow would look something like this:
+
+```ruby
+On my.jenkins.com, final build process is: 
+
+    POST my.puppetmaster.com {
+        'environment'   = 'production',
+        'role           = 'some_micro_service_backend',
+        'version        = '2.1.4'
+    }
+
+On my.puppetmaster.com, upon receiving POST from my.jenkins.com with the above JSON: 
+
+    1. Update hieradata at /etc/puppetlabs/puppet/environments/#{environment}/roles/#{role}.yaml 
+    with the correct #{version} from jenkins.
+    2. Commit the new version and push back up to our control repo where hieradata dir actually resides. 
+    3. Execute:
+        
+        mco puppet runonce -F 'role=#{role}' 
+```
+
+Boom, we just implemented and end-to-end CI chain from our Jenkins build process, which updated our Puppet Master with the new version of the micro service, which pushed the version to git, and ran puppet on the node whose role matches the micro service being updated. 
+
+In our infrastructure the profile for the micro service executes a ```s3file``` resource to pull down the build which matches:
+
+```ruby
+s3file { 'micro_service_${version}:
+    path    => '/some/bucket/',
+    ensure  => latest,
+}
+```
+
+When the node consuming the ```mco puppet runonce``` publication runs puppet, that profile ensures we get the latest revision of our code. d
+
+```puppet-webhook```` is available at:
+
+github.com/malnick/puppet-webhook.git
+
+^^ your milage may vary.
 
