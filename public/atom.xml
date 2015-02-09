@@ -4,7 +4,7 @@
   <title><![CDATA[JP]]></title>
   <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
   <link href="httpL://www.jeffmalnick.com/"/>
-  <updated>2015-02-06T07:29:33-08:00</updated>
+  <updated>2015-02-09T09:39:35-08:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
@@ -12,6 +12,111 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[puppet-s3 & continuous integration with Puppet, Jenkins and AWS]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2015/02/08/puppet-s3/"/>
+    <updated>2015-02-08T15:29:47-08:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2015/02/08/puppet-s3</id>
+    <content type="html"><![CDATA[<p>The (puppet-s3)[<a href="https://www.github.com/malnick/puppet-s3">https://www.github.com/malnick/puppet-s3</a>] module.</p>
+
+<p>Usage:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">s3</span> <span class="p">{</span> <span class="s1">&#39;/path/to/file/on/my/local/filesystem&#39;</span><span class="p">:</span>
+</span><span class='line'>    <span class="c1"># Required paramters:</span>
+</span><span class='line'>    <span class="k">ensure</span>              <span class="o">=&gt;</span> <span class="n">present</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">source</span>              <span class="o">=&gt;</span> <span class="s1">&#39;/bucket/path/to/object&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">access_key_id</span>       <span class="o">=&gt;</span> <span class="s1">&#39;mysecret&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">secret_access_key</span>   <span class="o">=&gt;</span> <span class="s1">&#39;anothersecret&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="c1"># Optional parameters:</span>
+</span><span class='line'>    <span class="n">region</span>              <span class="o">=&gt;</span> <span class="s1">&#39;us-west-1&#39;</span><span class="p">,</span> <span class="c1"># Defaults to us-east-1</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Overview</h2>
+
+<p>Puppet s3 is my response to the need for secure downloads from S3 via Puppet. At SRC:CLR we use IAM authentication for S3 downloads. This piece of Puppet allows us to build out
+our Jenkins continuous integration hook between the build and deployment process.</p>
+
+<p>Currently the S3 type is only <em>psudo-idempotent</em>. What does that mean? It means <code>exists()?</code> actually pulls down the specified object to compare to the one on disk via a
+tempfile. Then, if it returns false, <code>create()</code> pulls it down again.</p>
+
+<p>Yes, this is horribly inefficient.</p>
+
+<p>Yes, performance falls.</p>
+
+<p>Yes, I plan on changing it in the near future.</p>
+
+<h2>The Longview</h2>
+
+<p>The reason we needed this provider is to enable us to pull S3 objects using our IAM authentication. But that is one small step towards our larger goal of fully integrating our Jenkins build
+pipeline with our Puppet deployed AWS infrastructure.</p>
+
+<p>To fully realize this integration we needed a way to pull the S3 zip file that is our built application, from S3. Jenkins deposits this zip file for us.</p>
+
+<p>Then, Puppet compares the version number on S3 with the version number on disk. If greater, it pulls the new version.</p>
+
+<h2>The Pipeline</h2>
+
+<p>The pipeline from <code>git push</code> to <code>puppet agent -t</code> looks like this:</p>
+
+<ol>
+<li>A PR is submitted in Github and human eyes do a final check on the code.</li>
+<li>If the human check passes, a manual merge to master is invoked.</li>
+<li>A human manually runs a Jenkins build for either QA or Production environments. Lets assume this is a production deployment for this example.</li>
+<li>The Jenkins build:
+
+<ol>
+<li>Runs Java tests</li>
+<li>If the tests pass, builds a Java Jar.</li>
+<li>Places this jar on S3 as: <code>our_app_${version}.zip</code> Let&rsquo;s assume $version is 3.2.1</li>
+<li>Sends a HTTP POST to our Puppet Master with the following JSON:</li>
+</ol>
+</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="err">&#39;environment&#39;:&#39;production&#39;,</span>
+</span><span class='line'>    <span class="err">&#39;role&#39;:&#39;application_backend&#39;,</span>
+</span><span class='line'>    <span class="err">&#39;version&#39;:&#39;3.2.1&#39;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>A webhook running on our Puppet Master parses the POST and does the following:</p>
+
+<ol>
+<li>Edits the hieradata file at <code>/etc/puppetlabs/puppet/environments/${environment}/roles/${role}.yaml</code> to replace the value of key <code>profiles::sc_services::application_backend::version</code> with
+the value sent in the POST: 3.2.1. $environment and $role are also inserted in the $path above to make a fully qualified path.</li>
+<li>Commits this yaml data file locally and pushes it back up to our Puppet control repo.</li>
+<li>It then invokes MCO as:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">su</span> <span class="o">-</span> <span class="n">peadmin</span> <span class="o">-</span><span class="n">c</span> <span class="err">&#39;</span><span class="n">mco</span> <span class="n">puppet</span> <span class="n">runonce</span> <span class="o">-</span><span class="n">F</span> <span class="n">role</span><span class="o">=</span><span class="err">$</span><span class="p">{</span><span class="n">role</span><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Where $role is our role sent in the POST</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[puppet-webhook]]></title>
@@ -3624,9 +3729,9 @@ git init
 git remote add origin git@whatever.com:your_name/control_repo.git
 git branch -m master production
 git add Puppetfile
-git add hiera.yaml # r10k really doesn't need this but we'll add it anyways. 
+git add hiera.yaml[root@master puppet] r10k really doesn't need this but we'll add it anyways. 
 git add hieradata/
-git push -u origin production:production # or whatever branch, maybe production?
+git push -u origin production:production[root@master puppet] or whatever branch, maybe production?
 ```
 
 ###Configure hiera.yaml for dynamic environments
@@ -3677,7 +3782,7 @@ cd $confdir/hieradata
 
 
 ```bash
-git branch # check your branch, make sure it's still development
+git branch[root@master puppet] check your branch, make sure it's still development
 git commit -am hieradata
 git push 
 r10k deploy environment -pv
@@ -4001,9 +4106,9 @@ git init
 git remote add origin git@whatever.com:your_name/control_repo.git
 git branch -m master production
 git add Puppetfile
-git add hiera.yaml[root@master puppet] r10k really doesn't need this but we'll add it anyways. 
+git add hiera.yaml # r10k really doesn't need this but we'll add it anyways. 
 git add hieradata/
-git push -u origin production:production[root@master puppet] or whatever branch, maybe production?
+git push -u origin production:production # or whatever branch, maybe production?
 ```
 
 ###Configure hiera.yaml for dynamic environments
@@ -4054,7 +4159,7 @@ cd $confdir/hieradata
 
 
 ```bash
-git branch[root@master puppet] check your branch, make sure it's still development
+git branch # check your branch, make sure it's still development
 git commit -am hieradata
 git push 
 r10k deploy environment -pv
@@ -5130,60 +5235,6 @@ Puppetfile
 <h3>Testing the new hook &amp; agent</h3>
 
 <p>&hellip; to be updated shortly&hellip;</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Puppet Types: Understanding Parameters and Properties]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2014/04/19/puppet-types-understanding-parameters-and-properties/"/>
-    <updated>2014-04-19T08:30:28-07:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2014/04/19/puppet-types-understanding-parameters-and-properties</id>
-    <content type="html"><![CDATA[<p>When starting out with Types and Providers for Puppet it&rsquo;s common to misunderstand when something is a <em>Parameter</em> and when something is a <em>Property</em>.</p>
-
-<h3><strong>Properties</strong></h3>
-
-<p>Properties are anything that will <strong>modify</strong> a resource. In other words, attributes of a type that will change how that resource type exists on your system. A property is a charactaristic of a resource. A property does not change what a resource is, which is where the confusion usually begins.</p>
-
-<p>For example, let&rsquo;s take the file resource (anyone who has had the opportunity of taking Extending Puppet for Developers might find this redundant).</p>
-
-<pre><code>file {'/tmp/test':
-    ensure   =&gt; file,
-    path     =&gt; '/tmp/test', # $namevar
-    owner    =&gt; 'root',
-    group    =&gt; 'root',
-    checksum =&gt; 'md5',
-    content  =&gt; 'foo',
-    }
-</code></pre>
-
-<p>Any ideas which attributes are parameters and which are properties? Let&rsquo;s start with</p>
-
-<pre><code>ensure =&gt; file,
-</code></pre>
-
-<p>The &lsquo;ensure&rsquo; attribute is actually created by the &lsquo;ensurable&rsquo; method from the Puppet::Type class. Any attribute calling &lsquo;ensurable&rsquo; gets the default &lsquo;present&#8217;and &#8216;absent&rsquo; values telling the type to call from the provider &lsquo;exists?()&rsquo; then based on output from &lsquo;exists?&rsquo; evaluates &lsquo;creates()&rsquo; or &lsquo;destroy()&rsquo;.</p>
-
-<p>Ensure modifies the resource, but does not change the definition of what that resource is to the system, therefore ensure is a property.</p>
-
-<p>Other properties of file are</p>
-
-<pre><code>owner
-group
-content
-</code></pre>
-
-<p>Content? Yes, content. On a file system the content of the file does not define the file, the <em>$path</em> to the file is the definition of a file. Therefore content is just a charactaristic of that file, making that attribute a property as well.</p>
-
-<h3><strong>Parameters</strong></h3>
-
-<p>Parameters are used by Puppet to provision the resource onto the system. Parameters are resource attributes that can be retrieved and are used to create, or define the resource as it exists on the system.</p>
-
-<pre><code>path =&gt; '/tmp/testing',
-</code></pre>
-
-<p>For example, the $namevar of the the file resource is the $path. That&rsquo;s because the $path of a file defines the resource on the system. You can query the path of a file, however if you change the path of a file you define an entierly new file. Therefore, $path is a parameter.</p>
-
-<p>Another parameter of file would the checksum attribute. The checksum type is used when determining whether to replace a file’s contents. If your md5 checksum does not match the md5 checksum of the file on the system your file will be created; if it does match your file will not be updated if it exists; if it doesn&rsquo;t exist if will be provisioned. Checksum defines what the file should look like on the system; it&rsquo;s used by Puppet to provision the file but not stored as part of the file resource.</p>
 ]]></content>
   </entry>
   

@@ -1,0 +1,258 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<script data-cfasync="false" type="text/javascript" src="//use.typekit.net/axj3cfp.js"></script>
+	<script data-cfasync="false" type="text/javascript">try{Typekit.load();}catch(e){}</script>
+	<meta charset="utf-8">
+	<title>puppet-s3 & continuous integration with Puppet, Jenkins and AWS  | JP</title>
+
+<meta name="author" content="Jeff"> 
+
+<meta name="description" content="See subtitle."> <meta name="keywords" content="">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="JP" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.png" rel="shortcut icon">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href="/stylesheets/font-awesome.min.css" rel="stylesheet" type="text/css">
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<script type="text/javascript" src="/javascripts/jquery.fancybox.pack.js"></script>
+
+<script language="Javascript" type="text/javascript">
+$(document).ready(
+  function() {
+    (function($) {
+      $(".fancybox[data-content-id]").each(function() {
+        this.href = $(this).data('content-id');
+      });
+      $(".fancybox").fancybox({
+        beforeLoad: function() {
+          var el, 
+              id = $(this.element).data('title-id');
+
+          if (id) {
+            el = $('#' + id);
+
+            if (el.length) {
+              this.title = el.html();
+            }
+          }
+          if ($(this).data('content')) {
+            this.content = $(this).data('content');
+          }
+        },
+        helpers: {
+          title: {
+            type: 'inside'
+          }
+        }
+      });
+    })(jQuery);
+  }
+);
+</script>
+
+	
+</head>
+
+
+
+<body>
+	<header id="header" class="inner"><h1><a href="/">JP</a></h1>
+<h4>a techy blog</h4>
+<nav id="main-nav"><ul>
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/about">About</a></li>
+	<li><a href="/blog/resume">Resume</a></li>
+	<li><a href="/archives">Archive</a></li>
+</ul>
+</nav>
+<nav id="mobile-nav">
+	<div class="alignleft menu">
+		<a class="button">Menu</a>
+		<div class="container"><ul>
+	<li><a href="/">Blog</a></li>
+	<li><a href="/blog/about">About</a></li>
+	<li><a href="/blog/resume">Resume</a></li>
+	<li><a href="/archives">Archive</a></li>
+</ul>
+</div>
+	</div>
+	<div class="alignright search">
+		<a class="button"></a>
+		<div class="container">
+			<form action="http://google.com/search" method="get">
+				<input type="text" name="q" results="0">
+				<input type="hidden" name="q" value="site:httpL://www.jeffmalnick.com">
+			</form>
+		</div>
+	</div>
+</nav>
+
+
+</header>
+
+	<div id="content" class="inner"><article class="post">
+	<h2 class="title">Puppet-s3 & Continuous Integration With Puppet, Jenkins and AWS</h2>
+	<div class="entry-content"><p>The (puppet-s3)[<a href="https://www.github.com/malnick/puppet-s3">https://www.github.com/malnick/puppet-s3</a>] module.</p>
+
+<p>Usage:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">s3</span> <span class="p">{</span> <span class="s1">&#39;/path/to/file/on/my/local/filesystem&#39;</span><span class="p">:</span>
+</span><span class='line'>    <span class="c1"># Required paramters:</span>
+</span><span class='line'>    <span class="k">ensure</span>              <span class="o">=&gt;</span> <span class="n">present</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">source</span>              <span class="o">=&gt;</span> <span class="s1">&#39;/bucket/path/to/object&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">access_key_id</span>       <span class="o">=&gt;</span> <span class="s1">&#39;mysecret&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">secret_access_key</span>   <span class="o">=&gt;</span> <span class="s1">&#39;anothersecret&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="c1"># Optional parameters:</span>
+</span><span class='line'>    <span class="n">region</span>              <span class="o">=&gt;</span> <span class="s1">&#39;us-west-1&#39;</span><span class="p">,</span> <span class="c1"># Defaults to us-east-1</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Overview</h2>
+
+<p>Puppet s3 is my response to the need for secure downloads from S3 via Puppet. At SRC:CLR we use IAM authentication for S3 downloads. This piece of Puppet allows us to build out
+our Jenkins continuous integration hook between the build and deployment process.</p>
+
+<p>Currently the S3 type is only <em>psudo-idempotent</em>. What does that mean? It means <code>exists()?</code> actually pulls down the specified object to compare to the one on disk via a
+tempfile. Then, if it returns false, <code>create()</code> pulls it down again.</p>
+
+<p>Yes, this is horribly inefficient.</p>
+
+<p>Yes, performance falls.</p>
+
+<p>Yes, I plan on changing it in the near future.</p>
+
+<h2>The Longview</h2>
+
+<p>The reason we needed this provider is to enable us to pull S3 objects using our IAM authentication. But that is one small step towards our larger goal of fully integrating our Jenkins build
+pipeline with our Puppet deployed AWS infrastructure.</p>
+
+<p>To fully realize this integration we needed a way to pull the S3 zip file that is our built application, from S3. Jenkins deposits this zip file for us.</p>
+
+<p>Then, Puppet compares the version number on S3 with the version number on disk. If greater, it pulls the new version.</p>
+
+<h2>The Pipeline</h2>
+
+<p>The pipeline from <code>git push</code> to <code>puppet agent -t</code> looks like this:</p>
+
+<ol>
+<li>A PR is submitted in Github and human eyes do a final check on the code.</li>
+<li>If the human check passes, a manual merge to master is invoked.</li>
+<li>A human manually runs a Jenkins build for either QA or Production environments. Lets assume this is a production deployment for this example.</li>
+<li>The Jenkins build:
+
+<ol>
+<li>Runs Java tests</li>
+<li>If the tests pass, builds a Java Jar.</li>
+<li>Places this jar on S3 as: <code>our_app_${version}.zip</code> Let&rsquo;s assume $version is 3.2.1</li>
+<li>Sends a HTTP POST to our Puppet Master with the following JSON:</li>
+</ol>
+</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="err">&#39;environment&#39;:&#39;production&#39;,</span>
+</span><span class='line'>    <span class="err">&#39;role&#39;:&#39;application_backend&#39;,</span>
+</span><span class='line'>    <span class="err">&#39;version&#39;:&#39;3.2.1&#39;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>A webhook running on our Puppet Master parses the POST and does the following:</p>
+
+<ol>
+<li>Edits the hieradata file at <code>/etc/puppetlabs/puppet/environments/${environment}/roles/${role}.yaml</code> to replace the value of key <code>profiles::sc_services::application_backend::version</code> with
+the value sent in the POST: 3.2.1. $environment and $role are also inserted in the $path above to make a fully qualified path.</li>
+<li>Commits this yaml data file locally and pushes it back up to our Puppet control repo.</li>
+<li>It then invokes MCO as:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">su</span> <span class="o">-</span> <span class="n">peadmin</span> <span class="o">-</span><span class="n">c</span> <span class="err">&#39;</span><span class="n">mco</span> <span class="n">puppet</span> <span class="n">runonce</span> <span class="o">-</span><span class="n">F</span> <span class="n">role</span><span class="o">=</span><span class="err">$</span><span class="p">{</span><span class="n">role</span><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Where $role is our role sent in the POST</p>
+</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-02-08T15:29:47-08:00" pubdate data-updated="true">Feb 8<span>th</span>, 2015</time></div>
+	
+
+
+	
+</div></article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+<!---	<a class="addthis_counter addthis_pill_style"></a> --->
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+</div>
+	<footer id="footer" class="inner">Copyright &copy; 2015
+
+    Jeff
+
+<br>
+Powered by Octopress.
+</footer>
+	<script src="/javascripts/slash.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+
+
+
+
+</body>
+</html>
