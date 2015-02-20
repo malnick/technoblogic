@@ -4,7 +4,7 @@
   <title><![CDATA[JP]]></title>
   <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
   <link href="httpL://www.jeffmalnick.com/"/>
-  <updated>2015-02-20T07:23:10-08:00</updated>
+  <updated>2015-02-20T10:13:35-08:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
@@ -20,31 +20,35 @@
     <id>httpL://www.jeffmalnick.com/blog/2015/02/20/why-devops-isnt-a-job-its-a-culture</id>
     <content type="html"><![CDATA[<p>DevOps is not a job, it&rsquo;s a culture. DevOps is a shift in how you decide to manage, deploy, develop, monitor, and interact with your application code and your infrastructure as a whole. DevOps is a holistic approach to enacting the now bankrupt term &ldquo;agile&rdquo; as a method of development and operations engineering in an organization.</p>
 
-<p>Nobody does the &lsquo;DevOps&rsquo;, you do the &lsquo;DevOps&rsquo;. I&rsquo;m very lucky in that at SRC:CLR we have a culture of DevOps that puts me face-to-face with developers everyday. At many companies the &lsquo;DevOps&rsquo; team never sees another dev. In fact, they may not see another operations person either. Usually, when you hear the term &lsquo;DevOps team&rsquo;, that means it&rsquo;s just another siloed group of people in a company, usually focuse on automating infrastructure.</p>
+<p>At SRC:CLR we have a culture of DevOps that puts me face-to-face with developers everyday. At many companies the &lsquo;DevOps&rsquo; team never sees another dev. In fact, they may not see another operations person either. Usually, when you hear the term &lsquo;DevOps team&rsquo;, that means it&rsquo;s just another siloed group of people in a company, usually focused on automating infrastructure.</p>
 
 <p>At SRC:CLR we roll DevOps in the way it was meant to be rolled: me, &lsquo;Mr. DevOps&rsquo;, sits shoulder to shoulder with our devs. No partitions, no separate team. When we get a Dir. of Engineering I&rsquo;ll be reporting to him, the same as our devs. Our operations are tightly coupled with the development of our code. That coupling ensures everyone is on a flat playing field, pushing towards the same goal.</p>
 
-<p>How does this affect operations and development at SRC:CLR? It&rsquo;s the feedback loop stupid, it&rsquo;s continuous integration of ideas and knowledge of our application and our infrastructure. It creates synergy between how we architect our applications and our infrastructure.</p>
+<p>How does this affect operations and development at SRC:CLR? It&rsquo;s the feedback loop stupid &ndash; it&rsquo;s continuous integration of ideas and knowledge of our application and our infrastructure. It creates synergy between how we architect our applications and how we automate and deploy our infrastructure.</p>
 
-<p>True story: last week we had a hard time diagnosing why one of our main services was crashing. At first we thought it was Tomcat not having enough heap space. That helped but didn&rsquo;t fix it from continuing to silently crash. We enabled more robust logging but ended up with massive amounts of spring output that we started grepping through.</p>
+<p>True story: last week we had a hard time diagnosing why one of our main services was crashing. At first we thought it was Tomcat not having enough heap space. That helped but didn&rsquo;t fix it from continuing to silently crash. We enabled more robust logging but ended up with massive amounts of java spring output that we started grepping through.</p>
 
 <p>Not useful.</p>
 
-<p>I started looking at the process and realized our current monitoring system wasn&rsquo;t robust. We were using a mixture of New Relic for application and systems monitoring with CloudWatch from AWS. New Relic didn&rsquo;t have any logging data and what we wanted to find was corrolation between the generated logs at failure and the process crashing. We didn&rsquo;t have a robust tool to look at the log data.</p>
+<p>I started looking at the process and realized our current monitoring system wasn&rsquo;t robust. We were using a mixture of New Relic for application and systems monitoring with CloudWatch from AWS. New Relic didn&rsquo;t have any logging data and what we wanted to find was correlation between the generated logs at failure and the process crashing. We didn&rsquo;t have a robust tool to look at the log data.</p>
 
-<p>I started looking at hosted solutions: SumoLogic, Librato + Logstash, loggly. In the end our developers and I agreed that even though Librato has AMAZING graphic capabilities that offloading our logs to a hosted solution was insecure at best. We needed to stand up a solution in our private VPC.</p>
+<p>I started looking at hosted solutions: SumoLogic, Librato + Logstash, loggly. In the end our developers and I agreed that even though Librato has AMAZING graphing capabilities that offloading our logs to a hosted solution was insecure at best. We needed to stand up a solution in our private VPC.</p>
 
 <p>After that lunch meeting I went back to the drawing board and started piecing together some Puppet code around Elasticsearch, Logstash and Kibana that I had started the previous week. In an hour I had an ELK + Redis stack up and running that was pulling down unfiltered log data from the node running the service which was crashing.</p>
 
 <p>If you&rsquo;ve never graphed logging data you&rsquo;re not doing it right.</p>
 
-<p>Almost instantly our co-founder and one of the lead devs on our platform started looking at the graphing output. A lot of it was health checks from HaProxy. Not a problem, I can filter that out on the node using &lsquo;drop{}&rsquo; in logstash. Next up was creating a lot of data on the node. We ran some queries against the service and started looking at the data that was coming in.</p>
+<p>One of the lead devs on our platform started looking at the graphing output. A lot of it was health checks from HaProxy. Not a problem, I can filter that out on the node using &lsquo;drop{}&rsquo; in logstash. Next up was creating a lot of data on the node. We ran some queries against the service and started looking at the data that was coming in.</p>
 
-<p>No, we didn&rsquo;t find the problem right away but we did have a way to look for the problem. A way that was tighly coupled with how we develop and test our code. At the end of the day I&rsquo;m an automation guru. The infrastructure that I automate is tightly coupled with our code. Since I have the skills to bring to life the data that the developers generate (in this case logging data) I can help alliviate stress on our infrastructure, create a more performate and stable platform and enable deep insights to how code responds in a fully integrated environment.</p>
+<p>Having an interactive face to our logging data in the Kibana dashboard is invaluable. We can find correlations between crashes (on timestamps) and generated logging output. We can use that data to create alerts that go off before the process crashes.</p>
 
-<p>I can do this in a fully secure VPC or I can develop other methodologies in less secure hosted solutions. Either way, at the end of my day it&rsquo;s my job to ensure we have <code>uptime</code>. By far the best way to achieve that is to embed me in the middle of the development process, enabling fast iteration and seemless feedback between the development and operations ends of the deployment process.</p>
+<p>At the end of the day I&rsquo;m an automation guru. The infrastructure that I automate is tightly coupled with our code. Since I have the skills to bring to life the data that the developers generate (in this case logging data) I can help alleviate stress on our infrastructure, create a more performate and stable platform and enable deep insights to how code responds in a fully integrated environment.</p>
 
-<p>That&rsquo;s why DevOps isn&rsquo;t a job, it&rsquo;s a process in which everyone in engieering participates. DevOps might be in my title as an employee but what it truely represents is SRC:CLR&rsquo;s commitment to bluring the lines between development and operations, enhancing feedback loops in both directions. This ensures more security, higher performance and &#8220;uptime&#8220;`.</p>
+<p>This transparency between the code development process and how deployed code behaves is core to DevOps culture. My job is about creating feedback loops for our development team so when things break in a deployed environment we can intelligently respond and iterate faster and smarter.</p>
+
+<p>I can do this in a fully secure VPC or I can develop other methodologies in less secure hosted solutions. Either way, at the end of my day it&rsquo;s my job to ensure we have <code>uptime</code>. By far the best way to achieve that is to embed me in the middle of the development process, enabling fast iteration and seamless feedback between the development and operations ends of the deployment process.</p>
+
+<p>That&rsquo;s why DevOps isn&rsquo;t a job, it&rsquo;s a process in which everyone in engineering participates. DevOps might be in my title as an employee but what it truly represents is SRC:CLR&rsquo;s commitment to blurring the lines between development and operations, enhancing feedback loops in both directions. This ensures more security, higher performance and better &#8220;uptime&#8220;`.</p>
 ]]></content>
   </entry>
   
