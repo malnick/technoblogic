@@ -102,6 +102,495 @@ $(document).ready(
     <article class="post">
 	<h2 class="title">
 		
+		<a href="/blog/2014/07/21/agile-dev-environment-for-puppet-code/">
+		
+			Agile Dev Environment for Puppet Code</a>
+	</h2>
+	<div class="entry-content">
+		<p>When ever I am creating a new Puppet module or working on someone else&rsquo;s Puppet module I constantly look for ways to make more efficient the development process.</p>
+
+<p>It may not seem like a lot of time but all those &lsquo;vagrant up&rsquo; &lsquo;vagrant destroy&rsquo; &lsquo;git pull&rsquo; &lsquo;git commit&rsquo; &lsquo;&hellip;push, branch&hellip;&rsquo; etc turn into a lot of time wasted.</p>
+
+<p>What I need is an easy way to pull in git-based (or forge-based) modules to a VM and have them available locally to edit with my favorite editor.</p>
+
+<p>This environment needs to satisfy these needs:</p>
+
+<ol>
+<li>I can edit my code on my host machine in my favorit editor (vim) which has all my favorite plugins</li>
+<li>The code is live on the VM, sym linked from the VM to my host so I don&rsquo;t have to git push/pull to update the VM (or some other jank process)</li>
+<li>I can easily deploy many modules/dependances for the code to the VM with a simple Rake command</li>
+</ol>
+
+
+<h2>Solution</h2>
+
+<p>To solve this development issue I forked a loanly project from nval0. It was a basic Rakefile which was using Puppet-librarian to pull in modules from a Puppetfile.</p>
+
+<p>The environment used:</p>
+
+<ol>
+<li>Puppet librarian for module management via Puppetfile</li>
+<li>Vagrant VMs</li>
+<li>Wrapped up some of the commands into a Rakefile (gem prereq&rsquo;s etc)</li>
+</ol>
+
+
+<p>After playing with this environment for a bit I realized some drawbacks:</p>
+
+<ol>
+<li>Puppet-librarian only worked on ruby 1.9</li>
+<li>I wanted a rake task to &lsquo;deploy&rsquo; everything in the Puppetfile to sym-linked dir to the VM</li>
+</ol>
+
+
+<p>The first draw back was easily solved, instead of using Puppet-librarian I&rsquo;d use <a href="https://github.com/adrienthebo/r10k">r10k</a>. R10k builds off of Puppet-libarian and is most often used to map git branches for any Puppet module to local Puppet environments on a Puppet Master. However, you can use it in a similar fashion to Puppet-libarian where it only reads a Puppetfile then pulls in those modules directly. The great thing is it works on all major releases of Ruby so my dev environment will not need rbenv or another ruby environment manager.</p>
+
+<h3>Let&rsquo;s put this together into some rake tasks:</h3>
+
+<p>An example rake task to deploy the Puppetfile modules with r10k:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">desc</span> <span class="s1">&#39;Pull down modules in Puppetfile&#39;</span>
+</span><span class='line'><span class="n">task</span> <span class="ss">:pull</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">confdir</span> <span class="o">=</span> <span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span>
+</span><span class='line'>  <span class="n">moduledir</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/modules&quot;</span>
+</span><span class='line'>  <span class="n">puppetfile</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/Puppetfile&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Pulling down new modules in </span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2"> to </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;PUPPETFILE=</span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2"> PUPPETFILE_DIR=</span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2"> /usr/bin/r10k puppetfile install&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="nb">abort</span> <span class="s1">&#39;Failed to build out Puppet module directory. Exiting...&#39;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;New modules successfully pulled down&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This first rake task uses r10k to read the Puppetfile and pull down the modules listed in it to the module directory.</p>
+
+<p>Let&rsquo;s link this directory into the VM via the Vagrantfile, this way we can edit the code locally on the host while having it available to run on the Master VM:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:master</span> <span class="k">do</span> <span class="o">|</span><span class="n">master</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.100&quot;</span>
+</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
+</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
+</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="ss">:master</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;puppet/modules&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/modules&quot;</span>
+</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;puppet/manifests&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/manifests&quot;</span>
+</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;service iptables stop&quot;</span>
+</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;rm -rf /etc/puppetlabs/puppet/modules/ &amp;&amp; ln -s /tmp/modules/ /etc/puppetlabs/puppet/&quot;</span>
+</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;rm -rf /etc/puppetlabs/puppet/manifests/ &amp;&amp; ln -s /tmp/manifests/ /etc/puppetlabs/puppet/&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Why did I use the shell provisioner to sym link /tmp/modules and /tmp/manifests to <code>$confdir/modules</code> and <code>$confdir/manifests</code>?</p>
+
+<p>The pe_build plugin for Vagrant will provision the master using the default Puppet Enterprise installer. However, the installer will fail if any PE-related directories already exist (/opt/puppet or /etc/puppetlabs for example).
+To get around this, and still have live dir&rsquo;s provisioned on the VM I couldn&rsquo;t use the vagrant <code>synced_folder</code> method since that will run before the provisioners run (vagrant needs to build the machine before running any type of configuration managment on it) &ndash; the PE installer will blow up when the plugin runs since I have to sync into /etc/puppetlabs/puppet.</p>
+
+<p>So instead of syncing into a PE-specific PATH I sync into /tmp, and then when the provisioner finishes (provisioners are ran in order) I can sym link the PE-specific module and manifests dir&rsquo;s from /tmp.</p>
+
+<h3>Complete Vagrantfile:</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Now</span> <span class="n">we</span> <span class="n">have</span> <span class="n">a</span> <span class="no">Rakefile</span> <span class="n">that</span> <span class="n">wraps</span> <span class="n">up</span> <span class="n">some</span> <span class="n">deploy</span> <span class="n">commands</span> <span class="ow">and</span> <span class="n">a</span>
+</span><span class='line'><span class="c1"># -*- mode: ruby -*-</span>
+</span><span class='line'><span class="c1"># vi: set ft=ruby :</span>
+</span><span class='line'><span class="c1"># Vagrantfile API/syntax version. Don&#39;t touch unless you know what you&#39;re doing!</span>
+</span><span class='line'><span class="no">VAGRANTFILE_API_VERSION</span> <span class="o">=</span> <span class="s2">&quot;2&quot;</span>
+</span><span class='line'><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="no">VAGRANTFILE_API_VERSION</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="s2">&quot;centos-64-x64-vbox4210.box&quot;</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">box_url</span> <span class="o">=</span> <span class="s2">&quot;http://puppet-vagrant-boxes.puppetlabs.com/centos-64-x64-vbox4210.box&quot;</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">pe_build</span><span class="o">.</span><span class="n">download_root</span> <span class="o">=</span> <span class="s1">&#39;https://s3.amazonaws.com/pe-builds/released/:version&#39;</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">pe_build</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;3.2.3&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">## Master</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:master</span> <span class="k">do</span> <span class="o">|</span><span class="n">master</span><span class="o">|</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.100&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="ss">:master</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;puppet/modules&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/modules&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;puppet/manifests&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/manifests&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;service iptables stop&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;rm -rf /etc/puppetlabs/puppet/modules/ &amp;&amp; ln -s /tmp/modules/ /etc/puppetlabs/puppet/&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;rm -rf /etc/puppetlabs/puppet/manifests/ &amp;&amp; ln -s /tmp/manifests/ /etc/puppetlabs/puppet/&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">## Agent </span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:agent1</span> <span class="k">do</span> <span class="o">|</span><span class="n">agent</span><span class="o">|</span>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.111&quot;</span>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;agent1.puppetlabs.vm&#39;</span>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
+</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span>   <span class="o">=</span>  <span class="ss">:agent</span>
+</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now I have an easy to use Vagrantfile that can boot my master with sym linked module and manifests dirs and an agent to test on.</p>
+
+<p>Now we need to finish out that Rakefile, adding in some dependancy checks and some tasks to setup, deploy, pull (modules on the fly) and destroy as needed:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+<span class='line-number'>102</span>
+<span class='line-number'>103</span>
+<span class='line-number'>104</span>
+<span class='line-number'>105</span>
+<span class='line-number'>106</span>
+<span class='line-number'>107</span>
+<span class='line-number'>108</span>
+<span class='line-number'>109</span>
+<span class='line-number'>110</span>
+<span class='line-number'>111</span>
+<span class='line-number'>112</span>
+<span class='line-number'>113</span>
+<span class='line-number'>114</span>
+<span class='line-number'>115</span>
+<span class='line-number'>116</span>
+<span class='line-number'>117</span>
+<span class='line-number'>118</span>
+<span class='line-number'>119</span>
+<span class='line-number'>120</span>
+<span class='line-number'>121</span>
+<span class='line-number'>122</span>
+<span class='line-number'>123</span>
+<span class='line-number'>124</span>
+<span class='line-number'>125</span>
+<span class='line-number'>126</span>
+<span class='line-number'>127</span>
+<span class='line-number'>128</span>
+<span class='line-number'>129</span>
+<span class='line-number'>130</span>
+<span class='line-number'>131</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">begin</span>
+</span><span class='line'>  <span class="nb">require</span> <span class="s1">&#39;os&#39;</span>
+</span><span class='line'>  <span class="nb">require</span> <span class="s1">&#39;ptools&#39;</span>
+</span><span class='line'><span class="k">rescue</span> <span class="no">LoadError</span> <span class="o">=&gt;</span> <span class="n">e</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Error during requires: </span><span class="se">\t</span><span class="si">#{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="nb">abort</span> <span class="s2">&quot;You may be able to fix this problem by running &#39;bundle&#39;.&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">task</span> <span class="ss">:default</span> <span class="o">=&gt;</span> <span class="s1">&#39;deps&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">necessary_programs</span> <span class="o">=</span> <span class="sx">%w(VirtualBox vagrant)</span>
+</span><span class='line'><span class="n">necessary_plugins</span> <span class="o">=</span> <span class="sx">%w(vagrant-auto_network vagrant-pe_build vagrant-vmware-fusion)</span>
+</span><span class='line'><span class="n">necessary_gems</span> <span class="o">=</span> <span class="sx">%w(bundle r10k)</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">desc</span> <span class="s1">&#39;Check for the environment dependencies&#39;</span>
+</span><span class='line'><span class="n">task</span> <span class="ss">:deps</span> <span class="k">do</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s1">&#39;Checking environment dependencies...&#39;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nb">printf</span> <span class="s2">&quot;Is this a POSIX OS?...&quot;</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="no">OS</span><span class="o">.</span><span class="n">posix?</span>
+</span><span class='line'>    <span class="nb">abort</span> <span class="s1">&#39;Sorry, you need to be running Linux or OSX to use this Vagrant environment!&#39;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;OK&quot;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">necessary_programs</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">prog</span><span class="o">|</span>
+</span><span class='line'>    <span class="nb">printf</span> <span class="s2">&quot;Checking for %s...&quot;</span><span class="p">,</span> <span class="n">prog</span>
+</span><span class='line'>    <span class="k">unless</span> <span class="no">File</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">prog</span><span class="p">)</span>
+</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Sorry but I didn&#39;t find require program </span><span class="se">\&#39;</span><span class="si">#{</span><span class="n">prog</span><span class="si">}</span><span class="se">\&#39;</span><span class="s2"> in your PATH.</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;OK&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">necessary_plugins</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">plugin</span><span class="o">|</span>
+</span><span class='line'>    <span class="nb">printf</span> <span class="s2">&quot;Checking for vagrant plugin %s...&quot;</span><span class="p">,</span> <span class="n">plugin</span>
+</span><span class='line'>    <span class="k">unless</span> <span class="sx">%x{vagrant plugin list}</span><span class="o">.</span><span class="n">include?</span> <span class="n">plugin</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Sorry, I wasn&#39;t able to find the Vagrant plugin </span><span class="se">\&#39;</span><span class="si">#{</span><span class="n">plugin</span><span class="si">}</span><span class="se">\&#39;</span><span class="s2"> on your system.&quot;</span>
+</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;You may be able to fix this by running &#39;rake setup</span><span class="se">\&#39;</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;OK&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">necessary_gems</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">gem</span><span class="o">|</span>
+</span><span class='line'>    <span class="nb">printf</span> <span class="s2">&quot;Checking for Ruby gem %s...&quot;</span><span class="p">,</span> <span class="n">gem</span>
+</span><span class='line'>    <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;gem list --local -q --no-versions --no-details </span><span class="si">#{</span><span class="n">gem</span><span class="si">}</span><span class="s2"> | egrep &#39;^</span><span class="si">#{</span><span class="n">gem</span><span class="si">}</span><span class="s2">$&#39; &gt; /dev/null 2&gt;&amp;1&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Sorry, I wasn&#39;t able to find the </span><span class="se">\&#39;</span><span class="si">#{</span><span class="n">gem</span><span class="si">}</span><span class="se">\&#39;</span><span class="s2"> gem on your system.&quot;</span>
+</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;You may be able to fix this by running </span><span class="se">\&#39;</span><span class="s2">gem install </span><span class="si">#{</span><span class="n">gem</span><span class="si">}</span><span class="se">\&#39;</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;OK&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nb">printf</span> <span class="s2">&quot;Checking for additional gems via &#39;bundle check&#39;...&quot;</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="sx">%x{bundle check}</span>
+</span><span class='line'>    <span class="nb">abort</span> <span class="s1">&#39;&#39;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;OK&quot;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">80</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Congratulations! Everything looks a-ok.&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">80</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">desc</span> <span class="s1">&#39;Install the necessary Vagrant plugins&#39;</span>
+</span><span class='line'><span class="n">task</span> <span class="ss">:setup</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">necessary_plugins</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">plugin</span><span class="o">|</span>
+</span><span class='line'>    <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vagrant plugin install </span><span class="si">#{</span><span class="n">plugin</span><span class="si">}</span><span class="s2"> --verbose&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;Install of </span><span class="si">#{</span><span class="n">plugin</span><span class="si">}</span><span class="s2"> failed. Exiting...&quot;</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">necessary_gems</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">gem</span><span class="o">|</span>
+</span><span class='line'>    <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;gem install </span><span class="si">#{</span><span class="n">gem</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;Install of </span><span class="si">#{</span><span class="n">gem</span><span class="si">}</span><span class="s2"> failed. Exiting...&quot;</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">unless</span> <span class="sx">%x{bundle check}</span>
+</span><span class='line'>    <span class="nb">system</span><span class="p">(</span><span class="s1">&#39;bundle install&#39;</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">desc</span> <span class="s1">&#39;Deploying modules form Puppetfile and booting master and agent VMs&#39;</span>
+</span><span class='line'><span class="n">task</span> <span class="ss">:deploy</span> <span class="k">do</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Building out Puppet module directory...&quot;</span>
+</span><span class='line'>  <span class="n">confdir</span> <span class="o">=</span> <span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span>
+</span><span class='line'>  <span class="n">moduledir</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/modules&quot;</span>
+</span><span class='line'>  <span class="n">puppetfile</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/Puppetfile&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Placing modules in </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Using Puppetfile at </span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;PUPPETFILE=</span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2"> PUPPETFILE_DIR=</span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2"> /usr/bin/r10k puppetfile install&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="nb">abort</span> <span class="s1">&#39;Failed to build out Puppet module directory. Exiting...&#39;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Bringing up vagrant machines&quot;</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vagrant up master agent1&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="nb">abort</span> <span class="s1">&#39;Vagrant up failed. Exiting...&#39;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Vagrant Machines Up Successfully</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Access master at &#39;vagrant ssh master&#39; or &#39;ssh vagrant@10.10.100.100&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Password = vagrant&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;-----&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Puppet modules brought in via puppet/Puppetfile are available on the Vagrant master VM at /etc/puppetlabs/puppet/modules&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;-----&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Contact git owner for PR&#39;s &amp; bug fixes&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;-----&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Done.&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">desc</span> <span class="s1">&#39;Pull down modules in Puppetfile&#39;</span>
+</span><span class='line'><span class="n">task</span> <span class="ss">:pull</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">confdir</span> <span class="o">=</span> <span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span>
+</span><span class='line'>  <span class="n">moduledir</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/modules&quot;</span>
+</span><span class='line'>  <span class="n">puppetfile</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/Puppetfile&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Pulling down new modules in </span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2"> to </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;PUPPETFILE=</span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2"> PUPPETFILE_DIR=</span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2"> /usr/bin/r10k puppetfile install&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="nb">abort</span> <span class="s1">&#39;Failed to build out Puppet module directory. Exiting...&#39;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;New modules successfully pulled down&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'><span class="n">desc</span> <span class="s1">&#39;Destroy Vagrant Machines&#39;</span>
+</span><span class='line'><span class="n">task</span> <span class="ss">:destroy</span> <span class="k">do</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Are you sure you want to destroy the environment? [y/n]&quot;</span>
+</span><span class='line'>  <span class="no">STDOUT</span><span class="o">.</span><span class="n">flush</span>
+</span><span class='line'>  <span class="n">ans</span> <span class="o">=</span> <span class="no">STDIN</span><span class="o">.</span><span class="n">gets</span><span class="o">.</span><span class="n">chomp</span>
+</span><span class='line'>  <span class="k">if</span> <span class="n">ans</span> <span class="o">=~</span> <span class="sr">/^y/</span>
+</span><span class='line'>      <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vagrant destroy -f&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">else</span>
+</span><span class='line'>      <span class="nb">abort</span> <span class="s1">&#39;Aborting vagrant destroy, exiting...&#39;</span>
+</span><span class='line'>  <span class="k">end</span>      
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><a href="https://github.com/malnick/puppet-module-devtest-skeleton/tree/malnick">Entire project</a> is available on git.</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-07-21T12:15:51-07:00" pubdate data-updated="true">Jul 21<span>st</span>, 2014</time></div>
+	
+
+
+	
+</div></article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
 		<a href="/blog/2014/07/14/managing-git-repos-over-jump-hosts-using-persistant-sockets/">
 		
 			Managing Git Repos Over Jump Hosts Using Persistant Sockets</a>
@@ -2842,152 +3331,6 @@ Puppetfile
 
 
 <time datetime="2014-05-15T16:12:36-07:00" pubdate data-updated="true">May 15<span>th</span>, 2014</time></div>
-	
-
-
-	
-</div></article>
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2014/05/04/continous-integration-hooks-with-r10k-and-puppet/">
-		
-			Continous Integration Hooks With R10k &amp; Puppet</a>
-	</h2>
-	<div class="entry-content">
-		<p>A week ago I was modifiying a webhook to run r10k on push to a git repository. The goal here was to sync up r10k everytime a push was made to the repo. However, in doing so I found that the <a href="https://github.com/acidprime/r10k/blob/master/templates/usr/local/bin/webhook.erb">current</a> hook didn&rsquo;t take advantage of deploying a specific puppet environmnet, and instead runs a full r10k sync across all topic branchs and thus all puppet environments.</p>
-
-<p>I figured the first place to start was modifying the <a href="https://github.com/acidprime/r10k/blob/master/templates/usr/local/bin/webhook.erb#L35">&lsquo;post&rsquo;</a> method:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">post</span> <span class="s1">&#39;/payload&#39;</span> <span class="k">do</span>
-</span><span class='line'>      <span class="c1">#protected!</span>
-</span><span class='line'>      <span class="n">deploy</span><span class="p">()</span>
-</span><span class='line'>    <span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p> to parse the json sent by git (in this case I was integrating with gitlab) for the <a href="http://demo.gitlab.com/help/web_hooks">ref branch</a>. So the &lsquo;post&rsquo; hook now looks like <a href="https://github.com/malnick/r10k/blob/master/templates/usr/local/bin/webhook.erb#L52">this</a>:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">post</span> <span class="s1">&#39;/payload&#39;</span> <span class="k">do</span>
-</span><span class='line'>    <span class="c1">#protected!</span>
-</span><span class='line'>    <span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">rewind</span>  <span class="c1"># in case someone already read it</span>
-</span><span class='line'>    <span class="n">data</span> <span class="o">=</span> <span class="no">JSON</span><span class="o">.</span><span class="n">parse</span> <span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">read</span>
-</span><span class='line'>    <span class="n">branch</span> <span class="o">=</span> <span class="n">data</span><span class="o">[</span><span class="s1">&#39;ref&#39;</span><span class="o">].</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">last</span>
-</span><span class='line'>    <span class="s2">&quot;ref branch: </span><span class="si">#{</span><span class="n">branch</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>    <span class="c1">#deploy(refs)</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So the #branch effectively is our puppet environment that we want to pass to the r10k mcollective agent so we can deploy a specific puppet enviro and not sync across all topic branches/enviros. This will make it lightweight.</p>
-
-<p>However, I ran into a blocker in the mcollective r10k agent itself. I want to pass this argument to it so I can sync all r10k nodes at once from this hook based on the ref branch the current r10k <a href="https://github.com/acidprime/r10k/blob/master/files/agent/r10k.rb#L28">agent</a> does not accept any arugments and only syncs across all topic branches using the &lsquo;syncronize&rsquo; method.</p>
-
-<p>In order to pass this ref branch in and leverage &lsquo;r10k deploy environmnet #{topic_branch}&rsquo; as I&rsquo;m attempting here the agent will need to be modified to parse the argument.</p>
-
-<p><a href="https://github.com/acidprime/r10k/blob/master/files/agent/r10k.rb#L28">Zach&rsquo;s current r10k agent</a> is pretty good, so we&rsquo;ll stick to modifying that (at this point I handed over the agent writing to a colleague Andrew Brader since I was sent to a training site and he had a week/time to modifying the mco agent):</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'>     <span class="k">def</span> <span class="nf">run_cmd</span><span class="p">(</span><span class="n">action</span><span class="p">,</span><span class="n">path</span><span class="o">=</span><span class="kp">nil</span><span class="p">)</span>
-</span><span class='line'>        <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-</span><span class='line'>        <span class="n">git</span>  <span class="o">=</span> <span class="o">[</span><span class="s1">&#39;/usr/bin/env&#39;</span><span class="p">,</span> <span class="s1">&#39;git&#39;</span><span class="o">]</span>
-</span><span class='line'>        <span class="n">r10k</span> <span class="o">=</span> <span class="o">[</span><span class="s1">&#39;/usr/bin/env&#39;</span><span class="p">,</span> <span class="s1">&#39;r10k&#39;</span><span class="o">]</span>
-</span><span class='line'>        <span class="k">case</span> <span class="n">action</span>
-</span><span class='line'>        <span class="k">when</span> <span class="s1">&#39;push&#39;</span><span class="p">,</span><span class="s1">&#39;pull&#39;</span><span class="p">,</span><span class="s1">&#39;status&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">=</span> <span class="n">git</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;push&#39;</span>   <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;push&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;pull&#39;</span>   <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;pull&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;status&#39;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;status&#39;</span>
-</span><span class='line'>          <span class="n">reply</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="ss">:stderr</span> <span class="o">=&gt;</span> <span class="ss">:error</span><span class="p">,</span> <span class="ss">:stdout</span> <span class="o">=&gt;</span> <span class="ss">:output</span><span class="p">,</span> <span class="ss">:chomp</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">:cwd</span> <span class="o">=&gt;</span> <span class="n">path</span> <span class="p">)</span>
-</span><span class='line'>        <span class="k">when</span> <span class="s1">&#39;cache&#39;</span><span class="p">,</span><span class="s1">&#39;environment&#39;</span><span class="p">,</span><span class="s1">&#39;module&#39;</span><span class="p">,</span><span class="s1">&#39;synchronize&#39;</span><span class="p">,</span><span class="s1">&#39;sync&#39;</span><span class="p">,</span> <span class="s1">&#39;deploy_all&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">=</span> <span class="n">r10k</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;cache&#39;</span>       <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;cache&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;synchronize&#39;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;synchronize&#39;</span> <span class="ow">or</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;sync&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;environment&#39;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;environment&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;module&#39;</span>      <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;module&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;deploy&#39;</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;environment&#39;</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;-p&#39;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;deploy_all&#39;</span>
-</span><span class='line'>          <span class="n">reply</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="ss">:stderr</span> <span class="o">=&gt;</span> <span class="ss">:error</span><span class="p">,</span> <span class="ss">:stdout</span> <span class="o">=&gt;</span> <span class="ss">:output</span><span class="p">,</span> <span class="ss">:chomp</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span>
-</span><span class='line'>        <span class="k">end</span>
-</span><span class='line'>    <span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>In order to parse the topic branch from the hook we need to add a method, which Andrew did <a href="https://github.com/abrader/r10k/blob/master/files/agent/r10k.rb#L59">here</a>:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'>      <span class="k">def</span> <span class="nf">deploy_only_cmd</span><span class="p">(</span><span class="n">r10k_env</span><span class="o">=</span><span class="kp">nil</span><span class="p">)</span>
-</span><span class='line'>        <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-</span><span class='line'>        <span class="n">r10k</span> <span class="o">=</span> <span class="o">[</span><span class="s1">&#39;/usr/bin/env&#39;</span><span class="p">,</span> <span class="s1">&#39;r10k&#39;</span><span class="o">]</span>
-</span><span class='line'>        <span class="n">cmd</span> <span class="o">=</span> <span class="n">r10k</span>
-</span><span class='line'>        <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;deploy&#39;</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;environment&#39;</span> <span class="o">&lt;&lt;</span> <span class="n">r10k_env</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;-p&#39;</span>
-</span><span class='line'>        <span class="n">reply</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">deploy_only_cmd</span><span class="p">,</span> <span class="ss">:stderr</span> <span class="o">=&gt;</span> <span class="ss">:error</span><span class="p">,</span> <span class="ss">:stdout</span> <span class="o">=&gt;</span> <span class="ss">:output</span><span class="p">,</span> <span class="ss">:chomp</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span>
-</span><span class='line'>      <span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>Testing the new hook &amp; agent</h3>
-
-<p>&hellip; to be updated shortly&hellip;</p>
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-05-04T07:47:05-07:00" pubdate data-updated="true">May 4<span>th</span>, 2014</time></div>
 	
 
 

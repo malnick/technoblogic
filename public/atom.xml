@@ -4,7 +4,7 @@
   <title><![CDATA[JP]]></title>
   <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
   <link href="httpL://www.jeffmalnick.com/"/>
-  <updated>2015-02-09T09:39:35-08:00</updated>
+  <updated>2015-02-20T07:23:10-08:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
@@ -12,6 +12,41 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Why DevOps Isn't a Job, It's a Culture]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2015/02/20/why-devops-isnt-a-job-its-a-culture/"/>
+    <updated>2015-02-20T07:22:08-08:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2015/02/20/why-devops-isnt-a-job-its-a-culture</id>
+    <content type="html"><![CDATA[<p>DevOps is not a job, it&rsquo;s a culture. DevOps is a shift in how you decide to manage, deploy, develop, monitor, and interact with your application code and your infrastructure as a whole. DevOps is a holistic approach to enacting the now bankrupt term &ldquo;agile&rdquo; as a method of development and operations engineering in an organization.</p>
+
+<p>Nobody does the &lsquo;DevOps&rsquo;, you do the &lsquo;DevOps&rsquo;. I&rsquo;m very lucky in that at SRC:CLR we have a culture of DevOps that puts me face-to-face with developers everyday. At many companies the &lsquo;DevOps&rsquo; team never sees another dev. In fact, they may not see another operations person either. Usually, when you hear the term &lsquo;DevOps team&rsquo;, that means it&rsquo;s just another siloed group of people in a company, usually focuse on automating infrastructure.</p>
+
+<p>At SRC:CLR we roll DevOps in the way it was meant to be rolled: me, &lsquo;Mr. DevOps&rsquo;, sits shoulder to shoulder with our devs. No partitions, no separate team. When we get a Dir. of Engineering I&rsquo;ll be reporting to him, the same as our devs. Our operations are tightly coupled with the development of our code. That coupling ensures everyone is on a flat playing field, pushing towards the same goal.</p>
+
+<p>How does this affect operations and development at SRC:CLR? It&rsquo;s the feedback loop stupid, it&rsquo;s continuous integration of ideas and knowledge of our application and our infrastructure. It creates synergy between how we architect our applications and our infrastructure.</p>
+
+<p>True story: last week we had a hard time diagnosing why one of our main services was crashing. At first we thought it was Tomcat not having enough heap space. That helped but didn&rsquo;t fix it from continuing to silently crash. We enabled more robust logging but ended up with massive amounts of spring output that we started grepping through.</p>
+
+<p>Not useful.</p>
+
+<p>I started looking at the process and realized our current monitoring system wasn&rsquo;t robust. We were using a mixture of New Relic for application and systems monitoring with CloudWatch from AWS. New Relic didn&rsquo;t have any logging data and what we wanted to find was corrolation between the generated logs at failure and the process crashing. We didn&rsquo;t have a robust tool to look at the log data.</p>
+
+<p>I started looking at hosted solutions: SumoLogic, Librato + Logstash, loggly. In the end our developers and I agreed that even though Librato has AMAZING graphic capabilities that offloading our logs to a hosted solution was insecure at best. We needed to stand up a solution in our private VPC.</p>
+
+<p>After that lunch meeting I went back to the drawing board and started piecing together some Puppet code around Elasticsearch, Logstash and Kibana that I had started the previous week. In an hour I had an ELK + Redis stack up and running that was pulling down unfiltered log data from the node running the service which was crashing.</p>
+
+<p>If you&rsquo;ve never graphed logging data you&rsquo;re not doing it right.</p>
+
+<p>Almost instantly our co-founder and one of the lead devs on our platform started looking at the graphing output. A lot of it was health checks from HaProxy. Not a problem, I can filter that out on the node using &lsquo;drop{}&rsquo; in logstash. Next up was creating a lot of data on the node. We ran some queries against the service and started looking at the data that was coming in.</p>
+
+<p>No, we didn&rsquo;t find the problem right away but we did have a way to look for the problem. A way that was tighly coupled with how we develop and test our code. At the end of the day I&rsquo;m an automation guru. The infrastructure that I automate is tightly coupled with our code. Since I have the skills to bring to life the data that the developers generate (in this case logging data) I can help alliviate stress on our infrastructure, create a more performate and stable platform and enable deep insights to how code responds in a fully integrated environment.</p>
+
+<p>I can do this in a fully secure VPC or I can develop other methodologies in less secure hosted solutions. Either way, at the end of my day it&rsquo;s my job to ensure we have <code>uptime</code>. By far the best way to achieve that is to embed me in the middle of the development process, enabling fast iteration and seemless feedback between the development and operations ends of the deployment process.</p>
+
+<p>That&rsquo;s why DevOps isn&rsquo;t a job, it&rsquo;s a process in which everyone in engieering participates. DevOps might be in my title as an employee but what it truely represents is SRC:CLR&rsquo;s commitment to bluring the lines between development and operations, enhancing feedback loops in both directions. This ensures more security, higher performance and &#8220;uptime&#8220;`.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[puppet-s3 & continuous integration with Puppet, Jenkins and AWS]]></title>
@@ -5116,125 +5151,6 @@ Puppetfile
 <p>Since hiera.yaml is only used singularly on a puppet run, i.e., it&rsquo;s not consulted on a per environment basis, you only need one copy of it, and that&rsquo;s the one in your puppet $confdir. Having it scattered to the winds with r10k in the control repo does not give you any extra functionality (yet, someday we might make it enviro aware, but currently is not the case).</p>
 
 <p>So if you&rsquo;re going to run your hiera.yaml into a VCS then do it in it&rsquo;s own monolithic repo. You can symlink it into the $confdir for Puppet.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Continous Integration Hooks with r10k &amp; Puppet]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2014/05/04/continous-integration-hooks-with-r10k-and-puppet/"/>
-    <updated>2014-05-04T07:47:05-07:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2014/05/04/continous-integration-hooks-with-r10k-and-puppet</id>
-    <content type="html"><![CDATA[<p>A week ago I was modifiying a webhook to run r10k on push to a git repository. The goal here was to sync up r10k everytime a push was made to the repo. However, in doing so I found that the <a href="https://github.com/acidprime/r10k/blob/master/templates/usr/local/bin/webhook.erb">current</a> hook didn&rsquo;t take advantage of deploying a specific puppet environmnet, and instead runs a full r10k sync across all topic branchs and thus all puppet environments.</p>
-
-<p>I figured the first place to start was modifying the <a href="https://github.com/acidprime/r10k/blob/master/templates/usr/local/bin/webhook.erb#L35">&lsquo;post&rsquo;</a> method:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">post</span> <span class="s1">&#39;/payload&#39;</span> <span class="k">do</span>
-</span><span class='line'>      <span class="c1">#protected!</span>
-</span><span class='line'>      <span class="n">deploy</span><span class="p">()</span>
-</span><span class='line'>    <span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p> to parse the json sent by git (in this case I was integrating with gitlab) for the <a href="http://demo.gitlab.com/help/web_hooks">ref branch</a>. So the &lsquo;post&rsquo; hook now looks like <a href="https://github.com/malnick/r10k/blob/master/templates/usr/local/bin/webhook.erb#L52">this</a>:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">post</span> <span class="s1">&#39;/payload&#39;</span> <span class="k">do</span>
-</span><span class='line'>    <span class="c1">#protected!</span>
-</span><span class='line'>    <span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">rewind</span>  <span class="c1"># in case someone already read it</span>
-</span><span class='line'>    <span class="n">data</span> <span class="o">=</span> <span class="no">JSON</span><span class="o">.</span><span class="n">parse</span> <span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">read</span>
-</span><span class='line'>    <span class="n">branch</span> <span class="o">=</span> <span class="n">data</span><span class="o">[</span><span class="s1">&#39;ref&#39;</span><span class="o">].</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">last</span>
-</span><span class='line'>    <span class="s2">&quot;ref branch: </span><span class="si">#{</span><span class="n">branch</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>    <span class="c1">#deploy(refs)</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So the #branch effectively is our puppet environment that we want to pass to the r10k mcollective agent so we can deploy a specific puppet enviro and not sync across all topic branches/enviros. This will make it lightweight.</p>
-
-<p>However, I ran into a blocker in the mcollective r10k agent itself. I want to pass this argument to it so I can sync all r10k nodes at once from this hook based on the ref branch the current r10k <a href="https://github.com/acidprime/r10k/blob/master/files/agent/r10k.rb#L28">agent</a> does not accept any arugments and only syncs across all topic branches using the &lsquo;syncronize&rsquo; method.</p>
-
-<p>In order to pass this ref branch in and leverage &lsquo;r10k deploy environmnet #{topic_branch}&rsquo; as I&rsquo;m attempting here the agent will need to be modified to parse the argument.</p>
-
-<p><a href="https://github.com/acidprime/r10k/blob/master/files/agent/r10k.rb#L28">Zach&rsquo;s current r10k agent</a> is pretty good, so we&rsquo;ll stick to modifying that (at this point I handed over the agent writing to a colleague Andrew Brader since I was sent to a training site and he had a week/time to modifying the mco agent):</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'>     <span class="k">def</span> <span class="nf">run_cmd</span><span class="p">(</span><span class="n">action</span><span class="p">,</span><span class="n">path</span><span class="o">=</span><span class="kp">nil</span><span class="p">)</span>
-</span><span class='line'>        <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-</span><span class='line'>        <span class="n">git</span>  <span class="o">=</span> <span class="o">[</span><span class="s1">&#39;/usr/bin/env&#39;</span><span class="p">,</span> <span class="s1">&#39;git&#39;</span><span class="o">]</span>
-</span><span class='line'>        <span class="n">r10k</span> <span class="o">=</span> <span class="o">[</span><span class="s1">&#39;/usr/bin/env&#39;</span><span class="p">,</span> <span class="s1">&#39;r10k&#39;</span><span class="o">]</span>
-</span><span class='line'>        <span class="k">case</span> <span class="n">action</span>
-</span><span class='line'>        <span class="k">when</span> <span class="s1">&#39;push&#39;</span><span class="p">,</span><span class="s1">&#39;pull&#39;</span><span class="p">,</span><span class="s1">&#39;status&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">=</span> <span class="n">git</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;push&#39;</span>   <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;push&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;pull&#39;</span>   <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;pull&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;status&#39;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;status&#39;</span>
-</span><span class='line'>          <span class="n">reply</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="ss">:stderr</span> <span class="o">=&gt;</span> <span class="ss">:error</span><span class="p">,</span> <span class="ss">:stdout</span> <span class="o">=&gt;</span> <span class="ss">:output</span><span class="p">,</span> <span class="ss">:chomp</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">:cwd</span> <span class="o">=&gt;</span> <span class="n">path</span> <span class="p">)</span>
-</span><span class='line'>        <span class="k">when</span> <span class="s1">&#39;cache&#39;</span><span class="p">,</span><span class="s1">&#39;environment&#39;</span><span class="p">,</span><span class="s1">&#39;module&#39;</span><span class="p">,</span><span class="s1">&#39;synchronize&#39;</span><span class="p">,</span><span class="s1">&#39;sync&#39;</span><span class="p">,</span> <span class="s1">&#39;deploy_all&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">=</span> <span class="n">r10k</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;cache&#39;</span>       <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;cache&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;synchronize&#39;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;synchronize&#39;</span> <span class="ow">or</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;sync&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;environment&#39;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;environment&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;module&#39;</span>      <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;module&#39;</span>
-</span><span class='line'>          <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;deploy&#39;</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;environment&#39;</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;-p&#39;</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;deploy_all&#39;</span>
-</span><span class='line'>          <span class="n">reply</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="ss">:stderr</span> <span class="o">=&gt;</span> <span class="ss">:error</span><span class="p">,</span> <span class="ss">:stdout</span> <span class="o">=&gt;</span> <span class="ss">:output</span><span class="p">,</span> <span class="ss">:chomp</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span>
-</span><span class='line'>        <span class="k">end</span>
-</span><span class='line'>    <span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>In order to parse the topic branch from the hook we need to add a method, which Andrew did <a href="https://github.com/abrader/r10k/blob/master/files/agent/r10k.rb#L59">here</a>:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'>      <span class="k">def</span> <span class="nf">deploy_only_cmd</span><span class="p">(</span><span class="n">r10k_env</span><span class="o">=</span><span class="kp">nil</span><span class="p">)</span>
-</span><span class='line'>        <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-</span><span class='line'>        <span class="n">r10k</span> <span class="o">=</span> <span class="o">[</span><span class="s1">&#39;/usr/bin/env&#39;</span><span class="p">,</span> <span class="s1">&#39;r10k&#39;</span><span class="o">]</span>
-</span><span class='line'>        <span class="n">cmd</span> <span class="o">=</span> <span class="n">r10k</span>
-</span><span class='line'>        <span class="n">cmd</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;deploy&#39;</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;environment&#39;</span> <span class="o">&lt;&lt;</span> <span class="n">r10k_env</span> <span class="o">&lt;&lt;</span> <span class="s1">&#39;-p&#39;</span>
-</span><span class='line'>        <span class="n">reply</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">deploy_only_cmd</span><span class="p">,</span> <span class="ss">:stderr</span> <span class="o">=&gt;</span> <span class="ss">:error</span><span class="p">,</span> <span class="ss">:stdout</span> <span class="o">=&gt;</span> <span class="ss">:output</span><span class="p">,</span> <span class="ss">:chomp</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span>
-</span><span class='line'>      <span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>Testing the new hook &amp; agent</h3>
-
-<p>&hellip; to be updated shortly&hellip;</p>
 ]]></content>
   </entry>
   
