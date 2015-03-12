@@ -102,6 +102,754 @@ $(document).ready(
     <article class="post">
 	<h2 class="title">
 		
+		<a href="/blog/2014/08/03/deploying-box-files-from-virtualbox-for-vagrant/">
+		
+			Deploying .box Files From VirtualBox for Vagrant</a>
+	</h2>
+	<div class="entry-content">
+		<p>There are several tools available that streamline the production of the .box format for Vagrant from any open virtualization format (OVF).</p>
+
+<ol>
+<li><a href="www.packer.io">Packer</a>
+Enables you to boot a given image from an easy to build template. You can provision the machine using many types of configuration management tools such as Puppet and Chef, and run post-installer scritps for anything else.</li>
+</ol>
+
+
+<p>The Templates are easy to use and you can push out a .box file from Packer directly.</p>
+
+<ol>
+<li><a href="https://github.com/jedi4ever/veewee">Veewee</a>
+Easily converts an ISO to VM formats. Kinda like Packer but not, so Packer made <a href="http://www.packer.io/docs/templates/veewee-to-packer.html">this</a> tool to solve that problem.</li>
+</ol>
+
+
+<h2>My own tool</h2>
+
+<p>Jeff, why would you ever build your own tool when so many others exist? Because I hate troubleshooting other peoples tools. If you&rsquo;ve ever used Packer for anything serious, you could empathize/understand why I want to build my own tool.</p>
+
+<p>What do I want to do?</p>
+
+<ol>
+<li>Easily turn any VirtualBox registered VM on my host machine into a .box file and add it to Vagrant.</li>
+<li>Deploy it in 1 command.</li>
+</ol>
+
+
+<h2>Architecture</h2>
+
+<p>A Rakefile that calls to sub .task files in a subdir to create then build out the machine.</p>
+
+<p>The top level Rakefile will allocate class variables such as directory strucutre, arrays and hashes used by the lower .task files. It will allocate ENV variables, in particular <code>VM_USER</code> and <code>VM_PASSWORD</code> to be used by the lower .tasks. It will also ensure all environment dependencies such as gems and programs are installed properly.</p>
+
+<h2>Rakefile</h2>
+
+<p>We&rsquo;ll start with the top level Rakefile and work our way down:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">begin</span>
+</span><span class='line'>  <span class="nb">require</span> <span class="s1">&#39;rake&#39;</span>
+</span><span class='line'>  <span class="nb">require</span> <span class="s1">&#39;expect&#39;</span>
+</span><span class='line'>  <span class="nb">require</span> <span class="s1">&#39;net/ssh&#39;</span>
+</span><span class='line'><span class="k">rescue</span> <span class="no">LoadError</span> <span class="o">=&gt;</span> <span class="n">e</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Error during load, running bundler&quot;</span>
+</span><span class='line'>  <span class="nb">system</span><span class="p">(</span><span class="s1">&#39;bundler&#39;</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># Load the subtasks</span>
+</span><span class='line'><span class="no">Dir</span><span class="o">[</span><span class="s1">&#39;tasks/*.rake&#39;</span><span class="o">].</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">file</span><span class="o">|</span> <span class="nb">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># Set top level dir for sub level rake tasks</span>
+</span><span class='line'><span class="vi">@cwd</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">__FILE__</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># Ensure we have some deps</span>
+</span><span class='line'><span class="n">gems</span> <span class="o">=</span> <span class="sx">%w(net-ssh)</span>
+</span><span class='line'><span class="n">gems</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">g</span><span class="o">|</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;gem list --local -q --no-versions --no-details </span><span class="si">#{</span><span class="n">g</span><span class="si">}</span><span class="s2"> | egrep &#39;^</span><span class="si">#{</span><span class="n">g</span><span class="si">}</span><span class="s2">$&#39; &gt; /dev/null 2&gt;&amp;1&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">g</span><span class="si">}</span><span class="s2"> gem not found, installing...&quot;</span>
+</span><span class='line'>      <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;gem install </span><span class="si">#{</span><span class="n">g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span class='line'>          <span class="nb">abort</span> <span class="s2">&quot;Failed to install gem: </span><span class="si">#{</span><span class="n">g</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="nb">exec</span> <span class="o">=</span> <span class="sx">%w(vboxmanage)</span>
+</span><span class='line'><span class="nb">exec</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="nb">p</span><span class="o">|</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;which </span><span class="si">#{</span><span class="nb">p</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;Failed to find the executable &#39;</span><span class="si">#{</span><span class="nb">p</span><span class="si">}</span><span class="s2">&#39;, please make sure it&#39;s installed.&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">namespace</span> <span class="ss">:vm</span> <span class="k">do</span>
+</span><span class='line'>  <span class="ss">Rake</span><span class="p">:</span><span class="ss">:Task</span><span class="o">[</span><span class="s1">&#39;create&#39;</span><span class="o">].</span><span class="n">execute</span>
+</span><span class='line'>  <span class="ss">Rake</span><span class="p">:</span><span class="ss">:Task</span><span class="o">[</span><span class="s1">&#39;build&#39;</span><span class="o">].</span><span class="n">execute</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The comments are self explanitory. We do some basic enviro checks, declare some class variables and load up the subtask files.</p>
+
+<p>Since this is <em>my</em> tool I can do whatever I want. This is going to be a super streamlined process, I only need it to work with VirtualBox so I don&rsquo;t need to get too crazy. I can basically rely on the <code>vboxmanage</code> command line tool to interact with the VM.</p>
+
+<p><strong><em>DISCLAIMER:</em></strong> I originally was going to leverage the <a href="http://net-ssh.github.io">Net::SSH</a> ruby library to run all my post-processing on the VM. I needed some way to SCP scripts to the VM and execute them. Originally I used <code>vboxmanage</code> to get the IP address of the VM, then <code>Net::SSH</code> to SCP and execute commands. I had some methods all worked out for this, but then I ralized this needed to work on the VirtualBox NAT&#8217;ed network.</p>
+
+<p>Ouch.</p>
+
+<p>It would not reliably get a proper IP address and I also needed to do some fancy reverse SSH tunneling to SCP and execute with <code>Net::SSH</code>. I struggled with this for an hour or two and realized my desire to use all Ruby libs to do this interaction was going to be more trouble than it was worth. I instead decided to use the <code>vboxmanage</code> subset of tools that will actually copy data to the VM and execute the data. I re-wrote my copy and execute methods but still kept the <a href="https://github.com/malnick/create-vagrant-box/blob/master/extras/netssh_test.rb">Net::SSH code for later reference</a> since it&rsquo;s super handy.</p>
+
+<h2>Create</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+<span class='line-number'>102</span>
+<span class='line-number'>103</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1">#!/bin/ruby</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;rake&#39;</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;expect&#39;</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;net/ssh&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">desc</span> <span class="s1">&#39;Build a Vagrant box from a vBox VM&#39;</span>
+</span><span class='line'><span class="n">task</span> <span class="ss">:create</span> <span class="k">do</span>
+</span><span class='line'>  <span class="c1"># Vars </span>
+</span><span class='line'>  <span class="vi">@vmhash</span>     <span class="o">=</span> <span class="p">{}</span>
+</span><span class='line'>  <span class="vi">@vmname</span>     <span class="o">=</span> <span class="no">ENV</span><span class="o">[</span><span class="s1">&#39;VM_NAME&#39;</span><span class="o">]</span>
+</span><span class='line'>  <span class="vi">@vmuser</span>     <span class="o">=</span> <span class="no">ENV</span><span class="o">[</span><span class="s1">&#39;VM_USER&#39;</span><span class="o">]</span>
+</span><span class='line'>  <span class="vi">@vmpwd</span>      <span class="o">=</span> <span class="no">ENV</span><span class="o">[</span><span class="s1">&#39;VM_PWD&#39;</span><span class="o">]</span>
+</span><span class='line'>  <span class="n">guestiso</span> <span class="o">=</span> <span class="s1">&#39;4.3.8&#39;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># Get the guest edition ISO</span>
+</span><span class='line'>  <span class="n">vboxexists</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">exists?</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@cwd</span><span class="si">}</span><span class="s2">/VBoxGuestAdditions_</span><span class="si">#{</span><span class="n">guestiso</span><span class="si">}</span><span class="s2">.iso&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">if</span> <span class="o">!</span> <span class="n">vboxexists</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;Would you like to install the defualt version of guest editions? [</span><span class="si">#{</span><span class="n">guestiso</span><span class="si">}</span><span class="s2">] [y/n]&quot;</span>
+</span><span class='line'>      <span class="n">installdefault</span> <span class="o">=</span> <span class="no">STDIN</span><span class="o">.</span><span class="n">gets</span>
+</span><span class='line'>      <span class="k">if</span> <span class="n">installdefault</span> <span class="o">=~</span> <span class="sr">/^y/</span>      
+</span><span class='line'>          <span class="nb">puts</span> <span class="s2">&quot;Ok, downloading vBox guest editions version </span><span class="si">#{</span><span class="n">guestiso</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>          <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;wget http://download.virtualbox.org/virtualbox/4.3.8/VBoxGuestAdditions_</span><span class="si">#{</span><span class="n">guestiso</span><span class="si">}</span><span class="s2">.iso&quot;</span><span class="p">)</span>
+</span><span class='line'>              <span class="nb">puts</span> <span class="s2">&quot;Something broke downloading the guest editions iso.&quot;</span>
+</span><span class='line'>              <span class="nb">puts</span> <span class="s1">&#39;This may break the building of the box later, continue? [y/n]&#39;</span>
+</span><span class='line'>              <span class="n">cont</span> <span class="o">=</span> <span class="no">STDIN</span><span class="o">.</span><span class="n">gets</span>
+</span><span class='line'>              <span class="k">if</span> <span class="n">cont</span> <span class="o">=~</span><span class="sr">/^n/</span>
+</span><span class='line'>                  <span class="nb">abort</span> <span class="s1">&#39;Aborting.&#39;</span>
+</span><span class='line'>              <span class="k">end</span>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>      <span class="k">else</span>
+</span><span class='line'>          <span class="nb">puts</span> <span class="s2">&quot;Which version would you like to use? [x.x.x]&quot;</span>
+</span><span class='line'>          <span class="n">installversion</span> <span class="o">=</span> <span class="no">STDIN</span><span class="o">.</span><span class="n">gets</span>
+</span><span class='line'>          <span class="nb">puts</span> <span class="s2">&quot;Ok, downloading vBox guest edition version </span><span class="si">#{</span><span class="n">installversion</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>          <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;wget http://download.virtualbox.org/virtualbox/4.3.8/VBoxGuestAdditions_</span><span class="si">#{</span><span class="n">installversion</span><span class="si">}</span><span class="s2">.iso&quot;</span><span class="p">)</span>
+</span><span class='line'>                  <span class="nb">puts</span> <span class="s2">&quot;Something broke downloading http://download.virtualbox.org/virtualbox/4.3.8/VBoxGuestAdditions_</span><span class="si">#{</span><span class="n">installversion</span><span class="si">}</span><span class="s2">.iso&quot;</span>
+</span><span class='line'>              <span class="nb">puts</span> <span class="s1">&#39;This may break the buidling of the box later, continue? [y/n]&#39;</span>
+</span><span class='line'>              <span class="n">cont</span> <span class="o">=</span> <span class="no">STDIN</span><span class="o">.</span><span class="n">gets</span>
+</span><span class='line'>              <span class="k">if</span> <span class="n">cont</span> <span class="o">=~</span> <span class="sr">/^n/</span>
+</span><span class='line'>                  <span class="nb">abort</span> <span class="s2">&quot;Aborting.&quot;</span>
+</span><span class='line'>              <span class="k">end</span>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># Create a hash of vBox VMs</span>
+</span><span class='line'>      <span class="n">num</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span class='line'>      <span class="n">vms</span> <span class="o">=</span> <span class="no">IO</span><span class="o">.</span><span class="n">popen</span><span class="p">(</span><span class="s1">&#39;vboxmanage list vms&#39;</span><span class="p">)</span>
+</span><span class='line'>      <span class="n">vms</span><span class="o">.</span><span class="n">readlines</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="nb">name</span><span class="o">|</span>
+</span><span class='line'>          <span class="vi">@vmhash</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">num</span><span class="p">,</span><span class="nb">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">chomp</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reverse</span><span class="o">.</span><span class="n">chomp</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reverse</span><span class="p">)</span>
+</span><span class='line'>          <span class="n">num</span><span class="o">=</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># how many vm&#39;s do we have available?</span>
+</span><span class='line'>      <span class="vi">@vmhash</span><span class="o">.</span><span class="n">each_with_index</span> <span class="p">{</span><span class="o">|</span><span class="n">k</span><span class="p">,</span><span class="n">i</span><span class="o">|</span>
+</span><span class='line'>          <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="vi">@vmhash</span><span class="o">.</span><span class="n">length</span> <span class="o">-</span> <span class="mi">1</span>
+</span><span class='line'>              <span class="vi">@vmmax</span> <span class="o">=</span> <span class="n">i</span>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># Method to find if VM_NAME matches our hash listing</span>
+</span><span class='line'>      <span class="k">def</span> <span class="nf">findvm</span><span class="p">()</span>
+</span><span class='line'>          <span class="vi">@vmhash</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">|</span>
+</span><span class='line'>              <span class="nb">test</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">chomp</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reverse</span><span class="o">.</span><span class="n">chomp</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reverse</span>
+</span><span class='line'>              <span class="k">return</span> <span class="n">v</span> <span class="k">if</span> <span class="vi">@vmname</span> <span class="o">=~</span> <span class="sr">/test/</span>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>          <span class="kp">nil</span>
+</span><span class='line'>      <span class="k">end</span>      
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># If a VM_NAME was given, don&#39;t list them but check to make sure it&#39;s a good name</span>
+</span><span class='line'>      <span class="k">if</span> <span class="o">!</span> <span class="vi">@vmname</span>
+</span><span class='line'>          <span class="nb">puts</span> <span class="s2">&quot;Which vBox VM would you like to vagrantize? [1-</span><span class="si">#{</span><span class="vi">@vmmax</span><span class="si">}</span><span class="s2">]&quot;</span>
+</span><span class='line'>          <span class="vi">@vmhash</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">|</span> <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">v</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">}</span>
+</span><span class='line'>          <span class="n">vmcreate</span> <span class="o">=</span> <span class="no">STDIN</span><span class="o">.</span><span class="n">gets</span><span class="o">.</span><span class="n">chomp</span><span class="o">.</span><span class="n">to_i</span>
+</span><span class='line'>          <span class="n">vmax</span> <span class="o">=</span> <span class="vi">@vmmax</span>
+</span><span class='line'>          <span class="k">until</span> <span class="n">vmcreate</span><span class="o">.</span><span class="n">between?</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">.</span><span class="n">to_i</span><span class="p">)</span>
+</span><span class='line'>              <span class="nb">puts</span> <span class="s2">&quot;Range check&quot;</span>
+</span><span class='line'>              <span class="nb">puts</span> <span class="s2">&quot;Please select an integer between 1 and </span><span class="si">#{</span><span class="vi">@vmmax</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>              <span class="n">vmcreate</span> <span class="o">=</span> <span class="no">STDIN</span><span class="o">.</span><span class="n">gets</span><span class="o">.</span><span class="n">chomp</span><span class="o">.</span><span class="n">to_i</span>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>          <span class="vi">@vmname</span> <span class="o">=</span> <span class="vi">@vmhash</span><span class="o">[</span><span class="n">vmcreate</span><span class="o">]</span>
+</span><span class='line'>          <span class="ss">Rake</span><span class="p">:</span><span class="ss">:Task</span><span class="o">[</span><span class="s1">&#39;build&#39;</span><span class="o">].</span><span class="n">execute</span>
+</span><span class='line'>      <span class="k">else</span>
+</span><span class='line'>          <span class="k">if</span> <span class="n">findvm</span>
+</span><span class='line'>              <span class="vi">@vmname</span> <span class="o">=</span> <span class="n">findvm</span>
+</span><span class='line'>              <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2"> found with actual name: </span><span class="si">#{</span><span class="n">vmname</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>              <span class="ss">Rake</span><span class="p">:</span><span class="ss">:Task</span><span class="o">[</span><span class="s1">&#39;build&#39;</span><span class="o">].</span><span class="n">execute</span>
+</span><span class='line'>          <span class="k">else</span>
+</span><span class='line'>              <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2"> not found, available vm&#39;s for building are:&quot;</span>
+</span><span class='line'>              <span class="vi">@vmhash</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">|</span> <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">v</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">}</span>
+</span><span class='line'>              <span class="nb">puts</span> <span class="s2">&quot;Which VM would you like to use? [1-</span><span class="si">#{</span><span class="vi">@vmmax</span><span class="si">}</span><span class="s2">]&quot;</span>
+</span><span class='line'>              <span class="n">vmcreate</span> <span class="o">=</span> <span class="no">STDIN</span><span class="o">.</span><span class="n">gets</span><span class="o">.</span><span class="n">chomp</span><span class="o">.</span><span class="n">to_i</span>
+</span><span class='line'>              <span class="n">vmax</span> <span class="o">=</span> <span class="vi">@vmmax</span>
+</span><span class='line'>              <span class="k">until</span> <span class="n">vmcreate</span><span class="o">.</span><span class="n">between?</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">.</span><span class="n">to_i</span><span class="p">)</span>
+</span><span class='line'>                  <span class="nb">puts</span> <span class="s2">&quot;Please select an integer between 1 and </span><span class="si">#{</span><span class="vi">@vmmax</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>                  <span class="n">vmcreate</span> <span class="o">=</span> <span class="no">STDIN</span><span class="o">.</span><span class="n">gets</span><span class="o">.</span><span class="n">chomp</span><span class="o">.</span><span class="n">to_i</span>
+</span><span class='line'>              <span class="k">end</span>
+</span><span class='line'>              <span class="vi">@vmname</span> <span class="o">=</span> <span class="vi">@vmhash</span><span class="o">[</span><span class="n">vmcreate</span><span class="o">]</span>
+</span><span class='line'>              <span class="ss">Rake</span><span class="p">:</span><span class="ss">:Task</span><span class="o">[</span><span class="s1">&#39;build&#39;</span><span class="o">].</span><span class="n">execute</span>
+</span><span class='line'>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li><p>Check for vBox guest editions locally: I needed to make sure I had guest editions locally, if I didn&rsquo;t I would prompt to download the most recent release or give myself the option to install a different version.</p></li>
+<li><p>Get a list of all the registered VirtualBox VM&rsquo;s on the host: Get the list, create a hash that I can easily choose from with a numbered key.</p></li>
+<li><p>Override the previous step if the <code>VM_NAME</code> ENV was given at runtime, ensure this matches with an actual VM registered in the list anyways.</p></li>
+<li><p>Run <code>``Rake::Task['build'].excute</code></p></li>
+</ol>
+
+
+<h2>Build</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+<span class='line-number'>102</span>
+<span class='line-number'>103</span>
+<span class='line-number'>104</span>
+<span class='line-number'>105</span>
+<span class='line-number'>106</span>
+<span class='line-number'>107</span>
+<span class='line-number'>108</span>
+<span class='line-number'>109</span>
+<span class='line-number'>110</span>
+<span class='line-number'>111</span>
+<span class='line-number'>112</span>
+<span class='line-number'>113</span>
+<span class='line-number'>114</span>
+<span class='line-number'>115</span>
+<span class='line-number'>116</span>
+<span class='line-number'>117</span>
+<span class='line-number'>118</span>
+<span class='line-number'>119</span>
+<span class='line-number'>120</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">desc</span> <span class="s1">&#39;Build the vBox VM with Vagrant parameters&#39;</span>
+</span><span class='line'><span class="n">task</span> <span class="ss">:build</span> <span class="k">do</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">vmrunning?</span> <span class="p">()</span>
+</span><span class='line'>      <span class="k">if</span> <span class="nb">system</span><span class="p">(</span><span class="s1">&#39;vboxmanage list runningvms&#39;</span><span class="p">)</span>
+</span><span class='line'>          <span class="n">runningvms</span> <span class="o">=</span> <span class="o">[]</span>
+</span><span class='line'>          <span class="n">vmproc</span> <span class="o">=</span> <span class="no">IO</span><span class="o">.</span><span class="n">popen</span><span class="p">(</span><span class="s1">&#39;vboxmanage list runningvms &gt; /dev/null&#39;</span><span class="p">)</span>
+</span><span class='line'>          <span class="n">vmproc</span><span class="o">.</span><span class="n">readlines</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">v</span><span class="o">|</span> <span class="n">runningvms</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">v</span><span class="p">)}</span>
+</span><span class='line'>          <span class="n">runningvms</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">v</span><span class="o">|</span>
+</span><span class='line'>              <span class="k">if</span> <span class="n">v</span> <span class="o">=~</span> <span class="sr">/&quot;</span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="sr">&quot;/</span>
+</span><span class='line'>                  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">v</span><span class="si">}</span><span class="s2"> is running.&quot;</span>
+</span><span class='line'>                  <span class="kp">true</span>
+</span><span class='line'>              <span class="k">else</span>
+</span><span class='line'>                  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">v</span><span class="si">}</span><span class="s2"> is not running.&quot;</span>
+</span><span class='line'>                  <span class="kp">nil</span> 
+</span><span class='line'>              <span class="k">end</span>
+</span><span class='line'>          <span class="p">}</span>
+</span><span class='line'>      <span class="k">else</span>
+</span><span class='line'>          <span class="nb">puts</span> <span class="s2">&quot;No VMs are found running via [vboxmanage list runningvms]&quot;</span>
+</span><span class='line'>          <span class="nb">exit</span> <span class="mi">1</span>          
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">vminfo</span><span class="p">()</span>
+</span><span class='line'>      <span class="vi">@vmdata</span> <span class="o">=</span> <span class="no">IO</span><span class="o">.</span><span class="n">popen</span><span class="p">(</span><span class="s2">&quot;VBoxManage guestproperty enumerate </span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">vmcp</span><span class="p">(</span><span class="n">locpath</span><span class="p">)</span>
+</span><span class='line'>      <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vboxmanage guestcontrol </span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2"> copyto </span><span class="si">#{</span><span class="n">locpath</span><span class="si">}</span><span class="s2"> /root/ --username </span><span class="si">#{</span><span class="vi">@vmuser</span><span class="si">}</span><span class="s2"> --password </span><span class="si">#{</span><span class="vi">@vmpwd</span><span class="si">}</span><span class="s2"> --domain 0755 --verbose&quot;</span><span class="p">)</span>
+</span><span class='line'>          <span class="nb">abort</span> <span class="s2">&quot;Failed to copy </span><span class="si">#{</span><span class="n">locpath</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">vmexec</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+</span><span class='line'>      <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vboxmanage guestcontrol </span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2"> exec --image </span><span class="si">#{</span><span class="n">cmd</span><span class="si">}</span><span class="s2"> --username </span><span class="si">#{</span><span class="vi">@vmuser</span><span class="si">}</span><span class="s2"> --password </span><span class="si">#{</span><span class="vi">@vmpwd</span><span class="si">}</span><span class="s2"> --verbose --wait-stdout&quot;</span><span class="p">)</span>
+</span><span class='line'>          <span class="nb">abort</span> <span class="s2">&quot;Failed to run </span><span class="si">#{</span><span class="n">cmd</span><span class="si">}</span><span class="s2"> on guest machine&quot;</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;Successfully executed </span><span class="si">#{</span><span class="n">cmd</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="k">def</span> <span class="nf">vmexec_with_args</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+</span><span class='line'>      <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vboxmanage guestcontrol </span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2"> exec --image </span><span class="si">#{</span><span class="n">cmd</span><span class="si">}</span><span class="s2"> --username </span><span class="si">#{</span><span class="vi">@vmuser</span><span class="si">}</span><span class="s2"> --password </span><span class="si">#{</span><span class="vi">@vmpwd</span><span class="si">}</span><span class="s2"> --verbose --wait-stdout -- </span><span class="si">#{</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span class='line'>          <span class="nb">abort</span> <span class="s2">&quot;Failed to run </span><span class="si">#{</span><span class="n">cmd</span><span class="si">}</span><span class="s2"> on guest machine&quot;</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;Successfully executed </span><span class="si">#{</span><span class="n">cmd</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;-----&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Vagrantizing </span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="c1"># Start the VM</span>
+</span><span class='line'>  <span class="n">start</span> <span class="o">=</span> <span class="no">IO</span><span class="o">.</span><span class="n">popen</span><span class="p">(</span><span class="s2">&quot;vboxmanage startvm </span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="vi">@proc_id</span> <span class="o">=</span> <span class="n">start</span><span class="o">.</span><span class="n">pid</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Process ID for VM: </span><span class="si">#{</span><span class="vi">@proc_id</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Waiting to bring up machine...&quot;</span>
+</span><span class='line'>  <span class="nb">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># The main loop</span>
+</span><span class='line'>  <span class="k">while</span> <span class="n">vmrunning?</span>
+</span><span class='line'>      <span class="c1"># Get VM IP Address</span>
+</span><span class='line'>      <span class="n">vminfo</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">line</span><span class="o">|</span>
+</span><span class='line'>          <span class="k">if</span> <span class="n">line</span> <span class="o">=~</span> <span class="sr">/IP/</span>
+</span><span class='line'>              <span class="n">arry</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+</span><span class='line'>              <span class="vi">@vmip</span> <span class="o">=</span> <span class="n">arry</span><span class="o">[</span><span class="mi">1</span><span class="o">].</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">last</span><span class="o">.</span><span class="n">strip</span><span class="o">.</span><span class="n">chomp</span>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;Waiting for VM to become ready...&quot;</span>
+</span><span class='line'>      <span class="nb">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># Copy scripts dir to a locally accessible place</span>
+</span><span class='line'>      <span class="n">scripts</span> <span class="o">=</span> <span class="no">Dir</span><span class="o">[</span><span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@cwd</span><span class="si">}</span><span class="s2">/scripts/*.sh&quot;</span><span class="o">]</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;Script dir: </span><span class="si">#{</span><span class="n">scripts</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>      <span class="n">scripts</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">s</span><span class="o">|</span>
+</span><span class='line'>          <span class="nb">puts</span> <span class="s2">&quot;Copying </span><span class="si">#{</span><span class="n">s</span><span class="si">}</span><span class="s2"> to VM...&quot;</span>
+</span><span class='line'>          <span class="n">vmcp</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">geiso</span> <span class="o">=</span> <span class="no">Dir</span><span class="o">[</span><span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@cwd</span><span class="si">}</span><span class="s2">/*.iso&quot;</span><span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># Copy guest editions over</span>
+</span><span class='line'>      <span class="n">geiso</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">iso</span><span class="o">|</span>
+</span><span class='line'>          <span class="nb">puts</span> <span class="s2">&quot;Copying </span><span class="si">#{</span><span class="n">iso</span><span class="si">}</span><span class="s2"> to VM...&quot;</span>
+</span><span class='line'>          <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vboxmanage guestcontrol </span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2"> copyto </span><span class="si">#{</span><span class="n">iso</span><span class="si">}</span><span class="s2"> /root/ --username </span><span class="si">#{</span><span class="vi">@vmuser</span><span class="si">}</span><span class="s2"> --password </span><span class="si">#{</span><span class="vi">@vmpwd</span><span class="si">}</span><span class="s2"> --domain 0755 --verbose&quot;</span><span class="p">)</span>
+</span><span class='line'>              <span class="nb">abort</span> <span class="s2">&quot;Failed to copy </span><span class="si">#{</span><span class="n">iso</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="n">vmexec_with_args</span><span class="p">(</span><span class="s2">&quot;/bin/chmod&quot;</span><span class="p">,</span> <span class="s2">&quot;0755 /root/vagrant.sh&quot;</span><span class="p">)</span> 
+</span><span class='line'>      <span class="n">vmexec_with_args</span><span class="p">(</span><span class="s2">&quot;/bin/chmod&quot;</span><span class="p">,</span> <span class="s2">&quot;0755 /root/vboxguest.sh&quot;</span><span class="p">)</span>   
+</span><span class='line'>      <span class="n">vmexec_with_args</span><span class="p">(</span><span class="s2">&quot;/bin/chmod&quot;</span><span class="p">,</span> <span class="s2">&quot;0755 /root/compact.sh&quot;</span><span class="p">)</span> 
+</span><span class='line'>      <span class="n">vmexec</span><span class="p">(</span><span class="s1">&#39;/root/vagrant.sh&#39;</span><span class="p">)</span>
+</span><span class='line'>      <span class="n">vmexec</span><span class="p">(</span><span class="s1">&#39;/root/vboxguest.sh&#39;</span><span class="p">)</span>
+</span><span class='line'>      <span class="n">vmexec</span><span class="p">(</span><span class="s1">&#39;/root/compact.sh&#39;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># </span>
+</span><span class='line'>      <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vboxmanage controlvm </span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2"> poweroff&quot;</span><span class="p">)</span>
+</span><span class='line'>          <span class="nb">abort</span> <span class="s1">&#39;Failed to shutdown vm&#39;</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;Waiting for VM to shutdown.&quot;</span>
+</span><span class='line'>      <span class="nb">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;Packing vm...&quot;</span>
+</span><span class='line'>      <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vagrant package --base </span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span class='line'>                <span class="nb">abort</span> <span class="s2">&quot;Failed to package the vm.&quot;</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;All done.&quot;</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;-----&quot;</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;VM package available at:&quot;</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@cwd</span><span class="si">}</span><span class="s2">/package.box&quot;</span>
+</span><span class='line'>      <span class="nb">exit</span> <span class="mi">0</span>
+</span><span class='line'>      <span class="c1">#Process.kill(@proc_id) and exit 0</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># Package the box up</span>
+</span><span class='line'>  <span class="c1"># vagrant package --output centos-6.5-x86_64.box --base centos-6.5-x86_64 &lt;-- example.</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So, that first method is what I&rsquo;m going to wrap this entire program in &ndash; as long as the VM is running, lets copy some scripts to it, ensure they can be executed, then execute them.</p>
+
+<h3>vmrunning?()</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">vmrunning?</span> <span class="p">()</span>
+</span><span class='line'>  <span class="k">if</span> <span class="nb">system</span><span class="p">(</span><span class="s1">&#39;vboxmanage list runningvms&#39;</span><span class="p">)</span>
+</span><span class='line'>      <span class="n">runningvms</span> <span class="o">=</span> <span class="o">[]</span>
+</span><span class='line'>      <span class="n">vmproc</span> <span class="o">=</span> <span class="no">IO</span><span class="o">.</span><span class="n">popen</span><span class="p">(</span><span class="s1">&#39;vboxmanage list runningvms &gt; /dev/null&#39;</span><span class="p">)</span>
+</span><span class='line'>      <span class="n">vmproc</span><span class="o">.</span><span class="n">readlines</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">v</span><span class="o">|</span> <span class="n">runningvms</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">v</span><span class="p">)}</span>
+</span><span class='line'>      <span class="n">runningvms</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">v</span><span class="o">|</span>
+</span><span class='line'>          <span class="k">if</span> <span class="n">v</span> <span class="o">=~</span> <span class="sr">/&quot;</span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="sr">&quot;/</span>
+</span><span class='line'>              <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">v</span><span class="si">}</span><span class="s2"> is running.&quot;</span>
+</span><span class='line'>              <span class="kp">true</span>
+</span><span class='line'>          <span class="k">else</span>
+</span><span class='line'>              <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">v</span><span class="si">}</span><span class="s2"> is not running.&quot;</span>
+</span><span class='line'>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>  <span class="k">else</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;No VMs are found running via [vboxmanage list runningvms]&quot;</span>
+</span><span class='line'>      <span class="nb">exit</span> <span class="mi">1</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Pop open a vboxmanage process to list out the running VM&rsquo;s, ensure our VM exists there.</p>
+
+<h3>vminfo()</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">vminfo</span><span class="p">()</span>
+</span><span class='line'>  <span class="vi">@vmdata</span> <span class="o">=</span> <span class="no">IO</span><span class="o">.</span><span class="n">popen</span><span class="p">(</span><span class="s2">&quot;VBoxManage guestproperty enumerate </span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Super simple, use vbox manage to get a listing of VM data using <code>guestproperty enumerate</code>. I used the <code>.readlines</code> method so I could iterate it into an array easily.</p>
+
+<h3>vmcp(locpath)</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">vmcp</span><span class="p">(</span><span class="n">locpath</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vboxmanage guestcontrol </span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2"> copyto </span><span class="si">#{</span><span class="n">locpath</span><span class="si">}</span><span class="s2"> /root/ --username </span><span class="si">#{</span><span class="vi">@vmuser</span><span class="si">}</span><span class="s2"> --password </span><span class="si">#{</span><span class="vi">@vmpwd</span><span class="si">}</span><span class="s2"> --domain 0755 --verbose&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;Failed to copy </span><span class="si">#{</span><span class="n">locpath</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Use the guestcontrol command for vboxmanage to copy stuff from my host to the guest. Copies it to <code>/root</code> by default.</p>
+
+<h3>vmexec(cmd)</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">vmexec</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vboxmanage guestcontrol </span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2"> exec --image </span><span class="si">#{</span><span class="n">cmd</span><span class="si">}</span><span class="s2"> --username </span><span class="si">#{</span><span class="vi">@vmuser</span><span class="si">}</span><span class="s2"> --password </span><span class="si">#{</span><span class="vi">@vmpwd</span><span class="si">}</span><span class="s2"> --verbose --wait-stdout&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;Failed to run </span><span class="si">#{</span><span class="n">cmd</span><span class="si">}</span><span class="s2"> on guest machine&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Successfully executed </span><span class="si">#{</span><span class="n">cmd</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Execute commands without arguments on the guest VM. Handy for running my scripts after I copy them over or changing file permissions.</p>
+
+<h3>vmexec_with_args(cmd, args)</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">vmexec_with_args</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vboxmanage guestcontrol </span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2"> exec --image </span><span class="si">#{</span><span class="n">cmd</span><span class="si">}</span><span class="s2"> --username </span><span class="si">#{</span><span class="vi">@vmuser</span><span class="si">}</span><span class="s2"> --password </span><span class="si">#{</span><span class="vi">@vmpwd</span><span class="si">}</span><span class="s2"> --verbose --wait-stdout -- </span><span class="si">#{</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;Failed to run </span><span class="si">#{</span><span class="n">cmd</span><span class="si">}</span><span class="s2"> on guest machine&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Successfully executed </span><span class="si">#{</span><span class="n">cmd</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Do the exec with arguments if needed.</p>
+
+<h2>Execute some scripts on the VM, exit, package the .box</h2>
+
+<p>The rest of the script is pretty straight forward. I drop into my <code>unless vmrunning?()</code> loop, copy over my scripts, run some <code>chmod</code> commands and execute them.</p>
+
+<p>The scripts setup the Vagrant user and environmnent then install vBox Guest Editions and shutdown the VM once the scripts complete.</p>
+
+<p>Then it&rsquo;s simply a matter of using the <code>vagrant package --base</code> command on the box <strong><em>with the correct box timecode attached to it</em></strong>. (that last bit is completely undocumented).</p>
+
+<h2>Complete Project</h2>
+
+<p><a href="https://github.com/malnick/create-vagrant-box/">Available Here</a></p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-03T17:22:54-07:00" pubdate data-updated="true">Aug 3<span>rd</span>, 2014</time></div>
+	
+
+
+	
+</div></article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
 		<a href="/blog/2014/07/21/agile-dev-environment-for-puppet-code/">
 		
 			Agile Dev Environment for Puppet Code</a>
@@ -3219,118 +3967,6 @@ Puppetfile
 
 
 <time datetime="2014-05-16T12:34:33-07:00" pubdate data-updated="true">May 16<span>th</span>, 2014</time></div>
-	
-
-
-	
-</div></article>
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2014/05/15/hiera-and-r10k/">
-		
-			Why I Don&#8217;t Place a hiera.yaml in My CR</a>
-	</h2>
-	<div class="entry-content">
-		<p>Here&rsquo;s a really good reason. First off, unless your hiera.yaml is super complicated, then it probably doesn&rsquo;t need to be in version control. However, for a lot of deployments you need it in VC, but not in your control repo (i.e., the one that r10k will access for Puppetfile, hieradata and build our corrosponding enviros for on your master).</p>
-
-<p>No, place that hiera.yaml in it&rsquo;s own VC repo.</p>
-
-<p>I had a control repo with:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>Puppetfile
-</span><span class='line'>hieradata/
-</span><span class='line'>hiera.yaml</span></code></pre></td></tr></table></div></figure>
-
-
-<p>and I kept running in to this:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master hieradata]# puppet apply -e "notice(hiera(message))"
-</span><span class='line'>Error: Could not find data item message in any Hiera data file and no default supplied at line 1 on node master.puppetlabs.vm</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This was a very simple test to see if my <code>production</code> environment was grabbing the correct data via a message K,V in <code>$confdir/environments/production/hieradata/master.puppetlabs.vm.yaml</code> .</p>
-
-<p>Check out the &mdash;debug</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>Debug: hiera(): Hiera YAML backend starting
-</span><span class='line'>Debug: hiera(): Looking up message in YAML backend
-</span><span class='line'>Debug: hiera(): Looking for data source master.puppetlabs.vm
-</span><span class='line'>Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/master.puppetlabs.vm.yaml, skipping
-</span><span class='line'>Debug: hiera(): Looking for data source production
-</span><span class='line'>Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/production.yaml, skipping
-</span><span class='line'>Debug: hiera(): Looking for data source global
-</span><span class='line'>Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/global.yaml, skipping</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So I copied the <code>datafile</code> path and redirected it to a diff along with a &#8220;`$(pwd) while in the /etc/puppetlabs/puppet/environments/production/hieradata directory:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master hieradata]# diff &lt;(echo "/etc/puppetlabs/puppet/environmets/production/hieradata/") &lt;(echo "$(pwd)")
-</span><span class='line'>1c1
-</span><span class='line'>&lt; /etc/puppetlabs/puppet/environmets/production/hieradata/
-</span><span class='line'>---
-</span><span class='line'>&gt; /etc/puppetlabs/puppet/environments/production/hieradata</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So the <code>$datadir</code> path in hiera.yaml</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master puppet]# cat hiera.yaml | grep datadir
-</span><span class='line'>  :datadir: '/etc/puppetlabs/puppet/environmets/%{environment}/hieradata'</span></code></pre></td></tr></table></div></figure>
-
-
-<p>is indeed missing that f-ing &lsquo;n&rsquo;. Why? Because this was the second time this happened to me today.</p>
-
-<p>Really? The second time? Really. The second fucking time.</p>
-
-<p>I previously committed hiera.yaml along with hieradata/ and my Puppetfile to branch production. I tested it and came across this problem. Did the same test to figure out the correct path and updated hiera.yaml.</p>
-
-<p>However, hiera.yaml was also in my development and staging branches. I didn&rsquo;t update those. So here I was again doing tests on development data for Puppet and <strong>boom</strong> my shit&rsquo;s broken again.</p>
-
-<p>Since hiera.yaml is only used singularly on a puppet run, i.e., it&rsquo;s not consulted on a per environment basis, you only need one copy of it, and that&rsquo;s the one in your puppet $confdir. Having it scattered to the winds with r10k in the control repo does not give you any extra functionality (yet, someday we might make it enviro aware, but currently is not the case).</p>
-
-<p>So if you&rsquo;re going to run your hiera.yaml into a VCS then do it in it&rsquo;s own monolithic repo. You can symlink it into the $confdir for Puppet.</p>
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-05-15T16:12:36-07:00" pubdate data-updated="true">May 15<span>th</span>, 2014</time></div>
 	
 
 

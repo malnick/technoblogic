@@ -4,7 +4,7 @@
   <title><![CDATA[JP]]></title>
   <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
   <link href="httpL://www.jeffmalnick.com/"/>
-  <updated>2015-02-20T10:13:35-08:00</updated>
+  <updated>2015-03-11T21:15:35-07:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
@@ -12,6 +12,329 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Logging Analytics]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2015/03/11/logging-analytics/"/>
+    <updated>2015-03-11T21:06:53-07:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2015/03/11/logging-analytics</id>
+    <content type="html"><![CDATA[<p>What’s the first line of action when dealing with a service that is down? Logs.</p>
+
+<p>You can <code>ps ef</code>, <code>netstat aux</code> all day long but the big piece of information cake always lies in the log data. Log data carries the weight of information about your services, whether it’s a Spring Boot micro service powering a small piece of your backend platform or the NGINX and auth logs that convey what is happening on the opposite end of your application stack.</p>
+
+<p>Whatever the situation may be, logs are always the files we end up tailing to figure out what is happening and why.</p>
+
+<h2>Why tailing sucks</h2>
+
+<p>True story: <code>grep -ir 404 * | wc -l</code> or <code>grep -irl 404 *</code> or <code>grep -r 404 * | sort | uniq -c</code></p>
+
+<p>Sure, you might have some good feedback from this. Sure, you can plug this into a tool like nagios to alert you when things hit the fan.</p>
+
+<p>But, it’s missing a critical piece: visualization.</p>
+
+<p>You can’t <strong>see</strong> the log data on a time-based graph; you can’t correlate it to large logging events based on message type, log path or node. You’re only aggregating a single log at a time, and the information</p>
+
+<h2>How SRC:CLR Tracks Logging Data</h2>
+
+<p>At SRC:CLR we use Logstash, Redis, Elasticsearch and Kibana to capture log data from various services that we use including our Sping Boot micro service framework. The overall design looks like this:</p>
+
+<p><img src="http://michael.bouvy.net/blog/wp-content/uploads/2013/11/logstach-archi1.png" alt="aggregation" /></p>
+
+<p>Of course, this entire deployment is brought to you by Puppet Enterprise, and no blog post from me would be complete with out a <a href="https://github.com/sourceclear/puppet-kibana">shameless plug for some new module we wrote to automate this it</a>.</p>
+
+<p>As you can tell, we’re using Kibana 4.0.0 (as of this post, 4.0.1 is out and IS amazing but we’re not using it quite yet). Kibana 4x ships with it’s own server, so there’s no need to frontend it with NGINX or Apache anymore. However, I highly recommend at minimum a local NGINX reverse proxy so you can DNS the node and connect on 80 or 443 if it’s public-facing.</p>
+
+<h3>Logstash Agent Configuration</h3>
+
+<p>In our role for a given node, lets say a backend node that would be running our micro services, I can simply add some logstash configuration:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="ss">roles</span><span class="p">:</span><span class="ss">:backend_services</span> <span class="p">{</span>
+</span><span class='line'><span class="err">…</span>
+</span><span class='line'>  <span class="c1"># Logstash for services</span>
+</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="o">::</span><span class="ss">profiles</span><span class="p">:</span><span class="ss">:logstash</span><span class="o">::</span><span class="n">backend_services</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">redis_logstash_host</span> <span class="o">=&gt;</span> <span class="err">‘</span><span class="n">our</span><span class="o">-</span><span class="n">redis</span><span class="o">-</span><span class="n">aggregator</span><span class="o">.</span><span class="n">ourdomain</span><span class="o">.</span><span class="n">com</span><span class="err">’</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="err">…</span>
+</span><span class='line'><span class="c1"># More configuration</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And then our backend services profile for logstash, we do something like:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="ss">profiles</span><span class="p">:</span><span class="ss">:logstash</span><span class="o">::</span><span class="n">backend_services</span> <span class="p">(</span><span class="vg">$redis_logstash_host</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="s1">&#39;logstash&#39;</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">package_url</span> <span class="o">=&gt;</span> <span class="s1">&#39;https://download.elasticsearch.org/logstash/logstash/packages/debian/logstash_1.4.2-1-2c0f5a1_all.deb&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="ss">logstash</span><span class="p">:</span><span class="ss">:configfile</span> <span class="p">{</span> <span class="s1">&#39;output_redis&#39;</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">content</span> <span class="o">=&gt;</span> <span class="n">template</span><span class="p">(</span><span class="s1">&#39;profiles/logstash/output_redis.erb&#39;</span><span class="p">),</span>
+</span><span class='line'>        <span class="n">order</span>   <span class="o">=&gt;</span> <span class="mi">20</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="ss">logstash</span><span class="p">:</span><span class="ss">:configfile</span> <span class="p">{</span> <span class="err">‘</span><span class="n">micro_service_one_input</span><span class="err">’</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">content</span> <span class="o">=&gt;</span> <span class="n">template</span><span class="p">(</span><span class="err">‘</span><span class="n">profiles</span><span class="o">/</span><span class="n">logstash</span><span class="o">/</span><span class="n">input_micro_service_one</span><span class="o">.</span><span class="n">erb</span><span class="err">’</span><span class="p">),</span>
+</span><span class='line'>        <span class="n">order</span>   <span class="o">=&gt;</span> <span class="mi">10</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="ss">logstash</span><span class="p">:</span><span class="ss">:configfile</span> <span class="p">{</span> <span class="err">‘</span><span class="n">micro_service_two_input</span><span class="err">’</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">content</span> <span class="o">=&gt;</span> <span class="n">template</span><span class="p">(</span><span class="err">‘</span><span class="n">profiles</span><span class="o">/</span><span class="n">logstash</span><span class="o">/</span><span class="n">input_micro_service_two</span><span class="o">.</span><span class="n">erb</span><span class="err">’</span><span class="p">),</span>
+</span><span class='line'>        <span class="n">order</span>   <span class="o">=&gt;</span> <span class="mi">11</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="err">…</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>$redis_logstash_host</code> simply needs to be available in the variable namespace for the redis output template.</p>
+
+<p>When it comes to logstash, all the magic happens in those templates. For SRC:CLR, we roll with a few basic inputs and outputs in our logstash templates:</p>
+
+<h4>Log Path Input</h4>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># input_micro_service_one.erb</span>
+</span><span class='line'><span class="n">input</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">file</span> <span class="p">{</span>
+</span><span class='line'>        <span class="n">path</span> <span class="o">=&gt;</span> <span class="err">“</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">service_name</span><span class="o">/</span><span class="n">service_name</span><span class="o">*.</span><span class="n">log</span><span class="err">”</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>Redis Output</h4>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">output</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">redis</span> <span class="p">{</span>
+</span><span class='line'>        <span class="n">host</span> <span class="o">=&gt;</span> <span class="s2">&quot;&lt;%= @redis_logstash_host %&gt;&quot;</span>
+</span><span class='line'>        <span class="n">data_type</span> <span class="o">=&gt;</span> <span class="s2">&quot;list&quot;</span>
+</span><span class='line'>        <span class="n">key</span> <span class="o">=&gt;</span> <span class="s2">&quot;logstash&quot;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>ElasticSearch Output</h4>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">output</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">elasticsearch</span> <span class="p">{</span>
+</span><span class='line'>        <span class="n">cluster</span> <span class="o">=&gt;</span> <span class="s1">&#39;logstash&#39;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>The Final <code>logstash/conf.d/logstash.conf</code> File</h4>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">input</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">file</span> <span class="p">{</span>
+</span><span class='line'>        <span class="n">path</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="err">“</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">service_name</span><span class="o">/</span><span class="n">service_name</span><span class="o">*.</span><span class="n">log</span><span class="err">”</span><span class="o">]</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">input</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">file</span> <span class="p">{</span>
+</span><span class='line'>        <span class="n">path</span> <span class="o">=&gt;</span> <span class="err">“</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">service_name</span><span class="o">/</span><span class="n">service_name</span><span class="o">*.</span><span class="n">log</span><span class="err">”</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">output</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">redis</span> <span class="p">{</span>
+</span><span class='line'>        <span class="n">host</span> <span class="o">=&gt;</span> <span class="err">“</span><span class="n">our</span><span class="o">-</span><span class="n">redis</span><span class="o">-</span><span class="n">aggregator</span><span class="o">.</span><span class="n">ourdomain</span><span class="o">.</span><span class="n">com</span><span class="s2">&quot;</span>
+</span><span class='line'><span class="s2">        data_type =&gt; &quot;</span><span class="n">list</span><span class="s2">&quot;</span>
+</span><span class='line'><span class="s2">        key =&gt; &quot;</span><span class="n">logstash</span><span class="s2">&quot;</span>
+</span><span class='line'><span class="s2">    }</span>
+</span><span class='line'><span class="s2">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So far, we’ve covered our log pipeline from <code>micro_services_node -&gt; redis_output</code>. What does the configuration for our redis aggregator look like?</p>
+
+<p>It starts, as usual, with the role:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="ss">roles</span><span class="p">:</span><span class="ss">:logging_aggregator</span>  <span class="p">{</span>
+</span><span class='line'>    <span class="c1"># First, provision our ELK Stack</span>
+</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="o">::</span><span class="ss">profiles</span><span class="p">:</span><span class="ss">:elasticsearch</span><span class="o">::</span><span class="n">log_aggregator</span><span class="p">:}</span>
+</span><span class='line'>    <span class="o">-&gt;</span>
+</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="o">::</span><span class="ss">profiles</span><span class="p">:</span><span class="ss">:kibana</span><span class="o">::</span><span class="ss">basic</span><span class="p">:}</span>
+</span><span class='line'>    <span class="o">-&gt;</span>
+</span><span class='line'>    <span class="c1"># The logstash node needs to be an indexer reading from redis, dumping into elasticsearch</span>
+</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="o">::</span><span class="ss">profiles</span><span class="p">:</span><span class="ss">:logstash</span><span class="o">::</span><span class="n">redis_indexer</span><span class="p">:}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1"># Also, a basic redis instance</span>
+</span><span class='line'>    <span class="kp">include</span> <span class="o">::</span><span class="ss">profiles</span><span class="p">:</span><span class="ss">:redis</span><span class="o">::</span><span class="n">basic</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As you can probably tell, we’re rolling the entire ELK stack and redis queue on a single node. We can do this because it’s on a c3.3xlarge AWS instance type with it’s own EBS attached volume of 100GB and the logging data is coming from a small-ish stack.</p>
+
+<p>Our logging volume at the time of this post is about 4GB per day, per environment (QA, Prod, etc..). Flushing your elasticsearch indices and backing them up is highly recommended. There are <a href="https://github.com/imperialwicket/elasticsearch-logstash-index-mgmt">various</a> ways to do this sort of thing, but really the end goal is simple: get to 65% of EBS volume, then flush and back up to a persistent source.</p>
+
+<p>I recommend a datastore in your cluster such as MongoDB or tar.gz’s to S3. Either way, it’s amazing how much log data you can generate, and ours is a small infrastructure so your milage will vary.</p>
+
+<p>Eventually you’ll have to tackle the question: do I scale this vertically or horizontally. With elasticsearch in the mix the answer is simple: horizontally. ES has <a href="http://www.elastic.co/guide/en/elasticsearch/guide/current/optimistic-concurrency-control.html">“optimistic concurrency control”</a> and is particularly well suited for clustering.</p>
+
+<p>For Redis, you’ll have to <a href="http://redis.io/topics/cluster-spec">make a personal decision</a>, but I typically prefer a vertical scale, which is why our aggregation node is a c3.2xlarge and will probably grow.</p>
+
+<h3>Logstash Aggregator Configuration</h3>
+
+<p>Finally, we have the logstash aggregator. I’m not going to dive into it’s elasticsearch or redis configuration since <a href="https://github.com/elastic/puppet-elasticsearch">both those</a> tools are well <a href="https://forge.puppetlabs.com/fsalum/redis">documented</a>. Here, we&rsquo;ll focus on the logstash/redis aggregator configuration.</p>
+
+<p>I will however note the importance, again, of using an EBS volume for your ES data!</p>
+
+<p>From the role profile given above, lets take a look at <code>::profiles::logstash::redis_indexer</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="ss">profiles</span><span class="p">:</span><span class="ss">:logstash</span><span class="o">::</span><span class="n">redis_indexer</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="s1">&#39;logstash&#39;</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">package_url</span> <span class="o">=&gt;</span> <span class="s1">&#39;https://download.elasticsearch.org/logstash/logstash/packages/debian/logstash_1.4.2-1-2c0f5a1_all.deb&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1"># This template contains everything we need to run the indexer on a single host</span>
+</span><span class='line'>    <span class="ss">logstash</span><span class="p">:</span><span class="ss">:configfile</span> <span class="p">{</span> <span class="s1">&#39;redis_indexer&#39;</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">content</span> <span class="o">=&gt;</span> <span class="n">template</span><span class="p">(</span><span class="s1">&#39;profiles/logstash/redis_indexer.erb&#39;</span><span class="p">),</span>
+</span><span class='line'>        <span class="n">order</span> <span class="o">=&gt;</span> <span class="mi">10</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Where the redis_indexer.erb looks like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">input</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">redis</span> <span class="p">{</span>
+</span><span class='line'>        <span class="n">host</span> <span class="o">=&gt;</span> <span class="s2">&quot;127.0.0.1&quot;</span>
+</span><span class='line'>        <span class="n">data_type</span> <span class="o">=&gt;</span> <span class="s2">&quot;list&quot;</span>
+</span><span class='line'>        <span class="n">key</span> <span class="o">=&gt;</span> <span class="s2">&quot;logstash&quot;</span>
+</span><span class='line'>        <span class="n">codec</span> <span class="o">=&gt;</span> <span class="n">json</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="n">output</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">elasticsearch</span> <span class="p">{</span>
+</span><span class='line'>        <span class="n">host</span> <span class="o">=&gt;</span> <span class="s2">&quot;localhost&quot;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="n">stdout</span> <span class="p">{</span>
+</span><span class='line'>        <span class="n">codec</span> <span class="o">=&gt;</span> <span class="n">rubydebug</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You might notice the stdout output in that. The stdout is great for debugging stuff. When you run <code>logstash service start</code> it’ll startup as a daemon and you can <code>tail -f /var/log/logstash.log</code> but I prefer to run it in the foreground when I’m hooking everything up to see all the pretty colors and to drop it into debug mode.</p>
+
+<p>To do this I execute on both the nodes I’m pulling logs from and the log aggregator:</p>
+
+<p><code>/opt/logstash/bin/logstash -f /etc/logstash/conf.d/logstash.conf —debug</code></p>
+
+<p>Once this pipeline is executed you can go ahead and open <code>our-redis-aggregator.ourdomain.com:5601</code> in your browser and start making some fancy graphs:</p>
+
+<p><img src="https://s3.amazonaws.com/srcclr-public/Screen+Shot+2015-03-11+at+10.15.51+AM.png" alt="one" />
+<img src="https://s3.amazonaws.com/srcclr-public/Screen+Shot+2015-03-11+at+10.16.26+AM.png" alt="two" /></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Why DevOps Isn't a Job, It's a Culture]]></title>
@@ -5070,91 +5393,6 @@ Puppetfile
 <p>`</p>
 
 <p>We can also do a quick one time environment run with the <code>--environment</code> flag:</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Why I don't place a hiera.yaml in my CR]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2014/05/15/hiera-and-r10k/"/>
-    <updated>2014-05-15T16:12:36-07:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2014/05/15/hiera-and-r10k</id>
-    <content type="html"><![CDATA[<p>Here&rsquo;s a really good reason. First off, unless your hiera.yaml is super complicated, then it probably doesn&rsquo;t need to be in version control. However, for a lot of deployments you need it in VC, but not in your control repo (i.e., the one that r10k will access for Puppetfile, hieradata and build our corrosponding enviros for on your master).</p>
-
-<p>No, place that hiera.yaml in it&rsquo;s own VC repo.</p>
-
-<p>I had a control repo with:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>Puppetfile
-</span><span class='line'>hieradata/
-</span><span class='line'>hiera.yaml</span></code></pre></td></tr></table></div></figure>
-
-
-<p>and I kept running in to this:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master hieradata]# puppet apply -e "notice(hiera(message))"
-</span><span class='line'>Error: Could not find data item message in any Hiera data file and no default supplied at line 1 on node master.puppetlabs.vm</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This was a very simple test to see if my <code>production</code> environment was grabbing the correct data via a message K,V in <code>$confdir/environments/production/hieradata/master.puppetlabs.vm.yaml</code> .</p>
-
-<p>Check out the &mdash;debug</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>Debug: hiera(): Hiera YAML backend starting
-</span><span class='line'>Debug: hiera(): Looking up message in YAML backend
-</span><span class='line'>Debug: hiera(): Looking for data source master.puppetlabs.vm
-</span><span class='line'>Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/master.puppetlabs.vm.yaml, skipping
-</span><span class='line'>Debug: hiera(): Looking for data source production
-</span><span class='line'>Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/production.yaml, skipping
-</span><span class='line'>Debug: hiera(): Looking for data source global
-</span><span class='line'>Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/global.yaml, skipping</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So I copied the <code>datafile</code> path and redirected it to a diff along with a &#8220;`$(pwd) while in the /etc/puppetlabs/puppet/environments/production/hieradata directory:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master hieradata]# diff &lt;(echo "/etc/puppetlabs/puppet/environmets/production/hieradata/") &lt;(echo "$(pwd)")
-</span><span class='line'>1c1
-</span><span class='line'>&lt; /etc/puppetlabs/puppet/environmets/production/hieradata/
-</span><span class='line'>---
-</span><span class='line'>&gt; /etc/puppetlabs/puppet/environments/production/hieradata</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So the <code>$datadir</code> path in hiera.yaml</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master puppet]# cat hiera.yaml | grep datadir
-</span><span class='line'>  :datadir: '/etc/puppetlabs/puppet/environmets/%{environment}/hieradata'</span></code></pre></td></tr></table></div></figure>
-
-
-<p>is indeed missing that f-ing &lsquo;n&rsquo;. Why? Because this was the second time this happened to me today.</p>
-
-<p>Really? The second time? Really. The second fucking time.</p>
-
-<p>I previously committed hiera.yaml along with hieradata/ and my Puppetfile to branch production. I tested it and came across this problem. Did the same test to figure out the correct path and updated hiera.yaml.</p>
-
-<p>However, hiera.yaml was also in my development and staging branches. I didn&rsquo;t update those. So here I was again doing tests on development data for Puppet and <strong>boom</strong> my shit&rsquo;s broken again.</p>
-
-<p>Since hiera.yaml is only used singularly on a puppet run, i.e., it&rsquo;s not consulted on a per environment basis, you only need one copy of it, and that&rsquo;s the one in your puppet $confdir. Having it scattered to the winds with r10k in the control repo does not give you any extra functionality (yet, someday we might make it enviro aware, but currently is not the case).</p>
-
-<p>So if you&rsquo;re going to run your hiera.yaml into a VCS then do it in it&rsquo;s own monolithic repo. You can symlink it into the $confdir for Puppet.</p>
 ]]></content>
   </entry>
   

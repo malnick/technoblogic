@@ -67,7 +67,7 @@ class profiles::logstash::backend_services ($redis_logstash_host) {
 …
 ```
 
-```$redis_logstash_host``` simply needs to be available in the variable namespace for the redis output template. 
+`$redis_logstash_host` simply needs to be available in the variable namespace for the redis output template. 
 
 When it comes to logstash, all the magic happens in those templates. For SRC:CLR, we roll with a few basic inputs and outputs in our logstash templates:
 
