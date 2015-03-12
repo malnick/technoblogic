@@ -4,7 +4,7 @@
   <title><![CDATA[JP]]></title>
   <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
   <link href="httpL://www.jeffmalnick.com/"/>
-  <updated>2015-03-11T21:15:35-07:00</updated>
+  <updated>2015-03-12T08:54:04-07:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
@@ -327,7 +327,35 @@
 
 <p>To do this I execute on both the nodes I’m pulling logs from and the log aggregator:</p>
 
-<p><code>/opt/logstash/bin/logstash -f /etc/logstash/conf.d/logstash.conf —debug</code></p>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="sr">/opt/</span><span class="n">logstash</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">logstash</span> <span class="o">-</span><span class="n">f</span> <span class="sr">/etc/</span><span class="n">logstash</span><span class="o">/</span><span class="n">conf</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">logstash</span><span class="o">.</span><span class="n">conf</span> <span class="err">—</span><span class="n">debug</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Redis Data Persistance</h3>
+
+<p>An important note on Resis is that it will, <a href="http://redis.io/topics/persistence#redis-persistence">by defualt</a>, persist data every few minutes depending on load. There is some solid <a href="http://oldblog.antirez.com/post/redis-persistence-demystified.html">information</a> out there around best ways to protect your data and ensure durability. However, the end goal with this setup is to use Redis as a broker for our log data, not to persist that data as those goals are achieved with Elasticsearch. For this log aggregator I turn off all data persistance in Redis so data only persists in memory. You cna choose what is best for you, but I&rsquo;m not as concerned with durability here as some other situations.</p>
+
+<p>My redis configuration for this now looks like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="ss">profiles</span><span class="p">:</span><span class="ss">:redis</span><span class="o">::</span><span class="n">log_aggregator</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="o">::</span><span class="ss">redis</span><span class="p">:</span>
+</span><span class='line'>      <span class="n">redis_saves</span> <span class="o">=&gt;</span> <span class="kp">false</span><span class="p">,</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Note: using this <a href="https://github.com/thomasvandoren/puppet-redis">Redis</a> module.</p>
+
+<h2>Final Notes</h2>
 
 <p>Once this pipeline is executed you can go ahead and open <code>our-redis-aggregator.ourdomain.com:5601</code> in your browser and start making some fancy graphs:</p>
 

@@ -205,8 +205,27 @@ You might notice the stdout output in that. The stdout is great for debugging st
 
 To do this I execute on both the nodes I’m pulling logs from and the log aggregator:
 
-```/opt/logstash/bin/logstash -f /etc/logstash/conf.d/logstash.conf —debug```
+```
+/opt/logstash/bin/logstash -f /etc/logstash/conf.d/logstash.conf —debug
+```
 
+###Redis Data Persistance
+An important note on Resis is that it will, [by defualt](http://redis.io/topics/persistence#redis-persistence), persist data every few minutes depending on load. There is some solid [information](http://oldblog.antirez.com/post/redis-persistence-demystified.html) out there around best ways to protect your data and ensure durability. However, the end goal with this setup is to use Redis as a broker for our log data, not to persist that data as those goals are achieved with Elasticsearch. For this log aggregator I turn off all data persistance in Redis so data only persists in memory. You cna choose what is best for you, but I'm not as concerned with durability here as some other situations.
+
+My redis configuration for this now looks like this:
+
+```ruby
+class profiles::redis::log_aggregator {
+
+    class { ::redis:
+      redis_saves => false,
+    }
+}
+```
+
+Note: using this [Redis](https://github.com/thomasvandoren/puppet-redis) module.
+
+##Final Notes
 Once this pipeline is executed you can go ahead and open ```our-redis-aggregator.ourdomain.com:5601``` in your browser and start making some fancy graphs:
 
 ![one](https://s3.amazonaws.com/srcclr-public/Screen+Shot+2015-03-11+at+10.15.51+AM.png)
