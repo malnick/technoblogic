@@ -159,33 +159,44 @@ $(document).ready(
 </ol>
 
 
-<p>  &#8220;`json
-  {</p>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;service&quot;</span><span class="p">:</span>      <span class="s2">&quot;your_name_in_hiera_data&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;environment&quot;</span><span class="p">:</span>  <span class="s2">&quot;your_environment&quot;</span><span class="p">,</span>               <span class="err">#</span> <span class="err">qa</span> <span class="err">or</span> <span class="err">production?</span>
+</span><span class='line'>  <span class="nt">&quot;version&quot;</span><span class="p">:</span>      <span class="s2">&quot;service_version_being_deployed&quot;</span><span class="p">,</span> <span class="err">#</span> <span class="err">you&#39;ll</span> <span class="err">want</span> <span class="err">to</span> <span class="err">dynamicaly</span> <span class="err">generate</span> <span class="err">this</span> <span class="err">in</span> <span class="err">jenkis</span>
+</span><span class='line'>  <span class="nt">&quot;role&quot;</span><span class="p">:</span>         <span class="s2">&quot;role_of_node_in_puppet&quot;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
-<pre><code>"service":      "your_name_in_hiera_data",
-"environment":  "your_environment",               # qa or production?
-"version":      "service_version_being_deployed", # you'll want to dynamicaly generate this in jenkis
-"role":         "role_of_node_in_puppet"
-</code></pre>
-
-<p>  }
-  &#8220;`</p>
 
 <ol>
 <li>The Hiera data key matches the following pattern:</li>
 </ol>
 
 
-<p>  <code>yaml
-  # Overlay with vars from JSON
-  ${service_name}_version_${environment}: '1.2.1'
-  # A real-world example
-  myservice_version_qa: '1.2.1'
-  myotherservice_version_qa: '1.4.1'
-  someservice_version_production: '0.5.1'
-  myservice_version_production: '1.1.0'
-  ...
- </code></p>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="c1"># Overlay with vars from JSON</span>
+</span><span class='line'><span class="l-Scalar-Plain">${service_name}_version_${environment}</span><span class="p-Indicator">:</span> <span class="s">&#39;1.2.1&#39;</span>
+</span><span class='line'><span class="c1"># A real-world example</span>
+</span><span class='line'><span class="l-Scalar-Plain">myservice_version_qa</span><span class="p-Indicator">:</span> <span class="s">&#39;1.2.1&#39;</span>
+</span><span class='line'><span class="l-Scalar-Plain">myotherservice_version_qa</span><span class="p-Indicator">:</span> <span class="s">&#39;1.4.1&#39;</span>
+</span><span class='line'><span class="l-Scalar-Plain">someservice_version_production</span><span class="p-Indicator">:</span> <span class="s">&#39;0.5.1&#39;</span>
+</span><span class='line'><span class="l-Scalar-Plain">myservice_version_production</span><span class="p-Indicator">:</span> <span class="s">&#39;1.1.0&#39;</span>
+</span><span class='line'><span class="nn">...</span>
+</span></code></pre></td></tr></table></div></figure>
+
 
 <p>You can override this in the options you pass via the JSON POST with the key <code>key</code>.</p>
 
@@ -194,41 +205,68 @@ $(document).ready(
 </ol>
 
 
-<p>  &#8220;`ruby
-  module Update</p>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">Update</span>
+</span><span class='line'>  <span class="k">class</span> <span class="nc">Options</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kp">attr_accessor</span> <span class="ss">:config</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;##### Parsing Options #####&quot;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="vi">@config</span>         <span class="o">=</span> <span class="no">Hash</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># Required data from POST</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:environment</span><span class="o">]</span>    <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;environment&#39;</span><span class="o">]</span>   <span class="c1"># qa or production etc</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:version</span><span class="o">]</span>        <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;version&#39;</span><span class="o">]</span>       <span class="c1"># The version to write to the data file</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:service</span><span class="o">]</span>        <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;service&#39;</span><span class="o">]</span>       <span class="c1"># The service name</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:role</span><span class="o">]</span>           <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;role&#39;</span><span class="o">]</span>          <span class="c1"># The role for the nodes to update via mCollective</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># Optional data from POST</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:key</span><span class="o">]</span>            <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;key&#39;</span><span class="o">]</span>             <span class="o">||</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@config</span><span class="o">[</span><span class="ss">:service</span><span class="o">]</span><span class="si">}</span><span class="s2">_version_</span><span class="si">#{</span><span class="vi">@config</span><span class="o">[</span><span class="ss">:environment</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:git_repo</span><span class="o">]</span>       <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;git_repo&#39;</span><span class="o">]</span>        <span class="o">||</span> <span class="s1">&#39;git@github.com:malnick/puppet-control&#39;</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:git_repo_dir</span><span class="o">]</span>   <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;git_repo_dir&#39;</span><span class="o">]</span>    <span class="o">||</span> <span class="s1">&#39;/tmp/control&#39;</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:data_file</span><span class="o">]</span>      <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;data_file_path&#39;</span><span class="o">]</span>  <span class="o">||</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@config</span><span class="o">[</span><span class="ss">:git_repo_dir</span><span class="o">]</span><span class="si">}</span><span class="s2">/global.yaml&quot;</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;##### Setting configuration #####&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">|</span>
+</span><span class='line'>        <span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
 
-<pre><code>class Options
-
-  attr_accessor :config
-
-  def initialize(options)
-
-    LOG.info("##### Parsing Options #####")
-
-    @config         = Hash.new
-
-    # Required data from POST
-    @config[:environment]    = options['environment']   # qa or production etc
-    @config[:version]        = options['version']       # The version to write to the data file
-    @config[:service]        = options['service']       # The service name
-    @config[:role]           = options['role']          # The role for the nodes to update via mCollective
-
-    # Optional data from POST
-    @config[:key]            = options['key']             || "#{@config[:service]}_version_#{@config[:environment]}"
-    @config[:git_repo]       = options['git_repo']        || 'git@github.com:malnick/puppet-control'
-    @config[:git_repo_dir]   = options['git_repo_dir']    || '/tmp/control'
-    @config[:data_file]      = options['data_file_path']  || "#{@config[:git_repo_dir]}/global.yaml"
-
-    LOG.info("##### Setting configuration #####")
-    @config.each do |k,v|
-      LOG.info("#{k}: #{v}")
-    end
-  end
-end
-</code></pre>
-
-<p>  end
-  &#8220;`</p>
 
 <ol>
 <li>You&rsquo;re using a <code>$::role</code> fact. I roll in AWS, so everything is classified based on <code>$::role</code>. This webhook won&rsquo;t be able to run puppet on the node running your service you just updated the version for until you modify this code or get yourself a role face.</li>
@@ -242,48 +280,60 @@ end
 </ol>
 
 
-<p>  <code>bash
-  git clone git@github.com:malnick/jenkins-puppet-webhook.git
- </code></p>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>git clone git@github.com:malnick/jenkins-puppet-webhook.git
+</span></code></pre></td></tr></table></div></figure>
+
 
 <ol>
 <li>Turn it on:</li>
 </ol>
 
 
-<p>  <code>bash
-  bin/webhook start
-  # Should come up on :1015
- </code></p>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>bin/webhook start
+</span><span class='line'><span class="c"># Should come up on :1015</span>
+</span></code></pre></td></tr></table></div></figure>
+
 
 <ol>
 <li>Have a post-run stage in your jenkins build for a given service that executes something akin to the following:</li>
 </ol>
 
 
-<p>  &#8220;`sh
-  # Assuming you&rsquo;re running this from $WORKSPACE in jenkins, your paths will vary as well as your method of obtaining the version off the build.
-  VERSION=$(echo service/target/service-*.jar | cut -d- -f2 | cut -d. -f1,2,3)</p>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="c"># Assuming you&#39;re running this from $WORKSPACE in jenkins, your paths will vary as well as your method of obtaining the version off the build.</span>
+</span><span class='line'><span class="nv">VERSION</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo </span>service/target/service-*.jar | cut -d- -f2 | cut -d. -f1,2,3<span class="k">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Curl this webhook, which should be on the Puppet Master</span>
+</span><span class='line'>curl <span class="se">\</span>
+</span><span class='line'>  -X POST <span class="se">\</span>
+</span><span class='line'>  -d@- <span class="se">\</span>
+</span><span class='line'>  puppet.myorg.com:1015/deploy <span class="s">&lt;&lt;EOF</span>
+</span><span class='line'><span class="s">{</span>
+</span><span class='line'><span class="s">  &quot;service&quot;:     &quot;myservice&quot;,</span>
+</span><span class='line'><span class="s">  &quot;version&quot;:     &quot;$VERSION&quot;,</span>
+</span><span class='line'><span class="s">  &quot;environment&quot;: &quot;qa&quot;,</span>
+</span><span class='line'><span class="s">  &quot;role&quot;:        &quot;qa_services_migration&quot;</span>
+</span><span class='line'><span class="s">}</span>
+</span><span class='line'><span class="s">EOF</span>
+</span></code></pre></td></tr></table></div></figure>
 
-<p>  # Curl this webhook, which should be on the Puppet Master
-  curl \</p>
-
-<pre><code>-X POST \
--d@- \
-puppet.myorg.com:1015/deploy &lt;&lt;EOF
-</code></pre>
-
-<p>  {</p>
-
-<pre><code>"service":     "myservice",
-"version":     "$VERSION",
-"environment": "qa",
-"role":        "qa_services_migration"
-</code></pre>
-
-<p>  }
-  EOF
-  &#8220;`</p>
 
 <h3>Kick off a build&hellip;.</h3>
 
@@ -300,28 +350,37 @@ puppet.myorg.com:1015/deploy &lt;&lt;EOF
 </ol>
 
 
-<p>  &#8220;`ruby
-  &hellip;
-  s3 { &ldquo;${basedir}/${service}&ndash;${version}.jar&rdquo;:</p>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span><span class='line'><span class="n">s3</span> <span class="p">{</span> <span class="s2">&quot;${basedir}/${service}-${version}.jar&quot;</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">ensure</span>            <span class="o">=&gt;</span> <span class="n">present</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">source</span>            <span class="o">=&gt;</span> <span class="s2">&quot;/my_bucket/${service}-${deploy_stage}/${service}-${version}.jar&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">access_key_id</span>     <span class="o">=&gt;</span> <span class="vg">$access_key_id</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">secret_access_key</span> <span class="o">=&gt;</span> <span class="vg">$secret_access_key</span><span class="p">,</span>
+</span><span class='line'>    <span class="nb">require</span>           <span class="o">=&gt;</span> <span class="no">File</span><span class="o">[</span><span class="vg">$basedir</span><span class="o">]</span><span class="p">,</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span></code></pre></td></tr></table></div></figure>
 
-<pre><code>  ensure            =&gt; present,
-  source            =&gt; "/my_bucket/${service}-${deploy_stage}/${service}-${version}.jar",
-  access_key_id     =&gt; $access_key_id,
-  secret_access_key =&gt; $secret_access_key,
-  require           =&gt; File[$basedir],
-</code></pre>
-
-<p>  }
-  &hellip;
-  &#8220;`</p>
 
 <p>Where <code>$version</code> is derived from</p>
 
-<p>  <code>ruby
-  $service = 'my_service'
-  $version = hiera(my_service_version_qa)
-  ...
- </code></p>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="vg">$service</span> <span class="o">=</span> <span class="s1">&#39;my_service&#39;</span>
+</span><span class='line'><span class="vg">$version</span> <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="n">my_service_version_qa</span><span class="p">)</span>
+</span><span class='line'><span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
 
 <h2>Some Closing Remarks&hellip; or why this is rad</h2>
 
