@@ -102,6 +102,263 @@ $(document).ready(
     <article class="post">
 	<h2 class="title">
 		
+		<a href="/blog/2014/08/31/arbitrary-commandline-functions-for-mco/">
+		
+			Arbitrary Commandline Functions for MCO</a>
+	</h2>
+	<div class="entry-content">
+		<p>mCollective is a funny tool. The idea behind it is obvious and great: a message bus for node orchestration. But the API and underpinnings are often a black box for many Puppet noobs and even other automation professionals. They mostly stick to the Puppet Enterprise Live Management console to interact with the mCollective back-end, never <code>su peadmin</code> and running a few <code>mco $some_application -F $some_fact</code>.</p>
+
+<p>The truth is, MCO is a powerful backend for orchestration. It gets a bad name because the performance isn&rsquo;t there sometimes, especially at scale. Not to dive into a rabbit hole, but that&rsquo;s often due to user error: 1 broker running over 1000&rsquo;s of nodes; the ActiveMQ JVM being improperly tuned; bad layer 1  (yup, it can be that simple).</p>
+
+<p>One thing about MCO that is true is the API is hard to get through. It makes sense once you get under the hood, and especially after reading through other agents and DDl&rsquo;s but what if all you want is a simple way to run an arbitrary commandline argument on some remote node with MCO? If you don&rsquo;t know what you&rsquo;re doing that could take a while; if you know what you&rsquo;re doing, you still have the write the code.</p>
+
+<p>Well, since MCO runs through an API we can actually architect templates for this exact task, for both the data description language file and the agent ruby script.</p>
+
+<p>Let&rsquo;s start with a basic DDL that will inform an agent running this arbitary command:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">metadata</span> <span class="ss">:name</span>        <span class="o">=&gt;</span> <span class="s1">&#39;&lt;%= @action_name %&gt;&#39;</span><span class="p">,</span>
+</span><span class='line'>         <span class="ss">:description</span> <span class="o">=&gt;</span> <span class="s1">&#39;&lt;%= @description %&gt;&#39;</span><span class="p">,</span>
+</span><span class='line'>         <span class="ss">:author</span>      <span class="o">=&gt;</span> <span class="s1">&#39;&lt;%= (@author_name+&#39;</span> <span class="s1">&#39;+ @author_email).strip %&gt;&#39;</span><span class="p">,</span>
+</span><span class='line'>         <span class="ss">:license</span>     <span class="o">=&gt;</span> <span class="s1">&#39;&lt;%= @license %&gt;&#39;</span><span class="p">,</span>
+</span><span class='line'>         <span class="ss">:version</span>     <span class="o">=&gt;</span> <span class="s1">&#39;&lt;%= @version %&gt;&#39;</span><span class="p">,</span>
+</span><span class='line'>         <span class="ss">:url</span>         <span class="o">=&gt;</span> <span class="s1">&#39;&lt;%= @project_url %&gt;&#39;</span><span class="p">,</span>
+</span><span class='line'>         <span class="ss">:timeout</span>     <span class="o">=&gt;</span> <span class="o">&lt;</span><span class="sx">%= @timeout %&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="sx">action &quot;run&quot;, :description =</span><span class="o">&gt;</span> <span class="s1">&#39;&lt;%= @description %&gt;&#39;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="nb">display</span> <span class="ss">:always</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">output</span> <span class="ss">:status</span><span class="p">,</span>
+</span><span class='line'>         <span class="ss">:description</span> <span class="o">=&gt;</span> <span class="s2">&quot;The exit code of the script&quot;</span><span class="p">,</span>
+</span><span class='line'>         <span class="ss">:display_as</span>  <span class="o">=&gt;</span> <span class="s2">&quot;Return Value&quot;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">output</span> <span class="ss">:out</span><span class="p">,</span>
+</span><span class='line'>         <span class="ss">:description</span> <span class="o">=&gt;</span> <span class="s2">&quot;The output of the script on stdout&quot;</span><span class="p">,</span>
+</span><span class='line'>         <span class="ss">:display_as</span>  <span class="o">=&gt;</span> <span class="s2">&quot;Output Channel&quot;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">output</span> <span class="ss">:err</span><span class="p">,</span>
+</span><span class='line'>         <span class="ss">:description</span> <span class="o">=&gt;</span> <span class="s2">&quot;The output of the script on stderr&quot;</span><span class="p">,</span>
+</span><span class='line'>         <span class="ss">:display_as</span>  <span class="o">=&gt;</span> <span class="s2">&quot;Error Channel&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Just a quick shout out to Jeremy Adams who wrote <a href="https://forge.puppetlabs.com/jpadams/runyer">this</a> very ERB template for his Runyer module which does what this rake task does but in Puppet code.</p>
+
+<p>So we&rsquo;ve templated out the basic DDL for the agent. We&rsquo;ve included some metadata and output &ndash; arbitary commands usually just need to be ran without input, for instance <code>df -h</code> and returns the mounted volumes and data about them. That could be handy in orchestration. If we wanted to we could add some inputs here, for example, if we wanted to pass in an arbitrary input to a command. I&rsquo;m not interested in that here, just basic output from a command.</p>
+
+<p>Let&rsquo;s build out the ruby script to run this command:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">MCollective</span>
+</span><span class='line'>  <span class="k">module</span> <span class="nn">Agent</span>
+</span><span class='line'>    <span class="k">class</span> <span class="o">&lt;</span><span class="sx">%= @action_name.capitalize %&gt;&lt;RPC::Agent</span>
+</span><span class='line'><span class="sx">      activate_when do</span>
+</span><span class='line'><span class="sx">        &lt;%=</span> <span class="vi">@activate_condition</span> <span class="sx">%&gt; </span>
+</span><span class='line'><span class="sx">      end</span>
+</span><span class='line'>
+</span><span class='line'><span class="sx">      action &quot;run&quot; do</span>
+</span><span class='line'><span class="sx">        command = &#39;&lt;%= (@cmd_prefix+&#39; &#39;+@command).strip %&gt;</span><span class="err">&#39;</span>
+</span><span class='line'>        <span class="n">reply</span><span class="o">[</span><span class="ss">:status</span><span class="o">]</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="ss">:stdout</span> <span class="o">=&gt;</span> <span class="ss">:out</span><span class="p">,</span> <span class="ss">:stderr</span> <span class="o">=&gt;</span> <span class="ss">:err</span><span class="p">,</span> <span class="ss">:chomp</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Our arbitary command only has 1 action. It&rsquo;s that simple. We run the command and push our output to the ouputs in the command.</p>
+
+<p>Now let&rsquo;s look at the Rakefile that actually runs this. For me, I store most of my Rakefiles as <code>*.task</code> in <code>~/.rake</code> so I can run them anywhere with <code>rake -g</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># Rakefile to create MCO agents and associated DDL</span>
+</span><span class='line'><span class="c1"># Author: Jeff Malnick</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">get_agent_template</span><span class="p">()</span>
+</span><span class='line'>  <span class="n">template</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;rb.erb&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">get_ddl_template</span><span class="p">()</span>
+</span><span class='line'>  <span class="n">template</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;ddl.erb&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">McoAgent</span>
+</span><span class='line'>  <span class="nb">require</span> <span class="s1">&#39;erb&#39;</span>
+</span><span class='line'>  <span class="kp">attr_accessor</span> <span class="ss">:command</span><span class="p">,</span> <span class="ss">:template</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+</span><span class='line'>      <span class="vi">@command</span>        <span class="o">=</span> <span class="n">command</span>
+</span><span class='line'>      <span class="vi">@template</span>       <span class="o">=</span> <span class="n">template</span>
+</span><span class='line'>      <span class="vi">@action_name</span>        <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span>
+</span><span class='line'>      <span class="vi">@cmd_prefix</span>     <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span class='line'>      <span class="vi">@activate_condition</span>     <span class="o">=</span> <span class="kp">false</span>
+</span><span class='line'>      <span class="vi">@author_name</span>        <span class="o">=</span> <span class="s1">&#39;anonymous&#39;</span>
+</span><span class='line'>      <span class="vi">@author_email</span>       <span class="o">=</span> <span class="s1">&#39;anonym@us&#39;</span>
+</span><span class='line'>          <span class="vi">@license</span>            <span class="o">=</span> <span class="s1">&#39;Apache v2&#39;</span>
+</span><span class='line'>      <span class="vi">@version</span>            <span class="o">=</span> <span class="s1">&#39;1.0&#39;</span>
+</span><span class='line'>          <span class="vi">@project_url</span>        <span class="o">=</span> <span class="s1">&#39;http://www.puppetlabs.com&#39;</span>
+</span><span class='line'>      <span class="vi">@timeout</span>            <span class="o">=</span> <span class="mi">15</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">render</span><span class="p">()</span>
+</span><span class='line'>      <span class="no">ERB</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="vi">@template</span><span class="p">)</span><span class="o">.</span><span class="n">result</span><span class="p">(</span><span class="nb">binding</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+</span><span class='line'>      <span class="no">File</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
+</span><span class='line'>          <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">render</span><span class="p">)</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">task</span> <span class="ss">:mco_cmd</span> <span class="k">do</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="n">command</span> <span class="o">=</span> <span class="no">ENV</span><span class="o">[</span><span class="s1">&#39;command&#39;</span><span class="o">]</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Creating mco agent and data description file for </span><span class="si">#{</span><span class="n">command</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># Create Agent .rb File</span>
+</span><span class='line'>  <span class="n">agent</span> <span class="o">=</span> <span class="no">McoAgent</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">get_agent_template</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">agent</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span><span class="p">,</span> <span class="s2">&quot;mco_agents&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="si">}</span><span class="s2">.rb&quot;</span><span class="p">))</span>
+</span><span class='line'>  <span class="n">ddl</span> <span class="o">=</span> <span class="no">McoAgent</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">get_ddl_template</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">ddl</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span><span class="p">,</span> <span class="s2">&quot;mco_agents&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="si">}</span><span class="s2">.ddl&quot;</span><span class="p">))</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Path to agent: &quot;</span><span class="p">,</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span><span class="p">,</span> <span class="s2">&quot;mco_agents&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="si">}</span><span class="s2">.rb&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Path to ddl: &quot;</span><span class="p">,</span> <span class="no">File</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span><span class="p">,</span> <span class="s2">&quot;mco_agents&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="si">}</span><span class="s2">.ddl&quot;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As you can see, I wrote my Class into the Rakefile itself. It wasn&rsquo;t long and let me have some clarity, so there wasn&rsquo;t a need to break it out.</p>
+
+<p>The McoAgent Class accepts two attributes, command and template. Pass it a command and a template, for me I have a couple of def&rsquo;s that do this for the agent and ddl respectavely, and it builds out the ERB for us. My init def just declares the variables that we want available to our templates and we&rsquo;re good to go &ndash; the rest is accomplished via the ERB library.</p>
+
+<p>The entire project repo is available <a href="https://github.com/malnick/rake_tasks/tree/master/mco_create_agent">here</a></p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-31T08:16:59-07:00" pubdate data-updated="true">Aug 31<span>st</span>, 2014</time></div>
+	
+
+
+	
+</div></article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
 		<a href="/blog/2014/08/03/deploying-box-files-from-virtualbox-for-vagrant/">
 		
 			Deploying .box Files From VirtualBox for Vagrant</a>
@@ -3331,622 +3588,6 @@ We can also do a quick one time environment run with the &#8220;`&#8211;environm
 
 
 
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-05-16T12:34:33-07:00" pubdate data-updated="true">May 16<span>th</span>, 2014</time></div>
-	
-
-
-	
-</div></article>
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2014/05/16/r10k-control-repos/">
-		
-			R10k: Control Repos</a>
-	</h2>
-	<div class="entry-content">
-		<p>This document explains the architecture and deployment of a control repository for syncing multiple puppet environments, their associated puppet code (modules) and their assocaited data (hiera). This document does not review how to deploy r10k, however that is discussed in relevant detail <a href="https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff">here</a>.</p>
-
-<h2>What is a control repo?</h2>
-
-<p>A control repository stores a Puppetfile and hiera data (hiera.yaml and hieradata/).</p>
-
-<h3>What does it contain?</h3>
-
-<pre><code>hieradata/
-Puppetfile
-</code></pre>
-
-<p>It is also common to have a <code>hiera.yaml</code> in the control repo. However <a href="http://www.jeffmalnick.com/blog/2014/05/15/hiera-and-r10k/">for many reasons</a> I don&rsquo;t believe this is a good idea. It can lead to confusing issues with branching of the file that is only consulted once for it&rsquo;s <code>$datadir</code> path and is not used on a per environment basis &ndash; it&rsquo;s loaded once from <code>$confdir</code> during the <em>hiera()</em> call and is not consulted on a per environment basis (e.g. <code>$confdir/environments/$environments/hiera.yaml</code> <strong>is not used</strong> during the <em>hiera()</em> lookup, only <code>$confdir/hiera.yaml</code> is used).</p>
-
-<h2>How does it work?</h2>
-
-<p>The control repo is placed in a monolithic git repository.</p>
-
-<p>The repository can have one or more topic branches that are used by r10k to sync to local Puppet environments.</p>
-
-<h3>Configuration for Puppet code &amp; Hiera data sync via r10k</h3>
-
-<p>Details on how to deploy a gitlab repo and assocaited topic branching for r10k sync are <a href="https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff">here</a>.</p>
-
-<p>Place a Puppetfile in <code>$confdir/Puppetfile</code>.</p>
-
-<p>Populate your Puppetfile with what ever crap you need.</p>
-
-<p>In <code>$confdir</code>:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>git init
-</span><span class='line'>git remote add origin git@whatever.com:your_name/control_repo.git
-</span><span class='line'>git branch -m master production
-</span><span class='line'>git add Puppetfile
-</span><span class='line'>git add hiera.yaml <span class="c"># r10k really doesn&#39;t need this but we&#39;ll add it anyways. </span>
-</span><span class='line'>git add hieradata/
-</span><span class='line'>git push -u origin production:production <span class="c"># or whatever branch, maybe production?</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>Configure hiera.yaml for dynamic environments</h3>
-
-<p><strong>NOTE</strong>: the hiera.yaml is only loaded from <code>$confdir/hiera.yaml</code> on each puppet run, this means even though you&rsquo;ll have a hiera.yaml in <code>$confdir/environments/$environment/</code> those are not actually consulted, only the $confdir hiera.yaml is used &ndash; therefore, <strong><em>you can not have hierarchies per environment</em></strong>. Since the <code>$datadir</code> is environment aware that namespace is filled at run time, and consults the specific environment datadir <code>$confdir/environments/$environment/hieradata/</code>.</p>
-
-<p>Your hiera.yaml needs to have a <code>datadir</code> configured for dynamic lookup so:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
-</span><span class='line'><span class="l-Scalar-Plain">:backends</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">yaml</span>
-</span><span class='line'><span class="l-Scalar-Plain">:hierarchy</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;%{clientcert}&quot;</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="s">&quot;%{environment}&quot;</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">global</span>
-</span><span class='line'>
-</span><span class='line'><span class="l-Scalar-Plain">:yaml</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">:datadir</span><span class="p-Indicator">:</span> <span class="s">&#39;/etc/puppetlabs/puppet/environments/%{::environment}/hieradata&#39;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>Branching your Puppetfile</h3>
-
-<p>For example, assuming you already have a master or production branch:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi Puppetfile
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>&hellip;add some git modules etc&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>git checkout -b development
-</span><span class='line'>git push origin development:development
-</span><span class='line'>git commit -am Puppetfile
-</span><span class='line'>r10k deploy environment -pv
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Now you have a new topic branch &lsquo;development&rsquo; and a new Puppet environment in <code>$confdir/environments/development</code>.</p>
-
-<h3>Branching your hiera data</h3>
-
-<p>Our <code>development</code> branch needs it&rsquo;s own data too:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> <span class="nv">$confdir</span>/hieradata
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>modify K,V&rsquo;s in <code>whatever.yaml</code></li>
-<li>modify other K,V&rsquo;s as needed for your development environment</li>
-</ul>
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>git branch <span class="c"># check your branch, make sure it&#39;s still development</span>
-</span><span class='line'>git commit -am hieradata
-</span><span class='line'>git push
-</span><span class='line'>r10k deploy environment -pv
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Check <code>$confdir/environments/development/hieradata</code></p>
-
-<h2>Testing</h2>
-
-<h3>Configuration files for r10k, hiera, puppet:</h3>
-
-<h4>/etc/r10k.yaml</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>root@master hieradata<span class="o">]</span><span class="c"># cat /etc/r10k.yaml</span>
-</span><span class='line'>:cachedir: /var/cache/r10k
-</span><span class='line'>:sources:
-</span><span class='line'>  puppet:
-</span><span class='line'>    remote: <span class="s2">&quot;git@10.10.100.111:user/control_repo.git&quot;</span>
-</span><span class='line'>    basedir: /etc/puppetlabs/puppet/environments
-</span><span class='line'>    prefix: <span class="nb">false</span>
-</span><span class='line'>:purgedirs:
-</span><span class='line'>  - <span class="s2">&quot;&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>/etc/puppetlabs/puppet/puppet.conf</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> cat /etc/puppetlabs/puppet/puppet.conf
-</span><span class='line'><span class="o">[</span>main<span class="o">]</span>
-</span><span class='line'><span class="nv">certname</span> <span class="o">=</span> master.puppetlabs.vm
-</span><span class='line'><span class="nv">dns_alt_names</span> <span class="o">=</span> master.puppetlabs.vm,puppet
-</span><span class='line'><span class="nv">vardir</span> <span class="o">=</span> /var/opt/lib/pe-puppet
-</span><span class='line'><span class="nv">logdir</span> <span class="o">=</span> /var/log/pe-puppet
-</span><span class='line'><span class="nv">rundir</span> <span class="o">=</span> /var/run/pe-puppet
-</span><span class='line'><span class="nv">modulepath</span> <span class="o">=</span> /etc/puppetlabs/puppet/environments/<span class="nv">$environment</span>/modules:/opt/puppet/share/puppet/modules
-</span><span class='line'><span class="nv">server</span> <span class="o">=</span> master.puppetlabs.vm
-</span><span class='line'><span class="nv">user</span>  <span class="o">=</span> pe-puppet
-</span><span class='line'><span class="nv">group</span> <span class="o">=</span> pe-puppet
-</span><span class='line'><span class="nv">archive_files</span> <span class="o">=</span> <span class="nb">true</span>
-</span><span class='line'><span class="nv">archive_file_server</span> <span class="o">=</span> master.puppetlabs.vm
-</span><span class='line'><span class="c"># cut [master] &amp; [agent] sections, $modulepath above is the important config key here.</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>/etc/puppetlabs/puppet/hiera.yaml</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> cat hiera.yaml
-</span><span class='line'>---
-</span><span class='line'>:backends:
-</span><span class='line'>  - yaml
-</span><span class='line'>:hierarchy:
-</span><span class='line'>  - <span class="s2">&quot;%{clientcert}&quot;</span>
-</span><span class='line'>  - <span class="s2">&quot;%{environment}&quot;</span>
-</span><span class='line'>  - global
-</span><span class='line'>:yaml:
-</span><span class='line'>  :datadir: <span class="s1">&#39;/etc/puppetlabs/puppet/environmets/%{environment}/hieradata&#39;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>/etc/puppetlabs/puppet/Puppetfile</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># cat Puppetfile</span>
-</span><span class='line'><span class="c"># mod, &lt;module name&gt;, &lt;version or tag&gt;, &lt;source&gt;</span>
-</span><span class='line'>forge <span class="s2">&quot;http://forge.puppetlabs.com&quot;</span>
-</span><span class='line'>
-</span><span class='line'><span class="c"># Modules from the Puppet Forge</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/stdlib&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/apache&quot;</span>, <span class="s2">&quot;0.11.0&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/pe_gem&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/mysql&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/firewall&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/vcsrepo&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/git&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;puppetlabs/inifile&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;zack/r10k&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;gentoo/portage&quot;</span>
-</span><span class='line'>mod <span class="s2">&quot;thias/vsftpd&quot;</span>
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'><span class="c"># Modules from Github using various references</span>
-</span><span class='line'>mod <span class="s2">&quot;wordpress&quot;</span>,
-</span><span class='line'>  :git <span class="o">=</span>&gt; <span class="s2">&quot;git://github.com/hunner/puppet-wordpress.git&quot;</span>,
-</span><span class='line'>  :ref <span class="o">=</span>&gt; <span class="s1">&#39;0.4.0&#39;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>Testing the Puppet Master <code>master.puppetlabs.vm:$confdir/</code>:</h3>
-
-<h4>Our topic branches:</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> git branch
-</span><span class='line'>  development
-</span><span class='line'>* production
-</span><span class='line'>  staging
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>For the given topic branch above, production, let&rsquo;s look at our hieradata in <code>$confdir/hieradata</code>:</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> <span class="nb">pwd</span>
-</span><span class='line'>/etc/puppetlabs/puppet/hieradata
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> ls
-</span><span class='line'>agent1.puppetlabs.vm.yaml  agent2.puppetlabs.vm.yaml  agent3.puppetlabs.vm.yaml  master.puppetlabs.vm.yaml
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h4>and for each of these files we have the same K,V:</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> cat master.puppetlabs.vm.yaml
-</span><span class='line'>---
-</span><span class='line'>message: <span class="s2">&quot;%{fqdn} is running in environment %{environment}&quot;</span>
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> cat agent1.puppetlabs.vm.yaml
-</span><span class='line'>---
-</span><span class='line'>message: <span class="s2">&quot;%{fqdn} is running in environment %{environment}&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>Now let&rsquo;s switch over to our development branch and compare:</h3>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> git checkout development
-</span><span class='line'>Switched to branch <span class="s1">&#39;development&#39;</span>
-</span><span class='line'>root@master hieradata<span class="o">]</span> <span class="nb">pwd</span>
-</span><span class='line'>/etc/puppetlabs/puppet/hieradata
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> ls
-</span><span class='line'>agent1.puppetlabs.vm.yaml  agent2.puppetlabs.vm.yaml  agent3.puppetlabs.vm.yaml  master.puppetlabs.vm.yaml
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> cat agent1.puppetlabs.vm.yaml
-</span><span class='line'>---
-</span><span class='line'>message: <span class="s2">&quot;%{fqdn} is running in environment %{environment}&quot;</span>
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> cat master.puppetlabs.vm.yaml
-</span><span class='line'>---
-</span><span class='line'>message: <span class="s2">&quot;%{fqdn} is running in environment %{environment}&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Sync everything up with r10k so we can test:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> r10k deploy environment -pv
-</span><span class='line'><span class="o">[</span>R10K::Task::Deployment::DeployEnvironments - INFO<span class="o">]</span> Loading environments from all sources
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment staging
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment production
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying wordpress into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying vsftpd into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying portage into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying r10k into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying inifile into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying git into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying vcsrepo into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying firewall into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying mysql into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying pe_gem into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying apache into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Module::Sync - INFO<span class="o">]</span> Deploying stdlib into /etc/puppetlabs/puppet/environments/production/modules
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment master
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment development
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="o">[</span>R10K::Task::Deployment::PurgeEnvironments - INFO<span class="o">]</span> Purging stale environments from /etc/puppetlabs/puppet/environments
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Since there is a <code>%{certname}.yaml</code> for the master we can do a quick check on the command line that we&rsquo;re accessing the correct data:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> git checkout production
-</span><span class='line'>Already on <span class="s1">&#39;production&#39;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> puppet apply -e <span class="s2">&quot;notice(hiera(message))&quot;</span>
-</span><span class='line'>Notice: Scope<span class="o">(</span>Class<span class="o">[</span>main<span class="o">])</span>: master.puppetlabs.vm is running in environment production
-</span><span class='line'>Notice: Compiled catalog <span class="k">for </span>master.puppetlabs.vm in environment production in 0.06 seconds
-</span><span class='line'>Notice: Finished catalog run in 0.24 seconds
-</span><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>The <code>$fqdn</code> and <code>$environment</code> values were correctly filled in. <strong>Note</strong> that this is a poor test since my data files are essentially all the same, <code>$environment</code> will always match it&rsquo;s environment and <code>$fqdn</code> will always match it&rsquo;s fqdn &ndash;  we could be grabbing this value from anywhere. So Let&rsquo;s try with hard coded values:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> <span class="nb">pwd</span>
-</span><span class='line'>/etc/puppetlabs/puppet/hieradata
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> git branch
-</span><span class='line'>  development
-</span><span class='line'>* production
-</span><span class='line'>  staging
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> cat master.puppetlabs.vm.yaml
-</span><span class='line'>---
-</span><span class='line'>message: <span class="s2">&quot;I&#39;m hard coding this value: environment production, master.puppetlabs.vm.yaml&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Now push your new data for production branch up to gitlab</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># git add hieradata/</span>
-</span><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># git commit -m &quot;hieradata hard coded&quot;</span>
-</span><span class='line'><span class="o">[</span>production 3a58e49<span class="o">]</span> hieradata hard coded
-</span><span class='line'> 1 files changed, 1 insertions<span class="o">(</span>+<span class="o">)</span>, 1 deletions<span class="o">(</span>-<span class="o">)</span>
-</span><span class='line'> <span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># git push</span>
-</span><span class='line'> Counting objects: 7, <span class="k">done</span>.
-</span><span class='line'> Delta compression using up to 4 threads.
-</span><span class='line'> Compressing objects: 100% <span class="o">(</span>4/4<span class="o">)</span>, <span class="k">done</span>.
-</span><span class='line'> Writing objects: 100% <span class="o">(</span>4/4<span class="o">)</span>, 399 bytes, <span class="k">done</span>.
-</span><span class='line'> Total 4 <span class="o">(</span>delta 2<span class="o">)</span>, reused 0 <span class="o">(</span>delta 0<span class="o">)</span>
-</span><span class='line'> To git@10.10.100.111:user/control_repo.git
-</span><span class='line'>    1b240c6..3a58e49  production -&gt; production
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>and sync r10k</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># r10k deploy environment -pv</span>
-</span><span class='line'><span class="o">[</span>R10K::Task::Deployment::DeployEnvironments - INFO<span class="o">]</span> Loading environments from all sources
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment staging
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment production
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="c"># ommitting other output ...</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>and test for the correct hard coded K,V</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># puppet apply -e &quot;notice(hiera(message))&quot;</span>
-</span><span class='line'>Notice: Scope<span class="o">(</span>Class<span class="o">[</span>main<span class="o">])</span>: I<span class="err">&#39;</span>m hard coding this value: environment production, master.puppetlabs.vm.yaml
-</span><span class='line'>Notice: Compiled catalog <span class="k">for </span>master.puppetlabs.vm in environment production in 0.05 seconds
-</span><span class='line'>Notice: Finished catalog run in 0.26 seconds
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>YAY!</p>
-
-<h4>And again on the development branch</h4>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> <span class="nb">pwd</span>
-</span><span class='line'>/etc/puppetlabs/puppet/hieradata
-</span><span class='line'><span class="o">[</span>root@master hieradata<span class="o">]</span> git branch
-</span><span class='line'>* development
-</span><span class='line'>  production
-</span><span class='line'>  staging
-</span><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> cat hieradata/master.puppetlabs.vm.yaml
-</span><span class='line'>---
-</span><span class='line'>message: <span class="s2">&quot;I&#39;m hard coding this value: environment development, master.puppetlabs.vm.yaml&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Push our new hieradata for <code>development</code> to gitlab:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> git add hieradata/
-</span><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> git commit -m <span class="s2">&quot;hieradata hard coded&quot;</span>
-</span><span class='line'><span class="o">[</span>development 2873db5<span class="o">]</span> hieradata hard coded
-</span><span class='line'> 1 files changed, 1 insertions<span class="o">(</span>+<span class="o">)</span>, 1 deletions<span class="o">(</span>-<span class="o">)</span>
-</span><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span> git push
-</span><span class='line'>Counting objects: 7, <span class="k">done</span>.
-</span><span class='line'>Delta compression using up to 4 threads.
-</span><span class='line'>Compressing objects: 100% <span class="o">(</span>4/4<span class="o">)</span>, <span class="k">done</span>.
-</span><span class='line'>Writing objects: 100% <span class="o">(</span>4/4<span class="o">)</span>, 398 bytes, <span class="k">done</span>.
-</span><span class='line'>Total 4 <span class="o">(</span>delta 2<span class="o">)</span>, reused 0 <span class="o">(</span>delta 0<span class="o">)</span>
-</span><span class='line'>To git@10.10.100.111:user/control_repo.git
-</span><span class='line'>   08e249b..2873db5  development -&gt; development
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>andthen sync with r10k</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># r10k deploy environment -pv</span>
-</span><span class='line'><span class="o">[</span>R10K::Task::Deployment::DeployEnvironments - INFO<span class="o">]</span> Loading environments from all sources
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment staging
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="o">[</span>R10K::Task::Environment::Deploy - NOTICE<span class="o">]</span> Deploying environment production
-</span><span class='line'><span class="o">[</span>R10K::Task::Puppetfile::Sync - INFO<span class="o">]</span> Loading modules from Puppetfile into queue
-</span><span class='line'><span class="c"># ommitted the other output...</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>and test with the <code>--environment development</code> switch</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master puppet<span class="o">]</span><span class="c"># puppet apply -e &quot;notice(hiera(message))&quot; --environment development</span>
-</span><span class='line'>Notice: Scope<span class="o">(</span>Class<span class="o">[</span>main<span class="o">])</span>: I<span class="err">&#39;</span>m hard coding this value: environment development, master.puppetlabs.vm.yaml
-</span><span class='line'>Notice: Compiled catalog <span class="k">for </span>master.puppetlabs.vm in environment development in 0.05 seconds
-</span><span class='line'>Notice: Finished catalog run in 0.25 seconds
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>`</p>
-
-<p>We can also do a quick one time environment run with the <code>--environment</code> flag:</p>
 
 		
 		
