@@ -187,21 +187,47 @@ $(document).ready(
   ...
  </code></p>
 
+<p>You can override this in the options you pass via the JSON POST with the key <code>key</code>.</p>
+
 <ol>
-<li>You&rsquo;ll fork this repo, and update the <code>data_file</code> and maybe the <code>key</code> values in <code>lib/update.rb</code>:</li>
+<li>You&rsquo;ll fork this repo, and update the <code>data_file</code> and maybe the <code>key</code> values in <code>lib/options.rb</code>:</li>
 </ol>
 
 
 <p>  &#8220;`ruby
-  def write(options)</p>
+  module Update</p>
 
-<pre><code># UPDATE THIS PATH !!
-data_file      = File.expand_path(File.dirname(__FILE__)) + '/../ext/global.yaml'
-# ...AND MAYBE THIS KEY !!
-key            = "#{service}_version_#{environment}"
+<pre><code>class Options
+
+  attr_accessor :config
+
+  def initialize(options)
+
+    LOG.info("##### Parsing Options #####")
+
+    @config         = Hash.new
+
+    # Required data from POST
+    @config[:environment]    = options['environment']   # qa or production etc
+    @config[:version]        = options['version']       # The version to write to the data file
+    @config[:service]        = options['service']       # The service name
+    @config[:role]           = options['role']          # The role for the nodes to update via mCollective
+
+    # Optional data from POST
+    @config[:key]            = options['key']             || "#{@config[:service]}_version_#{@config[:environment]}"
+    @config[:git_repo]       = options['git_repo']        || 'git@github.com:malnick/puppet-control'
+    @config[:git_repo_dir]   = options['git_repo_dir']    || '/tmp/control'
+    @config[:data_file]      = options['data_file_path']  || "#{@config[:git_repo_dir]}/global.yaml"
+
+    LOG.info("##### Setting configuration #####")
+    @config.each do |k,v|
+      LOG.info("#{k}: #{v}")
+    end
+  end
+end
 </code></pre>
 
-<p>  &hellip;
+<p>  end
   &#8220;`</p>
 
 <ol>
@@ -268,9 +294,34 @@ puppet.myorg.com:1015/deploy &lt;&lt;EOF
 <li>If successful the build drops the new versioned jar or zip file or whatever in S3: <code>myservice-0.2.5.jar</code></li>
 <li>If successful the shell post-run is executed, running the above script that gets the new $version and POSTs to our webhook on the puppet master</li>
 <li>The webhook updates hiera data with the correct value for the updated version</li>
+<li>The webhook updates git to ensure that jenkins owns our versioning</li>
 <li>The Webhook executes an MCO call to run puppet on the node running this service based on the <code>$::role</code> fact</li>
+<li>The nodes matching the <code>$::role</code> get the updated version in hiera data and match that against the <code>s3</code> resource in that:</li>
 </ol>
 
+
+<p>  &#8220;`ruby
+  &hellip;
+  s3 { &ldquo;${basedir}/${service}&ndash;${version}.jar&rdquo;:</p>
+
+<pre><code>  ensure            =&gt; present,
+  source            =&gt; "/my_bucket/${service}-${deploy_stage}/${service}-${version}.jar",
+  access_key_id     =&gt; $access_key_id,
+  secret_access_key =&gt; $secret_access_key,
+  require           =&gt; File[$basedir],
+</code></pre>
+
+<p>  }
+  &hellip;
+  &#8220;`</p>
+
+<p>Where <code>$version</code> is derived from</p>
+
+<p>  <code>ruby
+  $service = 'my_service'
+  $version = hiera(my_service_version_qa)
+  ...
+ </code></p>
 
 <h2>Some Closing Remarks&hellip; or why this is rad</h2>
 
