@@ -8,7 +8,7 @@ footer: true
 ---
 ##Profile
 
-Proud hacker since birth, always curious about how it works, and finding the right solutions to the hard problems. I bring the scientific method to my work, holding my views tentatively and willingly modify them in the face of new evidence. I love teaching and collaborating on projects big and small. My preferred working space is one where I'm the dumbest person in the room. I play well with others. 
+A graduate from Puppet Labs' Professional Services, Jeff Malnick has been a systems engineer for 10 years starting with the Department of Defense at the Naval Postgraduate School to currently working for SRC:CLR, the foremost platform that brings software security to the development process. Outside of the day-to-day Jeff loves tearing up single track on his mountain bike, building pillow forts in his living room and finding new and often overlooked uses for glitter. 
 
 ##Experience
 
