@@ -6,15 +6,21 @@ comments: true
 sharing: true
 footer: true
 ---
-##Profile
-
-A graduate from Puppet Labs' Professional Services, Jeff Malnick has been a systems engineer for 10 years starting with the Department of Defense at the Naval Postgraduate School to currently working for SRC:CLR, the foremost platform that brings software security to the development process. Outside of the day-to-day Jeff loves tearing up single track on his mountain bike, building pillow forts in his living room and finding new and often overlooked uses for glitter. 
+DevOps'ing the shit out of it since 2008
 
 ##Experience
 
+###SRC:CLR - srcclr.com, Sr. DevOps Engineer
+
+January 2015 - Present
+
+Scalable chaos; Puppet; All things IT Operations.
+
+Wrote, deployed and managed our merge-to-master continuous integration pipeline (jenkns-puppet master-deploy to cluster in aws); single handedly wrote all the configuration management code, cloud formation templates for full stack one click deployments to AWS; managed migration of domain from @sourceclear to @srcclr including google apps, DNS, application layer configuration and other associated services; deployed all our company SAAS applications for SAML auth via Ping Managed SSO; worked with developers from the frontend to backend to build out sophisticated monitoring solutions using logstash -> ELK stack (for analytics and visualizations), logstash -> pager duty (alerts), New Relic -> pager duty.
+
 ###ConnectSolutions, Senior Systems Engineer
 
-October 2014 - Present 
+October 2014 - January 2015
 
 Leading the systems engieering team at Connect Solutions, a cloud hosting provider for Adobe Connect and MS Lync. Write tools to amend the automation pipeline built around Puppet. Develop new integrations with service discovery tools. Implement continuous integration webhooks and workflows around Jenkins to automate the dev­test­deploy workflow around our Puppet codebase. Lead the team by constantly learning about new technologies and methodologies and disseminate institutional knowledge. Own the automation of the application layer and design bare metal provisioning methodologies for our corporate and FedRAMP datacenters.
 
