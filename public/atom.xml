@@ -4,7 +4,7 @@
   <title><![CDATA[JP]]></title>
   <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
   <link href="httpL://www.jeffmalnick.com/"/>
-  <updated>2015-04-07T10:27:09-07:00</updated>
+  <updated>2015-04-15T10:33:09-07:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
@@ -12,6 +12,113 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Factory Patterns: Rule #1]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2015/04/15/factory-patterns-rule-number-1/"/>
+    <updated>2015-04-15T10:32:31-07:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2015/04/15/factory-patterns-rule-number-1</id>
+    <content type="html"><![CDATA[<h1>Factory Patterns</h1>
+
+<p>I learned early on in my career that the trick to successfully maintaining large, complicated deployments was to make things so that they are like a factory, then solve your problems using factory patterns. The metaphor is extended from the continuous integration pipelines I develop for seamless code deploys to the ways in which I go about maintaining the infrastructure on which that code runs.</p>
+
+<h3>Rule #1</h3>
+
+<p>Rule #1, the litmus test for your infrastructure: can you deploy your nodes into any cloud platform with out a SSH key and have your entire application up and running, zero intervention required?</p>
+
+<p>Rule #1 requires skillfully built configuration management code. It doesn’t matter what configuration management system you use as long as it satisfies the prerequisite that you can deploy your entire stack and never have to SSH into the box.</p>
+
+<p>Now I’d also add that the code you write which abstracts the configuration of any machine should be clear enough that any person who comes into your organization, either with you or after you leave, be able to understand the complete configuration of a machine by simply looking at your CM code, most notably the $role manifest or recipe.</p>
+
+<p>This syntax-ual sugar isn’t required for Rule #1 to be successful but plays a key role in ensuring the agile process of CM doesn’t become the burden of every other systems engineer in your organization. Good configuration management code should be abstract enough that any developer in your organization can understand the deployment of their code based on a given $role and every systems &amp; operations engineer can find clues as to where to look when things go astray by looking at that same CM code block.</p>
+
+<h3>The Pattern</h3>
+
+<p>A good factory is like a state machine, for a given input it produces a given output. Infrastructure is the same way, the inputs are straightforward: bare metal provisioning + configuration management + service discovery. These three inputs are generated in different ways but no matter what are always conceptually similar.</p>
+
+<h4>Bare Metal</h4>
+
+<p>Regardless of if you’re deploying in vCenter, AWS, Heroku or DigitalOcean you have a concept of a VM / Instance / Dyno / Droplet. Each platform has it’s own way of managing the deployment of those pieces, but the end result is similar: abstracted bare metal provisioning.</p>
+
+<h4>Configuration Management</h4>
+
+<p>Once the bare metal piece is in place the next stop in the factory is configuration management. Chef, Puppet, Ansible, and others all share a common thread: abstract away the notion of “resources” on a machine ($package, $file, $service) regardless of operating system or deployment environment and be able to declare those resources in an easy to understand way.</p>
+
+<p>Puppet uses it’s own DSL for CM based on Ruby, Chef uses it’s own Ruby libraries, Salt uses the YAML interchange format as well as Ansible. The idea at this point in the factory is to implement a system that abstracts away how to provision a resource on a machine and instead simply require that resource exist in a specific way.</p>
+
+<p>So a user can be defined as:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># Puppet</span>
+</span><span class='line'><span class="n">user</span> <span class="p">{</span> <span class="err">‘</span><span class="n">jeff</span><span class="err">’</span><span class="p">:</span> <span class="k">ensure</span> <span class="o">=&gt;</span> <span class="n">present</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># Chef</span>
+</span><span class='line'><span class="n">user</span> <span class="err">“</span><span class="n">jeff</span><span class="err">”</span> <span class="k">do</span> <span class="n">action</span> <span class="ss">:create</span> <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># Ansible</span>
+</span><span class='line'><span class="o">-</span> <span class="ss">user</span><span class="p">:</span> <span class="nb">name</span><span class="o">=</span><span class="n">jeff</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This abstraction enables the operations person to automate the deployment of resources to a given machine, in this example the user ‘jeff’, without having to worry about <strong>how to provision</strong> &ndash; the idea being, you don’t need to tell the computer how to make the user ‘jeff’, you simply declare it in your manifest/recipe/playbook and you’re done.</p>
+
+<p>Now this is an incredibly simple task, a single user. When you’re talking about tens of thousands of resources that may be compiled into a given catalogue to be processed on the node there are a lot of other considerations you have to take into account such as ensuring each step in the process is idempotent (you don’t execute a resource if the state of the machine already matches); ensuring the catalogue is a-cyclic (no resource dependencies create loops).</p>
+
+<p>At the end of the day this entire, highly complicated process, should be easily readable and understood at it’s highest layer of abstraction, i.e., some sort of role manifest/recipie that takes all those resources and wraps them into a value that conveys the business logic of what that code does.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># Puppet</span>
+</span><span class='line'><span class="c1"># $confdir/modules/role</span>
+</span><span class='line'><span class="k">class</span> <span class="ss">role</span><span class="p">:</span><span class="ss">:qa_haproxy_frontned</span> <span class="p">{</span> <span class="err">…</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># Chef</span>
+</span><span class='line'><span class="c1"># ~/chef-repo/roles/qa_haproxy_frontend/role.rb</span>
+</span><span class='line'><span class="nb">name</span> <span class="err">“</span><span class="n">qa_haproxy_frontend</span><span class="err">”</span>
+</span><span class='line'><span class="n">description</span> <span class="err">“</span><span class="no">The</span> <span class="n">outer</span> <span class="n">most</span> <span class="n">layer</span> <span class="n">of</span> <span class="n">the</span> <span class="no">QA</span> <span class="no">Haproxy</span> <span class="n">frontend</span> <span class="no">CM</span> <span class="n">code</span><span class="err">”</span>
+</span><span class='line'><span class="n">run_list</span> <span class="p">(</span><span class="s2">&quot;recipe[qa_haproxy_frontend]”)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>All things being equal the end goal is abstraction. The CM factory should make simple the increasingly complicated step of provisioning a node in a specific way. The code should be elegant, readable and maintainable. The output should be a working machine with a repeatably deployable state.</p>
+
+<h4>Service Discovery</h4>
+
+<p>The last piece to the puzzle is service discovery. This piece, previously thought of as “optional” for most deployments is becoming more of  a main stay due to the design principles of service oriented architecture. SOA ensures we have many services to maintain, sometimes many instances of that service on a given node, each satisfying a specific feature of the application. In some ways SOA makes more simple the maintenance of the product, such as enabling developers to easily deploy code changes to a specific service which may not completely break the overall usability of the application if something goes wrong during a code change.</p>
+
+<p>From a systems engineering perspective it enables easier scaling in that you can scale a specific service rather than the entire monolithic code base to meet the demands of an increasing user base. However, how the scaling occurs is the complicated part of this final stop in the factory. Everything from assigning a port for the service process to listen on to ensuring the service actually exists and is healthy is complicated to say the least.</p>
+
+<p>ZooKeeper, ETCd and other service discovery tools allow a single point of contact for each service to reach out to in order to feed those metrics back to a master process and in some cases do some basic configuration management based on information from those systems. However, these tools also ensure a single point of failure which is why ZooKeeper takes high availability seriously. The uptime of those service discovery tools also relies on other tools such as DNS or other hostname resolution mechanisms, thereby increasing not only the complexity of your deployment by one tool but rather by a number of tools.</p>
+
+<p>Implementing successful service discovery for your SOA is not for the faint of heart. More tools are coming out that bundle up ZooKeeper in a larger framework that abstracts these finer details. For example Mesosphere bundles the Mesos and Zookeeper projects with a distributed init and process management framework called Chronos and Marathon. Marathon can receive a POST with a specific docker image in a cloud or locally hosted registry along with information such as how many containers it needs to boot across your infrastructure. Mesosphere aims to abstract away the complicated task of port assignment and “is this service running” to ensure you alway have ’n’ number of services up, and if you need ’n’ more it makes it as easy as a POST or input via the web UI.</p>
+
+<p>Synapse and Nerve also serve a similar end goal: deploy service ‘x’ ’n’ number of times; ensure service ‘x’ is healthy, and if not, remove service ‘x’ from rotation and deploy another to replace it. Simple right?</p>
+
+<h3>In the end</h3>
+
+<p>In the end, Rule #1 still stands: can you deploy your entire application stack from bare metal to fully operational in one command and with out having to use SSH to get into a node?</p>
+
+<p>The final output of the factory should be your working web application. You should never have to SSH into any node: metrics and log data should be shipped off each node routinely using tools like Logstash and StatsD &ndash; SSH’ing because you needed to run ‘free -h’ or ‘tail ‘f /var/log/whatever.log’ isn’t scalable. Imagine running 10 services, each one dumping ‘docker logs’ to a /var/log/service_instance, across 100 nodes. Are you going to SSH into each one and tail? Fuck no. You’re going to need a consolidated place where each log gets turned into usable metrics for inspection via graphs or search.</p>
+
+<p>Same goes for metrics.</p>
+
+<p>Your configuration management should provision these log and metric aggregation services at boot so they’re “just there” the next time you log into whatever system you use to aggregate this data. Sound logrotate policies should be in place to ensure you don’t blow up /var/log. Alerting mechanisms based on derived metrics should be in place to ensure when things do break and you <strong>absolutely</strong> have to SSH into that box with your dusty SSH key that you know exactly where to look and the alarm didn’t sound because the APM metric for the app was based on a hard limit. Limits are never hard, they’re derived from rolling averages, but that’s fodder for a future post.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[jenkins-puppet-CI]]></title>
@@ -4459,383 +4566,6 @@ cd $confdir/hieradata
 
 ```bash
 git branch[root@master puppet] check your branch, make sure it's still development
-git commit -am hieradata
-git push 
-r10k deploy environment -pv
-```
-
-Check ```$confdir/environments/development/hieradata```
-
-##Testing
-###Configuration files for r10k, hiera, puppet:
-
-####/etc/r10k.yaml
-```bash
-root@master hieradata]# cat /etc/r10k.yaml
-:cachedir: /var/cache/r10k
-:sources:
-  puppet:
-    remote: "git@10.10.100.111:user/control_repo.git"
-    basedir: /etc/puppetlabs/puppet/environments
-    prefix: false
-:purgedirs:
-  - ""
-```
-####/etc/puppetlabs/puppet/puppet.conf
-```bash
-[root@master hieradata] cat /etc/puppetlabs/puppet/puppet.conf
-[main]
-certname = master.puppetlabs.vm
-dns_alt_names = master.puppetlabs.vm,puppet
-vardir = /var/opt/lib/pe-puppet
-logdir = /var/log/pe-puppet
-rundir = /var/run/pe-puppet
-modulepath = /etc/puppetlabs/puppet/environments/$environment/modules:/opt/puppet/share/puppet/modules
-server = master.puppetlabs.vm
-user  = pe-puppet
-group = pe-puppet
-archive_files = true
-archive_file_server = master.puppetlabs.vm
-# cut [master] & [agent] sections, $modulepath above is the important config key here.
-```
-####/etc/puppetlabs/puppet/hiera.yaml
-```bash
-[root@master puppet] cat hiera.yaml
----
-:backends:
-  - yaml
-:hierarchy:
-  - "%{clientcert}"
-  - "%{environment}"
-  - global
-:yaml:
-  :datadir: '/etc/puppetlabs/puppet/environmets/%{environment}/hieradata'
-```
-####/etc/puppetlabs/puppet/Puppetfile
-```bash
-[root@master puppet]# cat Puppetfile
-# mod, <module name>, <version or tag>, <source>
-forge &#8220;http://forge.puppetlabs.com&#8221;
-
-# Modules from the Puppet Forge
-mod &#8220;puppetlabs/stdlib&#8221;
-mod &#8220;puppetlabs/apache&#8221;, &#8220;0.11.0&#8221;
-mod &#8220;puppetlabs/pe_gem&#8221;
-mod &#8220;puppetlabs/mysql&#8221;
-mod &#8220;puppetlabs/firewall&#8221;
-mod &#8220;puppetlabs/vcsrepo&#8221;
-mod &#8220;puppetlabs/git&#8221;
-mod &#8220;puppetlabs/inifile&#8221;
-mod &#8220;zack/r10k&#8221;
-mod &#8220;gentoo/portage&#8221;
-mod &#8220;thias/vsftpd&#8221;
-
-
-# Modules from Github using various references
-mod &#8220;wordpress&#8221;,
-  :git => &#8220;git://github.com/hunner/puppet-wordpress.git&#8221;,
-  :ref => &#8216;0.4.0&#8217;
-&#8220;`
-###Testing the Puppet Master &#8220;`master.puppetlabs.vm:$confdir/&#8220;`:
-
-####Our topic branches:
-
-&#8220;`bash
-[root@master puppet] git branch
-  development
-* production
-  staging
-&#8220;`
-
-####For the given topic branch above, production, let&#8217;s look at our hieradata in &#8220;`$confdir/hieradata&#8220;`:
-
-&#8220;`bash
-[root@master hieradata] pwd
-/etc/puppetlabs/puppet/hieradata
-[root@master hieradata] ls
-agent1.puppetlabs.vm.yaml  agent2.puppetlabs.vm.yaml  agent3.puppetlabs.vm.yaml  master.puppetlabs.vm.yaml
-&#8220;`
-
-####and for each of these files we have the same K,V:
-
-&#8220;`bash
-[root@master hieradata] cat master.puppetlabs.vm.yaml
-&#8212;
-message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
-[root@master hieradata] cat agent1.puppetlabs.vm.yaml
-&#8212;
-message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
-&#8220;`
-
-###Now let&#8217;s switch over to our development branch and compare:
-
-&#8220;`bash
-[root@master puppet] git checkout development
-Switched to branch &#8216;development&#8217;
-root@master hieradata] pwd
-/etc/puppetlabs/puppet/hieradata
-[root@master hieradata] ls
-agent1.puppetlabs.vm.yaml  agent2.puppetlabs.vm.yaml  agent3.puppetlabs.vm.yaml  master.puppetlabs.vm.yaml
-[root@master hieradata] cat agent1.puppetlabs.vm.yaml
-&#8212;
-message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
-[root@master hieradata] cat master.puppetlabs.vm.yaml
-&#8212;
-message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
-&#8220;`
-
-Sync everything up with r10k so we can test:
-
-&#8220;`bash
-[root@master puppet] r10k deploy environment -pv
-[R10K::Task::Deployment::DeployEnvironments - INFO] Loading environments from all sources
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment staging
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment production
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-[R10K::Task::Module::Sync - INFO] Deploying wordpress into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying vsftpd into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying portage into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying r10k into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying inifile into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying git into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying vcsrepo into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying firewall into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying mysql into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying pe_gem into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying apache into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying stdlib into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment master
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment development
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-[R10K::Task::Deployment::PurgeEnvironments - INFO] Purging stale environments from /etc/puppetlabs/puppet/environments
-&#8220;`
-
-
-Since there is a &#8220;`%{certname}.yaml&#8220;` for the master we can do a quick check on the command line that we&#8217;re accessing the correct data:
-
-&#8220;`bash
-[root@master puppet] git checkout production
-Already on &#8216;production&#8217;
-
-[root@master puppet] puppet apply -e &#8220;notice(hiera(message))&#8221;
-Notice: Scope(Class[main]): master.puppetlabs.vm is running in environment production
-Notice: Compiled catalog for master.puppetlabs.vm in environment production in 0.06 seconds
-Notice: Finished catalog run in 0.24 seconds
-[root@master puppet]
-&#8220;`
-
-The &#8220;`$fqdn&#8220;` and &#8220;`$environment&#8220;` values were correctly filled in. **Note** that this is a poor test since my data files are essentially all the same, &#8220;`$environment&#8220;` will always match it&#8217;s environment and &#8220;`$fqdn&#8220;` will always match it&#8217;s fqdn -  we could be grabbing this value from anywhere. So Let&#8217;s try with hard coded values:
-
-&#8220;`bash
-[root@master hieradata] pwd
-/etc/puppetlabs/puppet/hieradata
-[root@master hieradata] git branch
-  development
-* production
-  staging
-[root@master hieradata] cat master.puppetlabs.vm.yaml
-&#8212;
-message: &#8220;I&#8217;m hard coding this value: environment production, master.puppetlabs.vm.yaml&#8221;
-&#8220;`
-
-Now push your new data for production branch up to gitlab
-
-&#8220;`
-[root@master puppet]# git add hieradata/
-[root@master puppet]# git commit -m &#8220;hieradata hard coded&#8221;
-[production 3a58e49] hieradata hard coded
- 1 files changed, 1 insertions(+), 1 deletions(-)
- [root@master puppet]# git push
- Counting objects: 7, done.
- Delta compression using up to 4 threads.
- Compressing objects: 100% (4/4), done.
- Writing objects: 100% (4/4), 399 bytes, done.
- Total 4 (delta 2), reused 0 (delta 0)
- To git@10.10.100.111:user/control_repo.git
-    1b240c6..3a58e49  production -> production
-&#8220;`
-
-and sync r10k
-
-&#8220;`
-[root@master puppet]# r10k deploy environment -pv
-[R10K::Task::Deployment::DeployEnvironments - INFO] Loading environments from all sources
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment staging
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment production
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-# ommitting other output &#8230;
-&#8220;`
-
-and test for the correct hard coded K,V
-
-&#8220;`
-[root@master puppet]# puppet apply -e &#8220;notice(hiera(message))&#8221;
-Notice: Scope(Class[main]): I&#8217;m hard coding this value: environment production, master.puppetlabs.vm.yaml
-Notice: Compiled catalog for master.puppetlabs.vm in environment production in 0.05 seconds
-Notice: Finished catalog run in 0.26 seconds
-&#8220;`
-
-YAY!
-
-####And again on the development branch
-&#8220;`bash
-[root@master hieradata] pwd
-/etc/puppetlabs/puppet/hieradata
-[root@master hieradata] git branch
-* development
-  production
-  staging
-[root@master puppet] cat hieradata/master.puppetlabs.vm.yaml
-&#8212;
-message: &#8220;I&#8217;m hard coding this value: environment development, master.puppetlabs.vm.yaml&#8221;
-&#8220;`
-
-Push our new hieradata for &#8220;`development&#8220;` to gitlab:
-
-&#8220;`bash
-[root@master puppet] git add hieradata/
-[root@master puppet] git commit -m &#8220;hieradata hard coded&#8221;
-[development 2873db5] hieradata hard coded
- 1 files changed, 1 insertions(+), 1 deletions(-)
-[root@master puppet] git push
-Counting objects: 7, done.
-Delta compression using up to 4 threads.
-Compressing objects: 100% (4/4), done.
-Writing objects: 100% (4/4), 398 bytes, done.
-Total 4 (delta 2), reused 0 (delta 0)
-To git@10.10.100.111:user/control_repo.git
-   08e249b..2873db5  development -> development
-&#8220;`
-
-andthen sync with r10k 
-
-&#8220;`
-[root@master puppet]# r10k deploy environment -pv
-[R10K::Task::Deployment::DeployEnvironments - INFO] Loading environments from all sources
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment staging
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment production
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-# ommitted the other output&#8230;
-&#8220;`
-
-and test with the &#8220;`&#8211;environment development&#8220;` switch
-
-&#8220;`
-[root@master puppet]# puppet apply -e &#8220;notice(hiera(message))&#8221; &#8211;environment development
-Notice: Scope(Class[main]): I&#8217;m hard coding this value: environment development, master.puppetlabs.vm.yaml
-Notice: Compiled catalog for master.puppetlabs.vm in environment development in 0.05 seconds
-Notice: Finished catalog run in 0.25 seconds
-&#8220;&#8220;
-
-
-We can also do a quick one time environment run with the &#8220;`&#8211;environment&#8220;` flag:
-
-
-
-
-
-
-
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[r10k: Control Repos]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2014/05/16/r10k-control-repos.markdown/"/>
-    <updated>2014-05-16T12:34:33-07:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2014/05/16/r10k-control-repos.markdown</id>
-    <content type="html"><![CDATA[This document explains the architecture and deployment of a control repository for syncing multiple puppet environments, their associated puppet code (modules) and their assocaited data (hiera). This document does not review how to deploy r10k, however that is discussed in relevant detail [here](https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff).
-
-##What is a control repo?
-
-A control repository stores a Puppetfile and hiera data (hiera.yaml and hieradata/).
-
-###What does it contain?
-
-	hieradata/
-	Puppetfile
-
-It is also common to have a ```hiera.yaml``` in the control repo. However [for many reasons](http://www.jeffmalnick.com/blog/2014/05/15/hiera-and-r10k/) I don't believe this is a good idea. It can lead to confusing issues with branching of the file that is only consulted once for it's ```$datadir``` path and is not used on a per environment basis - it's loaded once from ```$confdir``` during the *hiera()* call and is not consulted on a per environment basis (e.g. ```$confdir/environments/$environments/hiera.yaml``` **is not used** during the *hiera()* lookup, only ```$confdir/hiera.yaml``` is used). 
-##How does it work?
-
-The control repo is placed in a monolithic git repository. 
-
-The repository can have one or more topic branches that are used by r10k to sync to local Puppet environments. 
-
-###Configuration for Puppet code & Hiera data sync via r10k
-
-Details on how to deploy a gitlab repo and assocaited topic branching for r10k sync are [here](https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff). 
-
-Place a Puppetfile in ```$confdir/Puppetfile```.
-
-Populate your Puppetfile with what ever crap you need. 
-
-In ```$confdir```:
-
-```bash
-git init
-git remote add origin git@whatever.com:your_name/control_repo.git
-git branch -m master production
-git add Puppetfile
-git add hiera.yaml # r10k really doesn't need this but we'll add it anyways. 
-git add hieradata/
-git push -u origin production:production # or whatever branch, maybe production?
-```
-
-###Configure hiera.yaml for dynamic environments
-
-**NOTE**: the hiera.yaml is only loaded from ```$confdir/hiera.yaml``` on each puppet run, this means even though you'll have a hiera.yaml in ```$confdir/environments/$environment/``` those are not actually consulted, only the $confdir hiera.yaml is used - therefore, ***you can not have hierarchies per environment***. Since the ```$datadir``` is environment aware that namespace is filled at run time, and consults the specific environment datadir ```$confdir/environments/$environment/hieradata/```. 
-
-Your hiera.yaml needs to have a ```datadir``` configured for dynamic lookup so:
-
-```yaml
----
-:backends:
-  - yaml
-:hierarchy:
-  - "%{clientcert}"
-  - "%{environment}"
-  - global
-
-:yaml:
-  :datadir: '/etc/puppetlabs/puppet/environments/%{::environment}/hieradata'
-```
-
-###Branching your Puppetfile
-For example, assuming you already have a master or production branch:
-
-```bash
-vi Puppetfile
-```
-...add some git modules etc...
-
-```bash
-git checkout -b development
-git push origin development:development
-git commit -am Puppetfile
-r10k deploy environment -pv
-```
-Now you have a new topic branch 'development' and a new Puppet environment in ```$confdir/environments/development```.
-
-###Branching your hiera data
-
-Our ```development``` branch needs it's own data too:
-
-```bash
-cd $confdir/hieradata
-```
-
-* modify K,V's in ```whatever.yaml```
-* modify other K,V's as needed for your development environment
-
-
-```bash
-git branch # check your branch, make sure it's still development
 git commit -am hieradata
 git push 
 r10k deploy environment -pv

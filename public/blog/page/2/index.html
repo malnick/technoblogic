@@ -102,6 +102,366 @@ $(document).ready(
     <article class="post">
 	<h2 class="title">
 		
+		<a href="/blog/2014/10/07/streamlining-puppet-dev-part-duce-branch-the-enviro/">
+		
+			Streamlining Puppet Dev Part Duce: Branch the Enviro</a>
+	</h2>
+	<div class="entry-content">
+		<p>Most companies don&rsquo;t have a single monolithic application, today most applications evolve out of lots of atomic services: thus, service oriented architecture.</p>
+
+<p>What this means for your development environment is that you end up having many different applications, which is many cases are atomic services and in other cases are a conglomeration of services. Either way, you end up with a need for many dev environments.</p>
+
+<p>At Connect Solutions we have several environments that require infrastructure development. The main ones are our custom load balancer (we call it MTLB), our Connect Cluster, CQ, and our Connect Experience applications.</p>
+
+<p>In order to streamline our dev process with Puppet we created a repo called &lsquo;puppet-dev-enviro&rsquo; that deploys VM&rsquo;s with Vagrant and manages what modules you want to test via Rake &amp; r10k.</p>
+
+<p>For any given envio we like to mirror what it looks like in prod as best we can. Therefore, any enviro always uses the version of puppet we run in prod on a separate Puppet Master, then the nodes that make of the rest of the enviro.</p>
+
+<p>A simple example, theMTLB enviro deploys a Puppet Master and an MTLB load balancer node.</p>
+
+<h2>Enviro Management</h2>
+
+<p>Since we have so many enviros we branch the &lsquo;puppet-dev-enviro&rsquo; repo for each one. So if you&rsquo;re testing MTLB code the workflow looks like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">cd</span> <span class="n">puppet</span><span class="o">-</span><span class="n">dev</span><span class="o">-</span><span class="n">enviro</span>
+</span><span class='line'><span class="n">git</span> <span class="n">checkout</span> <span class="n">mtlb</span>
+</span><span class='line'><span class="no">MONO</span><span class="o">=</span><span class="kp">true</span> <span class="n">rake</span> <span class="n">deploy</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Those first two commands are pretty straight forward. However, the deploy command probably needs some explanation. I wrote this task to streamline our development pipeline. It&rsquo;s main functionality is to read from a subdirectory called puppet and a file called the Puppetfile.</p>
+
+<p>You might be familiar with the Puppetfile concept if you&rsquo;ve used Puppet Librarian or r10k. In this task, I actually invoke r10k locally on the Puppetfile to pull down all the modules listed in it to puppet/modules. In the case of Connect Solutions, we&rsquo;re currently in the process of moving our legacy puppet module structure from a monolithic one to their own atomic repos. This isn&rsquo;t complete yet, so the MONO=true env variable envokes a subcommand in deploy to rip out all the sub-modules of this monolithic repo and place them in puppet/modules.</p>
+
+<p>&lsquo;Deploy&rsquo; also supports hiera data management by checking for our <code>puppet-configuration</code> repo in the puppet/modules directory. If it&rsquo;s listed in the Puppetfile this repo will be present here. If so, it moves all the data from puppet-configuration into puppet/data.</p>
+
+<p>Both <code>puppet/modueles</code> and <code>puppet/data</code> are shared with the puppet master VM deploed with Vagrant. As a Vagrant post-provisioning step I blow away the <code>/etc/puppetlabs/puppet/modules</code>, <code>/etc/puppetlabs/puppet/data</code> directories and sym link the shared modules and data directories out of <code>/tmp</code>.</p>
+
+<h4>The Deploy Task</h4>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">desc</span> <span class="s1">&#39;Deploying modules form Puppetfile and booting master and agent VMs&#39;</span>
+</span><span class='line'><span class="n">task</span> <span class="ss">:deploy</span> <span class="k">do</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Building out Puppet module directory...&quot;</span>
+</span><span class='line'>  <span class="n">confdir</span> <span class="o">=</span> <span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span>
+</span><span class='line'>  <span class="c1"># Check directory structure:</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Checking for puppet/modules...&quot;</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="no">Dir</span><span class="o">.</span><span class="n">exists?</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/modules&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;puppet/modules not found, creating.&quot;</span>
+</span><span class='line'>    <span class="no">Dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/modules&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Checking for puppet/data...&quot;</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="no">Dir</span><span class="o">.</span><span class="n">exists?</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/data&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;puppet/data not found, creating.&quot;</span>
+</span><span class='line'>    <span class="no">Dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/data&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">moduledir</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/modules&quot;</span>
+</span><span class='line'>  <span class="n">puppetfile</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/Puppetfile&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Placing modules in </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Using Puppetfile at </span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;PUPPETFILE=</span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2"> PUPPETFILE_DIR=</span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2"> /usr/bin/r10k puppetfile install&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="nb">abort</span> <span class="s1">&#39;Failed to build out Puppet module directory. Exiting...&#39;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="k">if</span> <span class="no">Dir</span><span class="o">.</span><span class="n">exists?</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">/puppet-configuration/&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Detected puppet data repo, copying contents to </span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/data&quot;</span>
+</span><span class='line'>      <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;cp -Rv </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">/puppet-configuration/* </span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/data/&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;Failed to move puppet-configuration&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="k">if</span> <span class="n">mono</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Moving modules out of monolithic dir </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">/puppet-modules to </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;mv </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">/puppet-modules/* </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;Failed to move modules from monolithic repo to </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Bringing up vagrant machines&quot;</span>
+</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vagrant up --provider virtualbox&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="nb">abort</span> <span class="s1">&#39;Vagrant up failed. Exiting...&#39;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Vagrant Machines Up Successfully</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This structure allows us to play around with the module code on the fly from the host VM, with our own dotfiles and local editing or preferred pipelines. For example, I am a heavy Vim user, however, a lot of my colleagues are Sublime text users. You can choose what method best suites you and not be beholden to who provisioned the VM .box file beforehand.</p>
+
+<p>For large code-base changes, i.e., developing an entireley new topic branch, this pipeline allows seamless integration with git and enables better version control management. An example workflow would be:</p>
+
+<ol>
+<li>Open two screen or tmux sessions</li>
+<li>In one session cd into <code>/path/to/monolithic/puppet-modules/test-mod/manifests</code></li>
+<li>In the other session cd into <code>/path/to/puppet-dev-enviro</code></li>
+<li>In <code>puppet-dev-enviro</code>:
+
+<ol>
+<li>git checkout my-enviro</li>
+<li>update <code>puppet/Puppetfile</code> and <code>`puppet/manifests/site.pp</code></li>
+</ol>
+</li>
+</ol>
+
+
+<p>puppet/Puppetfile:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="s1">&#39;puppet-modules&#39;</span><span class="p">,</span> <span class="ss">:git</span> <span class="o">=&gt;</span> <span class="n">git</span><span class="vi">@github</span><span class="o">.</span><span class="n">com</span><span class="ss">:connectsolutions</span><span class="o">/</span><span class="n">puppet</span><span class="o">-</span><span class="n">modules</span><span class="s1">&#39;, :ref =&gt; &#39;</span><span class="n">my</span><span class="o">-</span><span class="n">topic</span><span class="o">-</span><span class="n">branch</span><span class="s1">&#39;</span>
+</span><span class='line'><span class="s1">&#39;</span><span class="n">puppet</span><span class="o">-</span><span class="n">configuration</span><span class="s1">&#39;, :git =&gt; git@github.com:connectsolutions/puppet-configuration&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>puppet/manifests/site.pp:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">node</span> <span class="err">&#39;</span><span class="n">my</span><span class="o">.</span><span class="n">node</span><span class="o">.</span><span class="n">dev</span><span class="sb">` {</span>
+</span><span class='line'><span class="sb"> include my::class</span>
+</span><span class='line'><span class="sb">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>DEPLOY: In <code>puppet-dev-enviro</code> run <code>MONO=true rake deploy</code></p>
+
+<p>This will now pull down and configure the environment for the VM&rsquo;s. When finished, all the puppet data and modules will be live on the master VM.</p>
+
+<h3>Enviro-Specific Vagrantfile</h3>
+
+<p>One step I&rsquo;ve skipped here however is making a git-branch for my-enviro. That&rsquo;s a completely different step but mainly involves updateing the Vagrantfile with the neccessary VM information. I won&rsquo;t cover that here since that is specific to every enviro the same way Puppet code is speciic to each module. I will however share what stays the same between most Vagrantfiles in each enviro and that is the Master VM configuration block:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="no">VAGRANTFILE_API_VERSION</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="s2">&quot;ubuntuamd64&quot;</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">box_url</span> <span class="o">=</span> <span class="s2">&quot;https://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-amd64-vagrant-disk1.box&quot;</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">pe_build</span><span class="o">.</span><span class="n">download_root</span> <span class="o">=</span> <span class="s1">&#39;https://s3.amazonaws.com/pe-builds/released/:version&#39;</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">pe_build</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;3.3.0&quot;</span>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">ssh</span><span class="o">.</span><span class="n">forward_agent</span>  <span class="o">=</span> <span class="kp">true</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:master</span> <span class="k">do</span> <span class="o">|</span><span class="n">master</span><span class="o">|</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provider</span> <span class="ss">:virtualbox</span> <span class="k">do</span> <span class="o">|</span><span class="n">v</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">v</span><span class="o">.</span><span class="n">memory</span> <span class="o">=</span> <span class="mi">2048</span>
+</span><span class='line'>  <span class="n">v</span><span class="o">.</span><span class="n">cpus</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.28.126.141&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;master.dev&#39;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="ss">:master</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;puppet/modules&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/modules&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;puppet/manifests&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/manifests&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;puppet/data&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/data&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;puppet/filestore&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/filestore&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;puppet/&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/puppet&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;rm -rf /etc/puppetlabs/puppet/modules/ &amp;&amp; ln -s /tmp/modules/ /etc/puppetlabs/puppet/&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;rm -rf /etc/puppetlabs/puppet/manifests/ &amp;&amp; ln -s /tmp/manifests/ /etc/puppetlabs/puppet/&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;rm -rf /etc/puppetlabs/puppet/data &amp;&amp; ln -s /tmp/data/ /etc/puppetlabs/puppet/&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;ln -s /tmp/filestore/ /etc/puppetlabs/puppet/&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;rm /etc/puppetlabs/puppet/hiera.yaml &amp;&amp; ln -s /tmp/puppet/hiera.yaml /etc/puppetlabs/puppet/hiera.yaml&quot;</span>
+</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;ln -s /tmp/puppet/fileserver.conf /etc/puppetlabs/puppet/fileserver.conf&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Code Test &ndash;> Develop Pipeline</h3>
+
+<p>Once the VM&rsquo;s are up and running you can ssh into the VM under test and run <code>puppet agent -t</code>. If everything went as planned the agent will get a catlog from the master and start configuring itself. If you&rsquo;re like me, it didn&rsquo;t work on the first try. Now we need to update our code-base.</p>
+
+<p>In the screen or tmux session that is CD&#8217;ed to your <code>puppet-modules</code> directory go into the manifests dir of the code in question. Edit that code or make whatever changes are needed for further testing.</p>
+
+<p>Keep in mind we are working on our <code>my-topic-branch</code> branch of the <code>puppet-modules</code> repo. So when we&rsquo;re done making the local changes:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>git add my-class.pp
+</span><span class='line'>git commit -m <span class="s2">&quot;I made changes&quot;</span>
+</span><span class='line'>git push origin my-topic-branch
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then in the other screen window that&rsquo;s in the <code>puppet-dev-enviro</code> directory run:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">MONO</span><span class="o">=</span><span class="nb">true </span>rake pull
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This runs only r10k and the workflow neccessary to pull down the new Puppet code. It is a heavy operation if you have a LOT of code in that Puppetfile. We haven&rsquo;t ran into an issue with that yet however for our individual test enviros. The :pull task looks like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">desc</span> <span class="s1">&#39;Pull down modules in Puppetfile&#39;</span>
+</span><span class='line'><span class="n">task</span> <span class="ss">:pull</span> <span class="k">do</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;This will blow away everything in puppet/modules. Are you sure you want to continue? [y/n]&quot;</span>
+</span><span class='line'>  <span class="n">ans</span> <span class="o">=</span> <span class="no">STDIN</span><span class="o">.</span><span class="n">gets</span>
+</span><span class='line'>  <span class="k">if</span> <span class="n">ans</span> <span class="o">=~</span> <span class="sr">/^y/</span>
+</span><span class='line'>      <span class="n">confdir</span> <span class="o">=</span> <span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span>
+</span><span class='line'>      <span class="n">moduledir</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/modules&quot;</span>
+</span><span class='line'>      <span class="n">puppetfile</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/Puppetfile&quot;</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;Pulling down new modules in </span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2"> to </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>      <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;PUPPETFILE=</span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2"> PUPPETFILE_DIR=</span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2"> /usr/bin/r10k puppetfile install&quot;</span><span class="p">)</span>
+</span><span class='line'>          <span class="nb">abort</span> <span class="s1">&#39;Failed to build out Puppet module directory. Exiting...&#39;</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;New modules successfully pulled down&quot;</span>
+</span><span class='line'>      <span class="k">if</span> <span class="n">mono</span>
+</span><span class='line'>          <span class="nb">puts</span> <span class="s2">&quot;Moving modules out of monolithic dir </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">/puppet-modules to </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>          <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;mv </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">/puppet-modules/* </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span class='line'>              <span class="nb">abort</span> <span class="s2">&quot;Failed to move modules from monolithic repo to </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>      <span class="k">if</span> <span class="no">Dir</span><span class="o">.</span><span class="n">exists?</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">/puppet-configuration/&quot;</span><span class="p">)</span>
+</span><span class='line'>              <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;cp -Rv </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">/puppet-configuration/* </span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/data/&quot;</span><span class="p">)</span>
+</span><span class='line'>              <span class="nb">abort</span> <span class="s2">&quot;Failed to move puppet-configuration&quot;</span>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>          <span class="k">end</span>
+</span><span class='line'>  <span class="k">else</span> <span class="nb">puts</span> <span class="s2">&quot;Exiting...&quot;</span>
+</span><span class='line'>      <span class="nb">exit</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now you have new code in your master VM, run <code>puppet agent -t</code> again on your agent.</p>
+
+<h3>Wait a minute!</h3>
+
+<p>Some will say, &ldquo;This is more work than before. Now I have this extra git step!&rdquo;. Yup, that&rsquo;s right, you&rsquo;re forced to commit your changes to your own topic branch before you test on your local machine. Yes, this isn&rsquo;t good for doing work on the airplane. Granted, this test enviro as it currently stands isn&rsquo;t designed for the latter, it&rsquo;s designed towards <strong><em>seamless collaboration</em></strong>.</p>
+
+<p>What do I mean by that? I mean, I don&rsquo;t want to have the conversation with a colleage at 4PM on a Thursday night that goes like this: &ldquo;Hey, I need to collaborate on your code. Can you push it to a topic branch in git for me?&rdquo; &ldquo;Sure, I&rsquo;ll do that as soon as I get home tonight after picking up the kids and making dinner.&rdquo; &ldquo;Great!&rdquo; &hellip; The following day: &ldquo;So hey, I REALLY wanted to test out that code we need in prod by this afternoon last night, but I never saw a push for your branch.&rdquo; &ldquo;Yeah, sorry, I got caught up in stuff. You know, life!&rdquo;.</p>
+
+<p>That &lsquo;extra&rsquo; git step ensures all the development steps are being tracked, and anyone at anytime can spin up this environmnet with the exact same Puppetfile and site.pp configuration and get similar testing results.</p>
+
+<p>Some day, I&rsquo;ll put together a local-only development environment but for now this is not the purpose of what we&rsquo;ve created here.</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-10-07T14:31:39-07:00" pubdate data-updated="true">Oct 7<span>th</span>, 2014</time></div>
+	
+
+
+	
+</div></article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
 		<a href="/blog/2014/08/31/arbitrary-commandline-functions-for-mco/">
 		
 			Arbitrary Commandline Functions for MCO</a>
@@ -2902,410 +3262,6 @@ cd $confdir/hieradata
 
 &#8220;`bash
 git branch[root@master puppet] check your branch, make sure it&#8217;s still development
-git commit -am hieradata
-git push 
-r10k deploy environment -pv
-&#8220;`
-
-Check &#8220;`$confdir/environments/development/hieradata&#8220;`
-
-##Testing
-###Configuration files for r10k, hiera, puppet:
-
-####/etc/r10k.yaml
-&#8220;`bash
-root@master hieradata]# cat /etc/r10k.yaml
-:cachedir: /var/cache/r10k
-:sources:
-  puppet:
-    remote: &#8220;git@10.10.100.111:user/control_repo.git&#8221;
-    basedir: /etc/puppetlabs/puppet/environments
-    prefix: false
-:purgedirs:
-  - &#8220;&#8221;
-&#8220;`
-####/etc/puppetlabs/puppet/puppet.conf
-&#8220;`bash
-[root@master hieradata] cat /etc/puppetlabs/puppet/puppet.conf
-[main]
-certname = master.puppetlabs.vm
-dns_alt_names = master.puppetlabs.vm,puppet
-vardir = /var/opt/lib/pe-puppet
-logdir = /var/log/pe-puppet
-rundir = /var/run/pe-puppet
-modulepath = /etc/puppetlabs/puppet/environments/$environment/modules:/opt/puppet/share/puppet/modules
-server = master.puppetlabs.vm
-user  = pe-puppet
-group = pe-puppet
-archive_files = true
-archive_file_server = master.puppetlabs.vm
-# cut [master] & [agent] sections, $modulepath above is the important config key here.
-&#8220;`
-####/etc/puppetlabs/puppet/hiera.yaml
-&#8220;`bash
-[root@master puppet] cat hiera.yaml
-&#8212;
-:backends:
-  - yaml
-:hierarchy:
-  - &#8220;%{clientcert}&#8221;
-  - &#8220;%{environment}&#8221;
-  - global
-:yaml:
-  :datadir: &#8216;/etc/puppetlabs/puppet/environmets/%{environment}/hieradata&#8217;
-&#8220;`
-####/etc/puppetlabs/puppet/Puppetfile
-&#8220;`bash
-[root@master puppet]# cat Puppetfile
-# mod, <module name>, <version or tag>, <source>
-forge &#8220;http://forge.puppetlabs.com&#8221;
-
-# Modules from the Puppet Forge
-mod &#8220;puppetlabs/stdlib&#8221;
-mod &#8220;puppetlabs/apache&#8221;, &#8220;0.11.0&#8221;
-mod &#8220;puppetlabs/pe_gem&#8221;
-mod &#8220;puppetlabs/mysql&#8221;
-mod &#8220;puppetlabs/firewall&#8221;
-mod &#8220;puppetlabs/vcsrepo&#8221;
-mod &#8220;puppetlabs/git&#8221;
-mod &#8220;puppetlabs/inifile&#8221;
-mod &#8220;zack/r10k&#8221;
-mod &#8220;gentoo/portage&#8221;
-mod &#8220;thias/vsftpd&#8221;
-
-
-# Modules from Github using various references
-mod &#8220;wordpress&#8221;,
-  :git => &#8220;git://github.com/hunner/puppet-wordpress.git&#8221;,
-  :ref => &#8216;0.4.0&#8217;
-&#8220;`
-###Testing the Puppet Master &#8220;`master.puppetlabs.vm:$confdir/&#8220;`:
-
-####Our topic branches:
-
-&#8220;`bash
-[root@master puppet] git branch
-  development
-* production
-  staging
-&#8220;`
-
-####For the given topic branch above, production, let&#8217;s look at our hieradata in &#8220;`$confdir/hieradata&#8220;`:
-
-&#8220;`bash
-[root@master hieradata] pwd
-/etc/puppetlabs/puppet/hieradata
-[root@master hieradata] ls
-agent1.puppetlabs.vm.yaml  agent2.puppetlabs.vm.yaml  agent3.puppetlabs.vm.yaml  master.puppetlabs.vm.yaml
-&#8220;`
-
-####and for each of these files we have the same K,V:
-
-&#8220;`bash
-[root@master hieradata] cat master.puppetlabs.vm.yaml
-&#8212;
-message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
-[root@master hieradata] cat agent1.puppetlabs.vm.yaml
-&#8212;
-message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
-&#8220;`
-
-###Now let&#8217;s switch over to our development branch and compare:
-
-&#8220;`bash
-[root@master puppet] git checkout development
-Switched to branch &#8216;development&#8217;
-root@master hieradata] pwd
-/etc/puppetlabs/puppet/hieradata
-[root@master hieradata] ls
-agent1.puppetlabs.vm.yaml  agent2.puppetlabs.vm.yaml  agent3.puppetlabs.vm.yaml  master.puppetlabs.vm.yaml
-[root@master hieradata] cat agent1.puppetlabs.vm.yaml
-&#8212;
-message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
-[root@master hieradata] cat master.puppetlabs.vm.yaml
-&#8212;
-message: &#8220;%{fqdn} is running in environment %{environment}&#8221;
-&#8220;`
-
-Sync everything up with r10k so we can test:
-
-&#8220;`bash
-[root@master puppet] r10k deploy environment -pv
-[R10K::Task::Deployment::DeployEnvironments - INFO] Loading environments from all sources
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment staging
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment production
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-[R10K::Task::Module::Sync - INFO] Deploying wordpress into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying vsftpd into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying portage into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying r10k into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying inifile into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying git into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying vcsrepo into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying firewall into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying mysql into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying pe_gem into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying apache into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Module::Sync - INFO] Deploying stdlib into /etc/puppetlabs/puppet/environments/production/modules
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment master
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment development
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-[R10K::Task::Deployment::PurgeEnvironments - INFO] Purging stale environments from /etc/puppetlabs/puppet/environments
-&#8220;`
-
-
-Since there is a &#8220;`%{certname}.yaml&#8220;` for the master we can do a quick check on the command line that we&#8217;re accessing the correct data:
-
-&#8220;`bash
-[root@master puppet] git checkout production
-Already on &#8216;production&#8217;
-
-[root@master puppet] puppet apply -e &#8220;notice(hiera(message))&#8221;
-Notice: Scope(Class[main]): master.puppetlabs.vm is running in environment production
-Notice: Compiled catalog for master.puppetlabs.vm in environment production in 0.06 seconds
-Notice: Finished catalog run in 0.24 seconds
-[root@master puppet]
-&#8220;`
-
-The &#8220;`$fqdn&#8220;` and &#8220;`$environment&#8220;` values were correctly filled in. **Note** that this is a poor test since my data files are essentially all the same, &#8220;`$environment&#8220;` will always match it&#8217;s environment and &#8220;`$fqdn&#8220;` will always match it&#8217;s fqdn -  we could be grabbing this value from anywhere. So Let&#8217;s try with hard coded values:
-
-&#8220;`bash
-[root@master hieradata] pwd
-/etc/puppetlabs/puppet/hieradata
-[root@master hieradata] git branch
-  development
-* production
-  staging
-[root@master hieradata] cat master.puppetlabs.vm.yaml
-&#8212;
-message: &#8220;I&#8217;m hard coding this value: environment production, master.puppetlabs.vm.yaml&#8221;
-&#8220;`
-
-Now push your new data for production branch up to gitlab
-
-&#8220;`
-[root@master puppet]# git add hieradata/
-[root@master puppet]# git commit -m &#8220;hieradata hard coded&#8221;
-[production 3a58e49] hieradata hard coded
- 1 files changed, 1 insertions(+), 1 deletions(-)
- [root@master puppet]# git push
- Counting objects: 7, done.
- Delta compression using up to 4 threads.
- Compressing objects: 100% (4/4), done.
- Writing objects: 100% (4/4), 399 bytes, done.
- Total 4 (delta 2), reused 0 (delta 0)
- To git@10.10.100.111:user/control_repo.git
-    1b240c6..3a58e49  production -> production
-&#8220;`
-
-and sync r10k
-
-&#8220;`
-[root@master puppet]# r10k deploy environment -pv
-[R10K::Task::Deployment::DeployEnvironments - INFO] Loading environments from all sources
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment staging
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment production
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-# ommitting other output &#8230;
-&#8220;`
-
-and test for the correct hard coded K,V
-
-&#8220;`
-[root@master puppet]# puppet apply -e &#8220;notice(hiera(message))&#8221;
-Notice: Scope(Class[main]): I&#8217;m hard coding this value: environment production, master.puppetlabs.vm.yaml
-Notice: Compiled catalog for master.puppetlabs.vm in environment production in 0.05 seconds
-Notice: Finished catalog run in 0.26 seconds
-&#8220;`
-
-YAY!
-
-####And again on the development branch
-&#8220;`bash
-[root@master hieradata] pwd
-/etc/puppetlabs/puppet/hieradata
-[root@master hieradata] git branch
-* development
-  production
-  staging
-[root@master puppet] cat hieradata/master.puppetlabs.vm.yaml
-&#8212;
-message: &#8220;I&#8217;m hard coding this value: environment development, master.puppetlabs.vm.yaml&#8221;
-&#8220;`
-
-Push our new hieradata for &#8220;`development&#8220;` to gitlab:
-
-&#8220;`bash
-[root@master puppet] git add hieradata/
-[root@master puppet] git commit -m &#8220;hieradata hard coded&#8221;
-[development 2873db5] hieradata hard coded
- 1 files changed, 1 insertions(+), 1 deletions(-)
-[root@master puppet] git push
-Counting objects: 7, done.
-Delta compression using up to 4 threads.
-Compressing objects: 100% (4/4), done.
-Writing objects: 100% (4/4), 398 bytes, done.
-Total 4 (delta 2), reused 0 (delta 0)
-To git@10.10.100.111:user/control_repo.git
-   08e249b..2873db5  development -> development
-&#8220;`
-
-andthen sync with r10k 
-
-&#8220;`
-[root@master puppet]# r10k deploy environment -pv
-[R10K::Task::Deployment::DeployEnvironments - INFO] Loading environments from all sources
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment staging
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-[R10K::Task::Environment::Deploy - NOTICE] Deploying environment production
-[R10K::Task::Puppetfile::Sync - INFO] Loading modules from Puppetfile into queue
-# ommitted the other output&#8230;
-&#8220;`
-
-and test with the &#8220;`&#8211;environment development&#8220;` switch
-
-&#8220;`
-[root@master puppet]# puppet apply -e &#8220;notice(hiera(message))&#8221; &#8211;environment development
-Notice: Scope(Class[main]): I&#8217;m hard coding this value: environment development, master.puppetlabs.vm.yaml
-Notice: Compiled catalog for master.puppetlabs.vm in environment development in 0.05 seconds
-Notice: Finished catalog run in 0.25 seconds
-&#8220;&#8220;
-
-
-We can also do a quick one time environment run with the &#8220;`&#8211;environment&#8220;` flag:
-
-
-
-
-
-
-
-
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-05-16T12:34:33-07:00" pubdate data-updated="true">May 16<span>th</span>, 2014</time></div>
-	
-
-
-	
-</div></article>
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2014/05/16/r10k-control-repos.markdown/">
-		
-			R10k: Control Repos</a>
-	</h2>
-	<div class="entry-content">
-		This document explains the architecture and deployment of a control repository for syncing multiple puppet environments, their associated puppet code (modules) and their assocaited data (hiera). This document does not review how to deploy r10k, however that is discussed in relevant detail [here](https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff).
-
-##What is a control repo?
-
-A control repository stores a Puppetfile and hiera data (hiera.yaml and hieradata/).
-
-###What does it contain?
-
-	hieradata/
-	Puppetfile
-
-It is also common to have a &#8220;`hiera.yaml&#8220;` in the control repo. However [for many reasons](http://www.jeffmalnick.com/blog/2014/05/15/hiera-and-r10k/) I don&#8217;t believe this is a good idea. It can lead to confusing issues with branching of the file that is only consulted once for it&#8217;s &#8220;`$datadir&#8220;` path and is not used on a per environment basis - it&#8217;s loaded once from &#8220;`$confdir&#8220;` during the *hiera()* call and is not consulted on a per environment basis (e.g. &#8220;`$confdir/environments/$environments/hiera.yaml&#8220;` **is not used** during the *hiera()* lookup, only &#8220;`$confdir/hiera.yaml&#8220;` is used). 
-##How does it work?
-
-The control repo is placed in a monolithic git repository. 
-
-The repository can have one or more topic branches that are used by r10k to sync to local Puppet environments. 
-
-###Configuration for Puppet code & Hiera data sync via r10k
-
-Details on how to deploy a gitlab repo and assocaited topic branching for r10k sync are [here](https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff). 
-
-Place a Puppetfile in &#8220;`$confdir/Puppetfile&#8220;`.
-
-Populate your Puppetfile with what ever crap you need. 
-
-In &#8220;`$confdir&#8220;`:
-
-&#8220;`bash
-git init
-git remote add origin git@whatever.com:your_name/control_repo.git
-git branch -m master production
-git add Puppetfile
-git add hiera.yaml # r10k really doesn&#8217;t need this but we&#8217;ll add it anyways. 
-git add hieradata/
-git push -u origin production:production # or whatever branch, maybe production?
-&#8220;`
-
-###Configure hiera.yaml for dynamic environments
-
-**NOTE**: the hiera.yaml is only loaded from &#8220;`$confdir/hiera.yaml&#8220;` on each puppet run, this means even though you&#8217;ll have a hiera.yaml in &#8220;`$confdir/environments/$environment/&#8220;` those are not actually consulted, only the $confdir hiera.yaml is used - therefore, ***you can not have hierarchies per environment***. Since the &#8220;`$datadir&#8220;` is environment aware that namespace is filled at run time, and consults the specific environment datadir &#8220;`$confdir/environments/$environment/hieradata/&#8220;`. 
-
-Your hiera.yaml needs to have a &#8220;`datadir&#8220;` configured for dynamic lookup so:
-
-&#8220;`yaml
-&#8212;
-:backends:
-  - yaml
-:hierarchy:
-  - &#8220;%{clientcert}&#8221;
-  - &#8220;%{environment}&#8221;
-  - global
-
-:yaml:
-  :datadir: &#8216;/etc/puppetlabs/puppet/environments/%{::environment}/hieradata&#8217;
-&#8220;`
-
-###Branching your Puppetfile
-For example, assuming you already have a master or production branch:
-
-&#8220;`bash
-vi Puppetfile
-&#8220;`
-&#8230;add some git modules etc&#8230;
-
-&#8220;`bash
-git checkout -b development
-git push origin development:development
-git commit -am Puppetfile
-r10k deploy environment -pv
-&#8220;`
-Now you have a new topic branch &#8216;development&#8217; and a new Puppet environment in &#8220;`$confdir/environments/development&#8220;`.
-
-###Branching your hiera data
-
-Our &#8220;`development&#8220;` branch needs it&#8217;s own data too:
-
-&#8220;`bash
-cd $confdir/hieradata
-&#8220;`
-
-* modify K,V&#8217;s in &#8220;`whatever.yaml&#8220;`
-* modify other K,V&#8217;s as needed for your development environment
-
-
-&#8220;`bash
-git branch # check your branch, make sure it&#8217;s still development
 git commit -am hieradata
 git push 
 r10k deploy environment -pv
