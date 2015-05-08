@@ -4,3 +4,6 @@
 [submodule ".themes/cleanpress"]
 	path = .themes/cleanpress
 	url = https://github.com/macjasp/cleanpress
+[submodule ".themes/MediumFox"]
+	path = .themes/MediumFox
+	url = https://github.com/sevenadrian/MediumFox

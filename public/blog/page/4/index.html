@@ -5,15 +5,15 @@
 	<script data-cfasync="false" type="text/javascript" src="//use.typekit.net/axj3cfp.js"></script>
 	<script data-cfasync="false" type="text/javascript">try{Typekit.load();}catch(e){}</script>
 	<meta charset="utf-8">
-	<title>a techy blog  | JP</title>
+	<title>Bicycles, Profanity & Bankrupt Technical Platitudes  | </title>
 
 <meta name="author" content="Jeff"> 
 
-<meta name="description" content="See subtitle."> <meta name="keywords" content="">
+<meta name="description" content="YAML &ndash;> JSON via Puppet Gen&#8217;ed YAML In a follow up to the post below, I started thinking about ways to generate a D3 readable JSON on &hellip;"> <meta name="keywords" content="">
 
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-	<link href="/atom.xml" rel="alternate" title="JP" type="application/atom+xml">
+	<link href="/atom.xml" rel="alternate" title="" type="application/atom+xml">
 	<link rel="canonical" href="">
 	<link href="/favicon.png" rel="shortcut icon">
 	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
@@ -62,8 +62,8 @@ $(document).ready(
 
 
 <body>
-	<header id="header" class="inner"><h1><a href="/">JP</a></h1>
-<h4>a techy blog</h4>
+	<header id="header" class="inner"><h1><a href="/"></a></h1>
+<h4>Bicycles, Profanity & Bankrupt Technical Platitudes</h4>
 <nav id="main-nav"><ul>
 	<li><a href="/">Blog</a></li>
 	<li><a href="/blog/about">About</a></li>
@@ -97,6 +97,156 @@ $(document).ready(
 </header>
 
 	<div id="content" class="inner">
+
+
+    <article class="post">
+	<h2 class="title">
+		
+		<a href="/blog/2014/01/17/extracting-json-from-puppet-yaml-report/">
+		
+			Extracting JSON From Puppet YAML Report</a>
+	</h2>
+	<div class="entry-content">
+		<h3>YAML &ndash;> JSON via Puppet Gen&#8217;ed YAML</h3>
+
+<p>In a follow up to the post below, I started thinking about ways to generate a D3 readable JSON on the fly from the puppet generated YAML. I started by using a parser from the node library &lsquo;js-yaml&rsquo;. My YAML format looked like this:</p>
+
+<figure class='code'><figcaption><span>last_puppet_run.yaml</span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">metrics</span><span class="p-Indicator">:</span>
+</span><span class='line'>    <span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="kt">!ruby</span><span class="l-Scalar-Plain">/object:Puppet::Util::Metric</span>
+</span><span class='line'>      <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">resources</span>
+</span><span class='line'>      <span class="l-Scalar-Plain">label</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Resources</span>
+</span><span class='line'>      <span class="l-Scalar-Plain">values</span><span class="p-Indicator">:</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">total</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Total</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">197</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">skipped</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Skipped</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">6</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">failed</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Failed</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">failed_to_restart</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="s">&quot;Failed</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">restart&quot;</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">restarted</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Restarted</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">changed</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Changed</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">out_of_sync</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="s">&quot;Out</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">sync&quot;</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'>        <span class="p-Indicator">-</span> <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">scheduled</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Scheduled</span>
+</span><span class='line'>          <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">0</span>
+</span><span class='line'><span class="nn">...</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>My original stab at parsing this YAML failed when using the js-yaml node library. This was due to the fact that this is Puppet YAML &ndash; it was generated by a ruby class denoted at the top of the file:</p>
+
+<figure class='code'><figcaption><span>last_puppet_run.yaml </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="err">   </span><span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="kt">!ruby</span><span class="l-Scalar-Plain">/object:Puppet::Util::Metric</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So the way to parse this file into a JSON would have to be done using a ruby script where I could import the &lsquo;puppet&rsquo; class directly so the YAML lib would know how to read this particular file. I thought this would be as simple as:</p>
+
+<figure class='code'><figcaption><span>test.rb </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">require</span> <span class="s1">&#39;puppet&#39;</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;yaml&#39;</span>
+</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;json&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">datajson</span> <span class="o">=</span> <span class="s1">&#39;report.json&#39;</span>
+</span><span class='line'><span class="n">datafile</span>  <span class="o">=</span> <span class="s1">&#39;last_run_report.yaml&#39;</span>
+</span><span class='line'><span class="n">yaml</span> <span class="o">=</span> <span class="no">YAML</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span>
+</span><span class='line'><span class="n">json</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">to_json</span>
+</span><span class='line'><span class="no">File</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">datajson</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span> <span class="n">json</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What I didn&rsquo;t count on was serialization.</p>
+
+<h3>Serialization</h3>
+
+<p>What would you expect that output to be? I&rsquo;ll give you one clue, it did look like a JSON&hellip; sorta:</p>
+
+<figure class='code'><figcaption><span>report.json </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span><span class="nt">&quot;metrics&quot;</span><span class="p">:{</span><span class="nt">&quot;resources&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8cda088&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8cd80f8&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;changes&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8ce1608&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;events&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Util::Metric:0x007f8fb8ce0eb0&gt;&quot;</span><span class="p">},</span><span class="nt">&quot;logs&quot;</span><span class="p">:[</span><span class="s2">&quot;Finished catalog run in 5.57 seconds&quot;</span><span class="p">],</span><span class="nt">&quot;resource_statuses&quot;</span><span class="p">:{</span><span class="nt">&quot;Schedule[daily]&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Resource::Status:0x007f8fb8ceaaf0&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;Schedule[monthly]&quot;</span><span class="p">:</span><span class="s2">&quot;#&lt;Puppet::Resource::Status:0x007f8fb8ce84f8&gt;&quot;</span><span class="p">,</span><span class="nt">&quot;Schedule[hourly]&quot;</span><span class="p">:</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What&rsquo;s happening here? What happened to all our nice data, all of the sudden it&rsquo;s not human friendly anymore. This data is serialized, it&rsquo;s a by-product of using &lsquo;.to_json&rsquo; which is akin to saying &lsquo;JSON::dump(datafile)&rsquo;.</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-01-17T06:55:04-08:00" pubdate data-updated="true">Jan 17<span>th</span>, 2014</time></div>
+	
+
+
+	
+</div></article>
 
 
     <article class="post">
