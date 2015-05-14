@@ -4,7 +4,7 @@
 
 url: httpL://www.jeffmalnick.com 
 title: 
-subtitle: Bicycles, Profanity & Bankrupt Technical Platitudes  
+subtitle: 'Bicycles, Profanity & Bankrupt Technical Platitudes'  
 author: Jeff
 simple_search: http://google.com/search
 description: 
@@ -16,10 +16,10 @@ description:
 date_format: "ordinal"
 
 # RSS / Email (optional) subscription links (change if using something like Feedburner)
-#subscribe_rss: /atom.xml
+subscribe_rss: /atom.xml
 subscribe_email:
 # RSS feeds can list your email address if you like
-email:
+email: malnick@gmail.com
 
 # ----------------------- #
 #    Jekyll & Plugins     #
@@ -32,7 +32,7 @@ source: source
 destination: public
 plugins: plugins
 code_dir: code
-category_dir: blog/categories
+category_dir: 
 markdown: rdiscount
 rdiscount:
   extensions:

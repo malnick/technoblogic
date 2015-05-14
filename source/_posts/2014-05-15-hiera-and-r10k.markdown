@@ -1,0 +1,69 @@
+---
+layout: post
+title: "Why I don't place a hiera.yaml in my CR"
+date: 2014-05-15 16:12:36 -0700
+comments: true
+categories: 
+---
+Here's a really good reason. First off, unless your hiera.yaml is super complicated, then it probably doesn't need to be in version control. However, for a lot of deployments you need it in VC, but not in your control repo (i.e., the one that r10k will access for Puppetfile, hieradata and build our corrosponding enviros for on your master).
+
+No, place that hiera.yaml in it's own VC repo. 
+
+I had a control repo with:
+
+```
+Puppetfile
+hieradata/
+hiera.yaml
+```
+
+and I kept running in to this:
+
+```
+[root@master hieradata]# puppet apply -e "notice(hiera(message))"
+Error: Could not find data item message in any Hiera data file and no default supplied at line 1 on node master.puppetlabs.vm
+```
+
+This was a very simple test to see if my ```production``` environment was grabbing the correct data via a message K,V in ```$confdir/environments/production/hieradata/master.puppetlabs.vm.yaml``` . 
+
+Check out the --debug
+
+```
+Debug: hiera(): Hiera YAML backend starting
+Debug: hiera(): Looking up message in YAML backend
+Debug: hiera(): Looking for data source master.puppetlabs.vm
+Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/master.puppetlabs.vm.yaml, skipping
+Debug: hiera(): Looking for data source production
+Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/production.yaml, skipping
+Debug: hiera(): Looking for data source global
+Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/global.yaml, skipping
+```
+
+So I copied the ```datafile``` path and redirected it to a diff along with a ```$(pwd) while in the /etc/puppetlabs/puppet/environments/production/hieradata directory:
+
+```
+[root@master hieradata]# diff <(echo "/etc/puppetlabs/puppet/environmets/production/hieradata/") <(echo "$(pwd)")
+1c1
+< /etc/puppetlabs/puppet/environmets/production/hieradata/
+---
+> /etc/puppetlabs/puppet/environments/production/hieradata
+```
+
+So the ```$datadir``` path in hiera.yaml
+
+```
+[root@master puppet]# cat hiera.yaml | grep datadir
+  :datadir: '/etc/puppetlabs/puppet/environmets/%{environment}/hieradata'
+```
+
+is indeed missing that f-ing 'n'. Why? Because this was the second time this happened to me today. 
+
+Really? The second time? Really. The second fucking time. 
+
+I previously committed hiera.yaml along with hieradata/ and my Puppetfile to branch production. I tested it and came across this problem. Did the same test to figure out the correct path and updated hiera.yaml. 
+
+However, hiera.yaml was also in my development and staging branches. I didn't update those. So here I was again doing tests on development data for Puppet and **boom** my shit's broken again. 
+
+Since hiera.yaml is only used singularly on a puppet run, i.e., it's not consulted on a per environment basis, you only need one copy of it, and that's the one in your puppet $confdir. Having it scattered to the winds with r10k in the control repo does not give you any extra functionality (yet, someday we might make it enviro aware, but currently is not the case). 
+
+So if you're going to run your hiera.yaml into a VCS then do it in it's own monolithic repo. You can symlink it into the $confdir for Puppet. 

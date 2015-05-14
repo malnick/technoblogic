@@ -79,7 +79,7 @@ module OctopressLiquidFilters
 
   # Escapes CDATA sections in post content
   def cdata_escape(input)
-    input.gsub(/<!\[CDATA\[/, '&lt;![CDATA[').gsub(/\]\]>/, ']]&gt;')
+   # input.gsub(/<!\[CDATA\[/, '&lt;![CDATA[').gsub(/\]\]>/, ']]&gt;')
   end
 
   # Replaces relative urls with full urls
