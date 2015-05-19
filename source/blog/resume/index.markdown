@@ -6,11 +6,9 @@ comments: true
 sharing: true
 footer: true
 ---
-DevOps'ing the shit out of it since 2008
-
 ##Experience
 
-###SRC:CLR - srcclr.com, Sr. DevOps Engineer
+###SRC:CLR - srcclr.com, Lead DevOps Engineer
 
 January 2015 - Present
 
