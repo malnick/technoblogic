@@ -2,22 +2,22 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[ | ]]></title>
-  <link href="httpL://www.jeffmalnick.com/blog/categories/puppet/atom.xml" rel="self"/>
+  <link href="httpL://www.jeffmalnick.com/categories/misc/atom.xml" rel="self"/>
   <link href="httpL://www.jeffmalnick.com/"/>
-  <updated>2015-05-14T13:02:25-07:00</updated>
+  <updated>2015-05-19T05:45:28-07:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
-    
+    <email><![CDATA[malnick@gmail.com]]></email>
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
   
   <entry>
     <title type="html"><![CDATA[]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2014/01/03/the-need-to-a-replication-provider/"/>
-    <updated>2014-01-03T09:05:51-08:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2014/01/03/the-need-to-a-replication-provider</id>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/01/02/blog-post-number-1/"/>
+    <updated>2014-01-02T10:52:00-08:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2014/01/02/blog-post-number-1</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   
