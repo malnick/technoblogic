@@ -1,0 +1,266 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>The Proxy Module - What we observe is not nature itself, but nature exposed to our method of questioning</title>
+  <meta name="author" content="Jeff">
+
+  
+  <meta name="description" content="The Proxy Module written In puppet land there are a lot of different phrases and keywords that float around: &ldquo;atomic modules&rdquo;, &ldquo; &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="httpL://www.jeffmalnick.com/blog/2014/10/30/the-proxy-module">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="What we observe is not nature itself, but nature exposed to our method of questioning" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+  <body>
+    <a href="/" class="home-icon">
+      <img src="/images/home.png"/>
+    </a>
+
+    <article role="article" class="full-single-article">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <h1>The Proxy Module</h1>
+        <div class="meta">
+          written 
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2014-10-30T16:50:15+13:00" pubdate data-updated="true"></time>
+          
+
+
+        </div>
+        <p>In puppet land there are a lot of different phrases and keywords that float around: &ldquo;atomic modules&rdquo;, &ldquo;Roles and Profiles&rdquo;, &ldquo;wrapper modules&rdquo;.</p>
+
+<p>This post disects these terms and others, and proposes a new type of site-specific, not-quite-a-wrapper module and not-quite-an-atomic module called the &ldquo;Proxy Module&rdquo;.</p>
+
+<h2>It&rsquo;s about solutions</h2>
+
+<p>We have a number of custom apt stores in our infrastrcture. In order to provision both our apt repos and our apt clients to our custom PPA&rsquo;s and Sources, we wrote a profile called apt_client_config and apt_repo.pp. These profiles lived in the profiles module, naturally. However, since they were called from profiles, we had several instances where another module being called from that profile also depended on apt. In which case, we would run into duplicate dependencies, looped graphs, and all the other expected outcomes of using a module whose bits and pieces are needed by many other modules, at such a high level of abstraction.</p>
+
+<p>The solution was to create a proxy module. This module would wrap up just the pieces of apt that needed to be instanciated at the profile level. So, instead of running apt-based profiles in run stages at the profile level, we would run our proxy module to apt that ran just the defines we needed. These defines would be fed data from hiera via create_resources(). In this way, the proxy module differs from an atommic one - it&rsquo;s still wrapping up another module, but since it&rsquo;s so site-specific, we omit the params.pp. We don&rsquo;t want this module to &ldquo;work out of the box&rdquo;, we want it to fail if it doesn&rsquo;t get our site-specific from hiera.</p>
+
+<h2>The implementation</h2>
+
+<p>The init.pp for our apt proxy module, named cs_apt (since we&rsquo;re Connect Solutions):</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># Class: cs_apt</span>
+</span><span class='line'><span class="c1">#</span>
+</span><span class='line'><span class="c1"># Parameters:</span>
+</span><span class='line'><span class="c1"># [*always_update*]</span>
+</span><span class='line'><span class="c1"># boolean value to determine if apt-get update should be run every time the</span>
+</span><span class='line'><span class="c1"># class is instantiated</span>
+</span><span class='line'><span class="c1">#</span>
+</span><span class='line'><span class="c1"># [*ppas*]</span>
+</span><span class='line'><span class="c1"># Hash of type apt::ppa to add to host</span>
+</span><span class='line'><span class="c1">#</span>
+</span><span class='line'><span class="c1"># [*purge_sources_list*]</span>
+</span><span class='line'><span class="c1"># Boolean value to determine if sources should be purged from host. True for</span>
+</span><span class='line'><span class="c1"># FedRAMP</span>
+</span><span class='line'><span class="c1">#</span>
+</span><span class='line'><span class="c1"># [*purge_sources_list_d*]</span>
+</span><span class='line'><span class="c1"># Boolean value to determin if source.d/* should be purged from host.</span>
+</span><span class='line'><span class="c1">#</span>
+</span><span class='line'><span class="c1"># [*sources*]</span>
+</span><span class='line'><span class="c1"># Hash of type apt::source to add new ppa sources to host</span>
+</span><span class='line'><span class="c1">#</span>
+</span><span class='line'><span class="c1"># Requires:</span>
+</span><span class='line'><span class="c1"># n/a</span>
+</span><span class='line'><span class="c1">#</span>
+</span><span class='line'><span class="c1"># Sample Usage:</span>
+</span><span class='line'><span class="c1"># See README.md</span>
+</span><span class='line'><span class="k">class</span> <span class="n">cs_apt</span> <span class="p">(</span>
+</span><span class='line'>  <span class="vg">$always_update</span>      <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;cs_apt::always_update&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="vg">$ppas</span>           <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;cs_apt::ppas&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="vg">$purge_sources_list</span>     <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;cs_apt::purge_sources_list&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="vg">$purge_sources_list_d</span>   <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;cs_apt::purge_sources_list_d&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="vg">$sources</span>        <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;cs_apt::sources&#39;</span><span class="p">),</span>
+</span><span class='line'><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="k">case</span> <span class="vg">$:</span><span class="ss">:osfamily</span> <span class="p">{</span>
+</span><span class='line'><span class="s1">&#39;debian&#39;</span> <span class="p">:</span> <span class="p">{}</span>
+</span><span class='line'><span class="ss">default</span><span class="p">:</span> <span class="p">{</span> <span class="nb">fail</span><span class="p">(</span><span class="s2">&quot;${::osfamily} is not supported with module&quot;</span><span class="p">)</span> <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="n">validate_bool</span><span class="p">(</span><span class="vg">$always_update</span><span class="p">)</span>
+</span><span class='line'><span class="n">validate_bool</span><span class="p">(</span><span class="vg">$purge_sources_list</span><span class="p">)</span>
+</span><span class='line'><span class="n">validate_bool</span><span class="p">(</span><span class="vg">$purge_sources_list_d</span><span class="p">)</span>
+</span><span class='line'><span class="k">if</span> <span class="vg">$ppas</span> <span class="p">{</span>
+</span><span class='line'><span class="n">validate_hash</span><span class="p">(</span><span class="vg">$ppas</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="k">if</span> <span class="vg">$sources</span> <span class="p">{</span>
+</span><span class='line'><span class="n">validate_hash</span><span class="p">(</span><span class="vg">$sources</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="c1"># Update repo cache and purge sources is necessary</span>
+</span><span class='line'><span class="k">class</span> <span class="p">{</span> <span class="s1">&#39;::apt&#39;</span><span class="p">:</span>
+</span><span class='line'><span class="n">always_apt_update</span> <span class="o">=&gt;</span> <span class="vg">$always_update</span><span class="p">,</span>
+</span><span class='line'><span class="n">purge_sources_list</span> <span class="o">=&gt;</span> <span class="vg">$purge_sources_list</span><span class="p">,</span>
+</span><span class='line'><span class="n">purge_sources_list_d</span> <span class="o">=&gt;</span> <span class="vg">$purge_sources_list_d</span><span class="p">,</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="k">if</span> <span class="vg">$ppas</span> <span class="p">{</span>
+</span><span class='line'><span class="n">create_resources</span><span class="p">(</span><span class="s1">&#39;::apt::ppa&#39;</span><span class="p">,</span> <span class="vg">$ppas</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="k">if</span> <span class="vg">$sources</span> <span class="p">{</span>
+</span><span class='line'><span class="n">create_resources</span><span class="p">(</span><span class="s1">&#39;::cs_apt::source&#39;</span><span class="p">,</span> <span class="vg">$sources</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="c1"># vim: ts=2 sw=2</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then in our profiles, to configure an apt source, we simply</p>
+
+
+        <hr class="divider-short"/>
+
+        
+      </div>
+    </div>
+  </div>
+</article>
+
+<hr class="divider-short"/>
+
+<div class="archive-link">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        
+          <a class="pull-left" href="/blog/2014/10/08/streamlining-puppet-dev-part-duce-branch-the-enviro/" title="Previous Post: Streamlining Puppet Dev Part Duce: Branch the enviro">&laquo; Previous: Streamlining Puppet Dev Part Duce: Branch the enviro</a>
+        
+
+        
+          <a class="pull-right" href="/blog/2014/11/01/the-benefits-of-being-sheep/" title="Next Post: The Benefits of being Sheep">Next: The Benefits of being Sheep &raquo;</a>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+    <footer id="footer" class="her-row">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-1">
+  <a href="/"><h4>Home</h4></a>
+</div>
+
+<div class="col-md-2">
+  <div class="social-icon-list">
+    
+    <a href="https://twitter.com/8bitsofsketch"><img src="/images/glyphicons_social_31_twitter.png"/></a>
+    
+
+    
+    <a href="https://github.com/malnick"><img src="/images/glyphicons_social_21_github.png"/></a>
+    
+
+    
+
+    
+    <a href="mailto:malnick@gmail.com"><img src="/images/glyphicons_social_39_e-mail.png"/></a>
+    
+  </div>
+</div>
+
+<div class="pull-right">
+  <h4>Powered by <a href="http://octopress.org/">Octopress</a>. Designed by <a href="http://AdrianArtiles.com">Adrian Artiles</a>.</h4>
+</div>
+
+
+    </div>
+  </div>
+</footer>
+
+    
+  </body>
+</html>

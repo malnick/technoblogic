@@ -1,0 +1,408 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>jenkins-puppet-CI - What we observe is not nature itself, but nature exposed to our method of questioning</title>
+  <meta name="author" content="Jeff">
+
+  
+  <meta name="description" content="jenkins-puppet-CI written SRC:CLR Deploy - Merge-to-Master -> Jenkins -> Puppet At SRC:CLR we used to use Opsworks to deploy our code pipeline. &hellip;&#8221;>
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="httpL://www.jeffmalnick.com/blog/2015/03/18/jenkins-puppet-ci">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="What we observe is not nature itself, but nature exposed to our method of questioning" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+  <body>
+    <a href="/" class="home-icon">
+      <img src="/images/home.png"/>
+    </a>
+
+    <article role="article" class="full-single-article">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <h1>jenkins-puppet-CI</h1>
+        <div class="meta">
+          written 
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-03-18T13:05:41+13:00" pubdate data-updated="true"></time>
+          
+
+
+        </div>
+        <h1>SRC:CLR Deploy - Merge-to-Master -> Jenkins -> Puppet</h1>
+
+<p>At SRC:CLR we used to use Opsworks to deploy our code pipeline. Opsworks is great but is overloaded with a lot of extra things that we don&rsquo;t need or want. It also doesn&rsquo;t allow us to fully open our code pipeline to outside applications in the way we wanted.</p>
+
+<p>In order to give our devs the easist way to deployment, we setup a pipeline from merge-to-master to deploy that encompasses the peer review process, java unit tests, and of course Puppet.</p>
+
+<p>If you don&rsquo;t want to read the post, we&rsquo;ve open sourced the code for <a href="https://github.com/malnick/jenkins-puppet-webhook.git">this webhook</a>.</p>
+
+<h2>The 10,000 Mile View</h2>
+
+<ol>
+<li>A developer submits a PR to merge to master from a dev branch</li>
+<li>Her peers review this PR and accept the merge to master</li>
+<li>Jenkins watches this repo, and starts a build on that branch</li>
+<li>If all tests pass, the jar file is sent to s3: <code>service-$version.jar</code></li>
+<li>A post build shell script runs that sends a POST with data about the buid to our puppet master</li>
+<li>The webhook on the master accepts this POST and uses the data to:</li>
+<li>Update hte version of the service in Hiera</li>
+<li>Update the git repo where the data file that tracks versions exists (in this case the puppet control repo with hiera data)</li>
+<li>Run mCollective to update all nodes matching the role which the service runs on</li>
+<li>The node(s) check in with the master, and diff the versino in the title of the S3 resource for the service jar file</li>
+<li>See the version has changed (since we updated it in hiera) the agent pulls down hte new jar file with version $version</li>
+<li>The agent restarts the services</li>
+</ol>
+
+
+<h2>The More Intimate View</h2>
+
+<p>This sinatra hook sits on a Puppet Master and listens for POSTs on :1015, when hit with a payload it updates the version number of a service in Hiera data and executes a mCollective call to run puppet on the node with a matching $::role value.</p>
+
+<p>This is great when used in conjunction with <a href="https://github.com/malnick/puppet-s3">puppet-s3</a> provider or something similar where you can classify the resrouce like</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">s3</span> <span class="p">{</span> <span class="s2">&quot;/path/to/service-${version}&quot;</span><span class="p">:</span>
+</span><span class='line'>  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then, using our webhook or a modified version of it, you can have a one click deploy in Jenkins since this hook will update the version in Hiera data that the <code>s3</code> resource is diff&#8217;ing from and execute mCollective to run puppet on the node matching a specific role - i.e., the role that classifies the node running the service being built by jenkins and pulled down by the <code>s3</code> resrouce.</p>
+
+<h3>How it&rsquo;s done&hellip;</h3>
+
+<p>Lets say you wanted to use the <a href="https://github.com/malnick/jenkins-puppet-webhook.git">open sourced</a> webhook and integrate it with your environment, here&rsquo;s what you need to know:</p>
+
+<h4>A few assumptions:</h4>
+
+<ol>
+<li>The payload from Jenkins, or whatever tool you&rsquo;re using to hit this hook, will pass the following parameters:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;service&quot;</span><span class="p">:</span>      <span class="s2">&quot;your_name_in_hiera_data&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;environment&quot;</span><span class="p">:</span>  <span class="s2">&quot;your_environment&quot;</span><span class="p">,</span>               <span class="err">#</span> <span class="err">qa</span> <span class="err">or</span> <span class="err">production?</span>
+</span><span class='line'>  <span class="nt">&quot;version&quot;</span><span class="p">:</span>      <span class="s2">&quot;service_version_being_deployed&quot;</span><span class="p">,</span> <span class="err">#</span> <span class="err">you&#39;ll</span> <span class="err">want</span> <span class="err">to</span> <span class="err">dynamicaly</span> <span class="err">generate</span> <span class="err">this</span> <span class="err">in</span> <span class="err">jenkis</span>
+</span><span class='line'>  <span class="nt">&quot;role&quot;</span><span class="p">:</span>         <span class="s2">&quot;role_of_node_in_puppet&quot;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>The Hiera data key matches the following pattern:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="c1"># Overlay with vars from JSON</span>
+</span><span class='line'><span class="l-Scalar-Plain">${service_name}_version_${environment}</span><span class="p-Indicator">:</span> <span class="s">&#39;1.2.1&#39;</span>
+</span><span class='line'><span class="c1"># A real-world example</span>
+</span><span class='line'><span class="l-Scalar-Plain">myservice_version_qa</span><span class="p-Indicator">:</span> <span class="s">&#39;1.2.1&#39;</span>
+</span><span class='line'><span class="l-Scalar-Plain">myotherservice_version_qa</span><span class="p-Indicator">:</span> <span class="s">&#39;1.4.1&#39;</span>
+</span><span class='line'><span class="l-Scalar-Plain">someservice_version_production</span><span class="p-Indicator">:</span> <span class="s">&#39;0.5.1&#39;</span>
+</span><span class='line'><span class="l-Scalar-Plain">myservice_version_production</span><span class="p-Indicator">:</span> <span class="s">&#39;1.1.0&#39;</span>
+</span><span class='line'><span class="nn">...</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You can override this in the options you pass via the JSON POST with the key <code>key</code>.</p>
+
+<ol>
+<li>You&rsquo;ll fork this repo, and update the <code>data_file</code> and maybe the <code>key</code> values in <code>lib/options.rb</code>:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">Update</span>
+</span><span class='line'>  <span class="k">class</span> <span class="nc">Options</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kp">attr_accessor</span> <span class="ss">:config</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;##### Parsing Options #####&quot;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="vi">@config</span>         <span class="o">=</span> <span class="no">Hash</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># Required data from POST</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:environment</span><span class="o">]</span>    <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;environment&#39;</span><span class="o">]</span>   <span class="c1"># qa or production etc</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:version</span><span class="o">]</span>        <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;version&#39;</span><span class="o">]</span>       <span class="c1"># The version to write to the data file</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:service</span><span class="o">]</span>        <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;service&#39;</span><span class="o">]</span>       <span class="c1"># The service name</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:role</span><span class="o">]</span>           <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;role&#39;</span><span class="o">]</span>          <span class="c1"># The role for the nodes to update via mCollective</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># Optional data from POST</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:key</span><span class="o">]</span>            <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;key&#39;</span><span class="o">]</span>             <span class="o">||</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@config</span><span class="o">[</span><span class="ss">:service</span><span class="o">]</span><span class="si">}</span><span class="s2">_version_</span><span class="si">#{</span><span class="vi">@config</span><span class="o">[</span><span class="ss">:environment</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:git_repo</span><span class="o">]</span>       <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;git_repo&#39;</span><span class="o">]</span>        <span class="o">||</span> <span class="s1">&#39;git@github.com:malnick/puppet-control&#39;</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:git_repo_dir</span><span class="o">]</span>   <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;git_repo_dir&#39;</span><span class="o">]</span>    <span class="o">||</span> <span class="s1">&#39;/tmp/control&#39;</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:data_file</span><span class="o">]</span>      <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;data_file_path&#39;</span><span class="o">]</span>  <span class="o">||</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@config</span><span class="o">[</span><span class="ss">:git_repo_dir</span><span class="o">]</span><span class="si">}</span><span class="s2">/global.yaml&quot;</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;##### Setting configuration #####&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">|</span>
+</span><span class='line'>        <span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>You&rsquo;re using a <code>$::role</code> fact. I roll in AWS, so everything is classified based on <code>$::role</code>. This webhook won&rsquo;t be able to run puppet on the node running your service you just updated the version for until you modify this code or get yourself a role face.</li>
+</ol>
+
+
+<h3>Deployment Pattern</h3>
+
+<ol>
+<li>Clone the repo to your pupetmaster and make the above suggested changes to make it work with your deployment</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>git clone git@github.com:malnick/jenkins-puppet-webhook.git
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>Turn it on:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>bin/webhook start
+</span><span class='line'><span class="c"># Should come up on :1015</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>Have a post-run stage in your jenkins build for a given service that executes something akin to the following:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="c"># Assuming you&#39;re running this from $WORKSPACE in jenkins, your paths will vary as well as your method of obtaining the version off the build.</span>
+</span><span class='line'><span class="nv">VERSION</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo </span>service/target/service-*.jar | cut -d- -f2 | cut -d. -f1,2,3<span class="k">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Curl this webhook, which should be on the Puppet Master</span>
+</span><span class='line'>curl <span class="se">\</span>
+</span><span class='line'>  -X POST <span class="se">\</span>
+</span><span class='line'>  -d@- <span class="se">\</span>
+</span><span class='line'>  puppet.myorg.com:1015/deploy <span class="s">&lt;&lt;EOF</span>
+</span><span class='line'><span class="s">{</span>
+</span><span class='line'><span class="s">  &quot;service&quot;:     &quot;myservice&quot;,</span>
+</span><span class='line'><span class="s">  &quot;version&quot;:     &quot;$VERSION&quot;,</span>
+</span><span class='line'><span class="s">  &quot;environment&quot;: &quot;qa&quot;,</span>
+</span><span class='line'><span class="s">  &quot;role&quot;:        &quot;qa_services_migration&quot;</span>
+</span><span class='line'><span class="s">}</span>
+</span><span class='line'><span class="s">EOF</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Kick off a build&hellip;.</h3>
+
+<p>This should implement the following chain:</p>
+
+<ol>
+<li>Build is executed on jenkins</li>
+<li>If successful the build drops the new versioned jar or zip file or whatever in S3: <code>myservice-0.2.5.jar</code></li>
+<li>If successful the shell post-run is executed, running the above script that gets the new $version and POSTs to our webhook on the puppet master</li>
+<li>The webhook updates hiera data with the correct value for the updated version</li>
+<li>The webhook updates git to ensure that jenkins owns our versioning</li>
+<li>The Webhook executes an MCO call to run puppet on the node running this service based on the <code>$::role</code> fact</li>
+<li>The nodes matching the <code>$::role</code> get the updated version in hiera data and match that against the <code>s3</code> resource in that:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span><span class='line'><span class="n">s3</span> <span class="p">{</span> <span class="s2">&quot;${basedir}/${service}-${version}.jar&quot;</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">ensure</span>            <span class="o">=&gt;</span> <span class="n">present</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">source</span>            <span class="o">=&gt;</span> <span class="s2">&quot;/my_bucket/${service}-${deploy_stage}/${service}-${version}.jar&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">access_key_id</span>     <span class="o">=&gt;</span> <span class="vg">$access_key_id</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">secret_access_key</span> <span class="o">=&gt;</span> <span class="vg">$secret_access_key</span><span class="p">,</span>
+</span><span class='line'>    <span class="nb">require</span>           <span class="o">=&gt;</span> <span class="no">File</span><span class="o">[</span><span class="vg">$basedir</span><span class="o">]</span><span class="p">,</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Where <code>$version</code> is derived from</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="vg">$service</span> <span class="o">=</span> <span class="s1">&#39;my_service&#39;</span>
+</span><span class='line'><span class="vg">$version</span> <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="n">my_service_version_qa</span><span class="p">)</span>
+</span><span class='line'><span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Some Closing Remarks&hellip; or why this is rad</h2>
+
+<p>Your devs should never have to worry about depoying code, they have enough to worry about in writing it. The pipeline that is built around deployment should be mind numbingly simple for them to implement. Merge-to-master is scary for a lot of reasons. Automating the updating of values in Hiera is scary for a lot of reasons. At the end of the day however, those are my problems and not the developers. My job is to make efficient pipelines for our product, and the release pipeline is the purest incarnation of that. We think this is pretty rad, and if you want to play along and fork our public repo and submit some PR&rsquo;s we&rsquo;d love to hear from you.</p>
+
+
+        <hr class="divider-short"/>
+
+        
+      </div>
+    </div>
+  </div>
+</article>
+
+<hr class="divider-short"/>
+
+<div class="archive-link">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        
+          <a class="pull-left" href="/blog/2015/03/12/logging-analytics/" title="Previous Post: Logging Analytics">&laquo; Previous: Logging Analytics</a>
+        
+
+        
+          <a class="pull-right" href="/blog/2015/04/16/factory-patterns-rule-number-1/" title="Next Post: Factory Patterns: Rule #1">Next: Factory Patterns: Rule #1 &raquo;</a>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+    <footer id="footer" class="her-row">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-1">
+  <a href="/"><h4>Home</h4></a>
+</div>
+
+<div class="col-md-2">
+  <div class="social-icon-list">
+    
+    <a href="https://twitter.com/8bitsofsketch"><img src="/images/glyphicons_social_31_twitter.png"/></a>
+    
+
+    
+    <a href="https://github.com/malnick"><img src="/images/glyphicons_social_21_github.png"/></a>
+    
+
+    
+
+    
+    <a href="mailto:malnick@gmail.com"><img src="/images/glyphicons_social_39_e-mail.png"/></a>
+    
+  </div>
+</div>
+
+<div class="pull-right">
+  <h4>Powered by <a href="http://octopress.org/">Octopress</a>. Designed by <a href="http://AdrianArtiles.com">Adrian Artiles</a>.</h4>
+</div>
+
+
+    </div>
+  </div>
+</footer>
+
+    
+  </body>
+</html>

@@ -1,0 +1,212 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Automating Spring Boot Micro Service Deployments - What we observe is not nature itself, but nature exposed to our method of questioning</title>
+  <meta name="author" content="Jeff">
+
+  
+  <meta name="description" content="Automating Spring Boot Micro Service Deployments written Spring is a java framework that has been around for the better part of a decade. Though &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="httpL://www.jeffmalnick.com/blog/2015/05/02/automating-spring-boot-micro-service-deployments">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="What we observe is not nature itself, but nature exposed to our method of questioning" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+  <body>
+    <a href="/" class="home-icon">
+      <img src="/images/home.png"/>
+    </a>
+
+    <article role="article" class="full-single-article">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <h1>Automating Spring Boot Micro Service Deployments</h1>
+        <div class="meta">
+          written 
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-05-02T05:05:30+12:00" pubdate data-updated="true"></time>
+          
+
+
+        </div>
+        Spring is a java framework that has been around for the better part of a decade. Though some argue it&#8217;s growing long in the tooth, it&#8217;s still a standard among large enterprise to smaller startup style web applications. Spring boot is Springs answer to next generation, easy-to-implement, spring setup. Spring boot has a host of advantages over it&#8217;s legacy counterpart, chef among them packaging up your application in jar file format vs. war file format, embedded tomcat, and the primary topic of this post: resource configuration based on config files found in the classpath.  
+
+This seeminly simple way to configure an application provides a much needed interface for operations to successfully automate a spring application across heterogenious environments. y Since spring is Java-based we have the typical players we can roll in our init script to tune things JVM-related: XMX/XMS are key. We can also pass in active profiles, or groupings of configuration that override any application property files which in turn set &#8220;defaults&#8221; for a given deployment. 
+
+Typical Sping-based deployments suffer from configuration being hard coded into the application properties files of the code repository. This is great for modularizing your code base so it can be transported to multiple environmnets. However it ensures your code also has clear text passwords, api keys and other data that shouldn&#8217;t be in a VCS repo or distributed in any way.
+
+In order to lock down the security of the code base itself we decided to externalize all the passwords, api keys and other confidential data from our code base. Spring makes it remarkably easy to do this, providing the options to specify configuration as environment variables at boot or specify external application property files to an init script or CLI call.
+
+## Method 1: External App Properties
+First, lets talk about how we provision a node that runs our backend Spring services. Everything is managed with Puppet, which allows us to take advantage of encrypted YAML as a datasource via [Hiera](https://docs.puppetlabs.com/hiera/1/). We wrote a module around the deployment of our Spring services which takes care of the absolute neccessities for the proper configuration of our service. Via this module we&#8217;re able to implement:
+
+1. Securely pulling the jar file from S3 with an ephemeral IAM user using the [S3 module](https://github.com/malnick/puppet-s3) given a specific $version
+1. Deploying the service to /opt/sourceclear/$service/$service.jar and symlinking the versioned jar to the executed inode
+1. Logstash & logrotate configuration for the service
+1. Exported balancermember resources for Haproxy for each process of each service that is running on a $node
+1. Externalized application-$app.properties file specifying the passwords, api keys and other encrypted data from eYaml
+1. An init script for init.d which runs &#8216;n&#8217; number of processes specified by the $proc_opts hash sc_services::services defined type. 
+1. Configure application metric monitoring for New Relic 
+1. Define JVM Heap size for each process
+
+A typical service might have the following deployment in Puppetland:
+
+&#8220;`ruby
+class profiles::sc_services::some_service ( $version ){
+
+  $properties_file = {
+    &#8216;rabbitmq.password&#8217; => hiera(&#8216;qa::rabbitmq_password&#8217;),
+    &#8216;mandrill.api.key&#8217;  => hiera(&#8216;qa::mandrill_api_key&#8217;),
+  }
+
+  # The main service definition
+  sc_services::service { $some_service:
+    deploy_stage        => &#8216;qa&#8217;,
+    version             => $version,
+    enable_newrelic_apm => true,
+    loadbalancer_role   => &#8216;qa_internal&#8217;,
+    xmx_setting         => &#8216;512&#8217;,
+    xms_setting         => &#8216;512&#8217;,
+    proc_opts           => {
+      &#8216;1&#8217;  => {
+        &#8216;env_profile&#8217; => &#8216;qa&#8217;,
+        &#8216;port&#8217;        => &#8216;55000&#8217;,
+        &#8216;mgmt_port&#8217;   => &#8216;55010&#8217;,
+        &#8216;override&#8217;    => $properties_file,
+      },
+      &#8216;2&#8217;  => {
+        &#8216;env_profile&#8217; => &#8216;qa&#8217;,
+        &#8216;port&#8217;        => &#8216;55001&#8217;,
+        &#8216;mgmt_port&#8217;   => &#8216;55011&#8217;,
+        &#8216;override&#8217;    => $properties_file,
+      }
+    }
+  }
+}
+&#8220;`
+
+This configuration will boot a node with an init script managing 2 Java processes for $service. Each prcess gets it&#8217;s own exported balancermember resource for our internal haproxy in the environment &#8216;qa&#8217; as well as New Relic APM monitoring, and most importantly an externalized configuration built from data in git that is encrypted. 
+
+## Method 2: Environment Variables
+Since Sping allows you to also override any configuration as ENV variables it makes it incredibly easy to roll this service into a docker container:
+
+&#8220;`ruby
+  $rabbitmq_password  = hiera(&#8216;rabbitmq_password&#8217;)
+  $mandrill_api_key   = hiera(&#8216;mandrill_api_key&#8217;)
+
+  $env_variables = [
+    &#8220;rabbitmq.password=${rabbitmq_password}&#8221;,
+    &#8220;mandrill.api.key=${mandrill_api_key}&#8221;,
+  ]
+
+  docker::run { &#8216;some_service&#8217;:
+    image           => &#8220;our_priv_registry:5000/some_service-${version}&#8221;,
+    ports           => [&#8216;55010&#8217;],
+    expose          => [&#8216;55010&#8217;],
+    env             => $env_variables,
+    restart_service => true,
+    privileged      => false,
+    pull_on_start   => true,
+  }
+&#8220;`
+
+Now we can toss out an on-system properties file and keep the secure passwords purely in the context of the shell which they are executed. This furthers security as the passwords are never actually written to the system, they can not be copied or read from disk as it were. 
+
+Of course, this simple docker example doesn&#8217;t run multiples of the service but we could easily write a small module around docker which does. However, our Docker deployment is more about moving towards mesosphere as our service execution framework. This way, configuration management will not be used at all for booting and running our Docker containers. Instead, we&#8217;ll be POSTing the container, the number of instances, and ENV variables to a a Mesos master which will manage the service discovery, runtime persistance and aggregation of the services in our AWS deployment. 
+
+
+        <hr class="divider-short"/>
+
+        
+      </div>
+    </div>
+  </div>
+</article>
+
+<hr class="divider-short"/>
+
+<div class="archive-link">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        
+          <a class="pull-left" href="/blog/2015/04/16/factory-patterns-rule-number-1/" title="Previous Post: Factory Patterns: Rule #1">&laquo; Previous: Factory Patterns: Rule #1</a>
+        
+
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+    <footer id="footer" class="her-row">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-1">
+  <a href="/"><h4>Home</h4></a>
+</div>
+
+<div class="col-md-2">
+  <div class="social-icon-list">
+    
+    <a href="https://twitter.com/8bitsofsketch"><img src="/images/glyphicons_social_31_twitter.png"/></a>
+    
+
+    
+    <a href="https://github.com/malnick"><img src="/images/glyphicons_social_21_github.png"/></a>
+    
+
+    
+
+    
+    <a href="mailto:malnick@gmail.com"><img src="/images/glyphicons_social_39_e-mail.png"/></a>
+    
+  </div>
+</div>
+
+<div class="pull-right">
+  <h4>Powered by <a href="http://octopress.org/">Octopress</a>. Designed by <a href="http://AdrianArtiles.com">Adrian Artiles</a>.</h4>
+</div>
+
+
+    </div>
+  </div>
+</footer>
+
+    
+  </body>
+</html>

@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Puppet Types: Understanding Parameters and Properties - What we observe is not nature itself, but nature exposed to our method of questioning</title>
+  <meta name="author" content="Jeff">
+
+  
+  <meta name="description" content="Puppet Types: Understanding Parameters and Properties written When starting out with Types and Providers for Puppet it&rsquo;s common to &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="httpL://www.jeffmalnick.com/blog/2014/04/20/puppet-types-understanding-parameters-and-properties">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="What we observe is not nature itself, but nature exposed to our method of questioning" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+  <body>
+    <a href="/" class="home-icon">
+      <img src="/images/home.png"/>
+    </a>
+
+    <article role="article" class="full-single-article">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <h1>Puppet Types: Understanding Parameters and Properties</h1>
+        <div class="meta">
+          written 
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2014-04-20T03:30:28+12:00" pubdate data-updated="true"></time>
+          
+
+
+        </div>
+        <p>When starting out with Types and Providers for Puppet it&rsquo;s common to misunderstand when something is a <em>Parameter</em> and when something is a <em>Property</em>.</p>
+
+<h3><strong>Properties</strong></h3>
+
+<p>Properties are anything that will <strong>modify</strong> a resource. In other words, attributes of a type that will change how that resource type exists on your system. A property is a charactaristic of a resource. A property does not change what a resource is, which is where the confusion usually begins.</p>
+
+<p>For example, let&rsquo;s take the file resource (anyone who has had the opportunity of taking Extending Puppet for Developers might find this redundant).</p>
+
+<pre><code>file {'/tmp/test':
+    ensure   =&gt; file,
+    path     =&gt; '/tmp/test', # $namevar
+    owner    =&gt; 'root',
+    group    =&gt; 'root',
+    checksum =&gt; 'md5',
+    content  =&gt; 'foo',
+    }
+</code></pre>
+
+<p>Any ideas which attributes are parameters and which are properties? Let&rsquo;s start with</p>
+
+<pre><code>ensure =&gt; file,
+</code></pre>
+
+<p>The &lsquo;ensure&rsquo; attribute is actually created by the &lsquo;ensurable&rsquo; method from the Puppet::Type class. Any attribute calling &lsquo;ensurable&rsquo; gets the default &lsquo;present&#8217;and &#8216;absent&rsquo; values telling the type to call from the provider &lsquo;exists?()&rsquo; then based on output from &lsquo;exists?&rsquo; evaluates &lsquo;creates()&rsquo; or &lsquo;destroy()&rsquo;.</p>
+
+<p>Ensure modifies the resource, but does not change the definition of what that resource is to the system, therefore ensure is a property.</p>
+
+<p>Other properties of file are</p>
+
+<pre><code>owner
+group
+content
+</code></pre>
+
+<p>Content? Yes, content. On a file system the content of the file does not define the file, the <em>$path</em> to the file is the definition of a file. Therefore content is just a charactaristic of that file, making that attribute a property as well.</p>
+
+<h3><strong>Parameters</strong></h3>
+
+<p>Parameters are used by Puppet to provision the resource onto the system. Parameters are resource attributes that can be retrieved and are used to create, or define the resource as it exists on the system.</p>
+
+<pre><code>path =&gt; '/tmp/testing',
+</code></pre>
+
+<p>For example, the $namevar of the the file resource is the $path. That&rsquo;s because the $path of a file defines the resource on the system. You can query the path of a file, however if you change the path of a file you define an entierly new file. Therefore, $path is a parameter.</p>
+
+<p>Another parameter of file would the checksum attribute. The checksum type is used when determining whether to replace a file’s contents. If your md5 checksum does not match the md5 checksum of the file on the system your file will be created; if it does match your file will not be updated if it exists; if it doesn&rsquo;t exist if will be provisioned. Checksum defines what the file should look like on the system; it&rsquo;s used by Puppet to provision the file but not stored as part of the file resource.</p>
+
+
+        <hr class="divider-short"/>
+
+        
+      </div>
+    </div>
+  </div>
+</article>
+
+<hr class="divider-short"/>
+
+<div class="archive-link">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        
+          <a class="pull-left" href="/blog/2014/03/21/brief-intro-to-puppetizing-stig-compliance/" title="Previous Post: Brief Intro to Puppetizing STIG Compliance">&laquo; Previous: Brief Intro to Puppetizing STIG Compliance</a>
+        
+
+        
+          <a class="pull-right" href="/blog/2014/05/05/continous-integration-hooks-with-r10k-and-puppet/" title="Next Post: Continous Integration Hooks with r10k &amp; Puppet">Next: Continous Integration Hooks with r10k &amp; Puppet &raquo;</a>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+    <footer id="footer" class="her-row">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-1">
+  <a href="/"><h4>Home</h4></a>
+</div>
+
+<div class="col-md-2">
+  <div class="social-icon-list">
+    
+    <a href="https://twitter.com/8bitsofsketch"><img src="/images/glyphicons_social_31_twitter.png"/></a>
+    
+
+    
+    <a href="https://github.com/malnick"><img src="/images/glyphicons_social_21_github.png"/></a>
+    
+
+    
+
+    
+    <a href="mailto:malnick@gmail.com"><img src="/images/glyphicons_social_39_e-mail.png"/></a>
+    
+  </div>
+</div>
+
+<div class="pull-right">
+  <h4>Powered by <a href="http://octopress.org/">Octopress</a>. Designed by <a href="http://AdrianArtiles.com">Adrian Artiles</a>.</h4>
+</div>
+
+
+    </div>
+  </div>
+</footer>
+
+    
+  </body>
+</html>
