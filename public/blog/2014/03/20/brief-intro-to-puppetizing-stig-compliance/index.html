@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Brief Intro to Puppetizing STIG Compliance - What we observe is not nature itself, but nature exposed to our method of questioning</title>
+  <meta name="author" content="Jeff">
+
+  
+  <meta name="description" content="Brief Intro to Puppetizing STIG Compliance written STIG is a methodology for the implementation of security compliance across heterogeneous &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="httpL://www.jeffmalnick.com/blog/2014/03/20/brief-intro-to-puppetizing-stig-compliance">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="What we observe is not nature itself, but nature exposed to our method of questioning" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+  <body>
+    <a href="/" class="home-icon">
+      <img src="/images/home.png"/>
+    </a>
+
+    <article role="article" class="full-single-article">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <h1>Brief Intro to Puppetizing STIG Compliance</h1>
+        <div class="meta">
+          written 
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2014-03-20T10:01:05-07:00" pubdate data-updated="true"></time>
+          
+
+
+        </div>
+        <p>STIG is a methodology for the implementation of security compliance across heterogeneous operating systems. Every OS has a specific STIG. The STIG for a given OS is maintained and distributed by the Defense Information Systems Agency (DISA). Current STIGs can be found on the <a href="http://iase.disa.mil/stigs/">DISA website</a>.</p>
+
+<p>Puppet is an excellent tool for bringing machines into STIG compliance. At my previous job I was in <a href="https://github.com/malnick/do_debian_stig/blob/master/do_debian_stig.sh">shell script hell</a> until we spun up a POS master and started writing a STIG module that worked across all OS&rsquo;s we supported (14 linux distros, 30 territorial sys admins, ~250 nodes).</p>
+
+<p>In doing a STIG module for puppet it’s best to just work from Cat 1 down. 1 &amp; 2 offenses are pretty big, 3 &amp; 4 are usually minor security patches and can be overlooked if you’re time crunched. Staying on top of the false positives and keeping your module up to date with actual security implementation is the biggest hurdle.</p>
+
+<p>This document is a general guideline from my experience in implementing STIG compliance measures.</p>
+
+<h3>Basic STIG Process</h3>
+
+<ol>
+<li><p>Go to the DISA site and download the STIG for the appropriate OS</p></li>
+<li><p>Do some sort of benchmark scan on a base OS:</p>
+
+<ul>
+<li>I used retina (which is awful) scans that were preloaded with the appropriate <a href="http://www.public.navy.mil/spawar/Atlantic/ProductsServices/Pages/SCAP.aspx">Security Content Automation Protocol (SCAP)</a> documents (.xml files, see below).</li>
+<li> You can also get SCAP benchmarks on the DISA site for the appropriate OS listed with the STIG benchmarks (see below on SCAP)</li>
+</ul>
+</li>
+<li><p>Take retina report with categorized vulnerabilities and start writing puppet modules - oh wait, just kidding! first you’ll need to:</p>
+
+<ol type="a">
+<li> Check for false positives - in most cases the OS provider is way ahead of the game, and simply running ‘apt-get update’ or ‘yum update’ will take care of 80% of the vulnerabilities on the box. STIG guidelines are notoriously behind the OS and will have LOTS of false positives. Most of your time will be spent accounting for what is actually a vulnerability and what is actually already patched by the OS provider.</li>
+</ol>
+</li>
+<li><p>What vulnerabilities are left after cross correlating with security patches are what you have to develop specified puppet classes for, this is actually the easy part.</p></li>
+</ol>
+
+
+<p>A really good resource for this is the <a href="https://fedorahosted.org/aqueduct/wiki/RhelStigProcess">Aqueduct Project</a> at Fedora. They’re really good about staying on top of the recent STIG process and also maintaining a set puppet module for STIGing RHEL boxes (or at least they used to, not sure what their status is now. A recent look shows they&rsquo;re only on RHEL 5 so&hellip;).</p>
+
+<h3>SCAP</h3>
+
+<p>The Security <a href="http://scap.nist.gov">Content Automation Protocol (SCAP)</a> is a protocol developed by the NSA puppet branch of government known as NIST for implementing IT security measures. Some parts of the protocol can be useful in scanning tools such as retina since the XML format for the vulnerability index are standardized.</p>
+
+<p>For example, when you are on the DISA site looking at the current STIG for a specific OS there will be a download button for &lsquo;SCAP Benchmarks&rsquo;. This is a .zip of several .xml&rsquo;s that contain:</p>
+
+<p><a href="http://scap.nist.gov/specifications/cpe/">Common Platform Enumeration (CPE)</a> files for describing and identifying classes of applications, operating systems, and hardware devices present among an enterprise&rsquo;s computing assets.</p>
+
+<p><a href="http://oval.mitre.org">Open Vulnerability and Assessment Language (OVAL)</a> for assessing and reporting upon the rachine state.</p>
+
+<p><a href="http://scap.nist.gov/specifications/xccdf/index.html">Extensible Configuration Checklist Description Format (XCCDF)</a> which is a structured collection of security configuration rules for some set of target systems.</p>
+
+<p>&hellip; and maybe some other random ones as well.</p>
+
+<p>This is a document in motion so I&rsquo;ll be adding more here, feel free to add as you find information as well.</p>
+
+
+        <hr class="divider-short"/>
+
+        
+      </div>
+    </div>
+  </div>
+</article>
+
+<hr class="divider-short"/>
+
+<div class="archive-link">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        
+          <a class="pull-left" href="/blog/2014/03/20/rspec-testing-puppet-enterprise-modules/" title="Previous Post: How To Install Rspec-Puppet on Puppet Enterprise">&laquo; Previous: How To Install Rspec-Puppet on Puppet Enterprise</a>
+        
+
+        
+          <a class="pull-right" href="/blog/2014/04/19/puppet-types-understanding-parameters-and-properties/" title="Next Post: Puppet Types: Understanding Parameters and Properties">Next: Puppet Types: Understanding Parameters and Properties &raquo;</a>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+    <footer id="footer" class="her-row">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-1">
+  <a href="/"><h4>Home</h4></a>
+</div>
+
+<div class="col-md-2">
+  <div class="social-icon-list">
+    
+    <a href="https://twitter.com/8bitsofsketch"><img src="/images/glyphicons_social_31_twitter.png"/></a>
+    
+
+    
+    <a href="https://github.com/malnick"><img src="/images/glyphicons_social_21_github.png"/></a>
+    
+
+    
+
+    
+    <a href="mailto:malnick@gmail.com"><img src="/images/glyphicons_social_39_e-mail.png"/></a>
+    
+  </div>
+</div>
+
+<div class="pull-right">
+  <h4>Powered by <a href="http://octopress.org/">Octopress</a>. Designed by <a href="http://AdrianArtiles.com">Adrian Artiles</a>.</h4>
+</div>
+
+
+    </div>
+  </div>
+</footer>
+
+    
+  </body>
+</html>

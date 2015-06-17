@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Why I don&#8217;t place a hiera.yaml in my CR - What we observe is not nature itself, but nature exposed to our method of questioning</title>
+  <meta name="author" content="Jeff">
+
+  
+  <meta name="description" content="Why I don't place a hiera.yaml in my CR written Here&rsquo;s a really good reason. First off, unless your hiera.yaml is super complicated, then it &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="httpL://www.jeffmalnick.com/blog/2014/05/15/hiera-and-r10k">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="What we observe is not nature itself, but nature exposed to our method of questioning" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+  <body>
+    <a href="/" class="home-icon">
+      <img src="/images/home.png"/>
+    </a>
+
+    <article role="article" class="full-single-article">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <h1>Why I don&#8217;t place a hiera.yaml in my CR</h1>
+        <div class="meta">
+          written 
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2014-05-15T16:12:36-07:00" pubdate data-updated="true"></time>
+          
+
+
+        </div>
+        <p>Here&rsquo;s a really good reason. First off, unless your hiera.yaml is super complicated, then it probably doesn&rsquo;t need to be in version control. However, for a lot of deployments you need it in VC, but not in your control repo (i.e., the one that r10k will access for Puppetfile, hieradata and build our corrosponding enviros for on your master).</p>
+
+<p>No, place that hiera.yaml in it&rsquo;s own VC repo.</p>
+
+<p>I had a control repo with:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Puppetfile
+</span><span class='line'>hieradata/
+</span><span class='line'>hiera.yaml</span></code></pre></td></tr></table></div></figure>
+
+
+<p>and I kept running in to this:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master hieradata]# puppet apply -e "notice(hiera(message))"
+</span><span class='line'>Error: Could not find data item message in any Hiera data file and no default supplied at line 1 on node master.puppetlabs.vm</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This was a very simple test to see if my <code>production</code> environment was grabbing the correct data via a message K,V in <code>$confdir/environments/production/hieradata/master.puppetlabs.vm.yaml</code> .</p>
+
+<p>Check out the &ndash;debug</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Debug: hiera(): Hiera YAML backend starting
+</span><span class='line'>Debug: hiera(): Looking up message in YAML backend
+</span><span class='line'>Debug: hiera(): Looking for data source master.puppetlabs.vm
+</span><span class='line'>Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/master.puppetlabs.vm.yaml, skipping
+</span><span class='line'>Debug: hiera(): Looking for data source production
+</span><span class='line'>Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/production.yaml, skipping
+</span><span class='line'>Debug: hiera(): Looking for data source global
+</span><span class='line'>Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/global.yaml, skipping</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So I copied the <code>datafile</code> path and redirected it to a diff along with a &#8220;`$(pwd) while in the /etc/puppetlabs/puppet/environments/production/hieradata directory:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master hieradata]# diff &lt;(echo "/etc/puppetlabs/puppet/environmets/production/hieradata/") &lt;(echo "$(pwd)")
+</span><span class='line'>1c1
+</span><span class='line'>&lt; /etc/puppetlabs/puppet/environmets/production/hieradata/
+</span><span class='line'>---
+</span><span class='line'>&gt; /etc/puppetlabs/puppet/environments/production/hieradata</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So the <code>$datadir</code> path in hiera.yaml</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master puppet]# cat hiera.yaml | grep datadir
+</span><span class='line'>  :datadir: '/etc/puppetlabs/puppet/environmets/%{environment}/hieradata'</span></code></pre></td></tr></table></div></figure>
+
+
+<p>is indeed missing that f-ing &lsquo;n&rsquo;. Why? Because this was the second time this happened to me today.</p>
+
+<p>Really? The second time? Really. The second fucking time.</p>
+
+<p>I previously committed hiera.yaml along with hieradata/ and my Puppetfile to branch production. I tested it and came across this problem. Did the same test to figure out the correct path and updated hiera.yaml.</p>
+
+<p>However, hiera.yaml was also in my development and staging branches. I didn&rsquo;t update those. So here I was again doing tests on development data for Puppet and <strong>boom</strong> my shit&rsquo;s broken again.</p>
+
+<p>Since hiera.yaml is only used singularly on a puppet run, i.e., it&rsquo;s not consulted on a per environment basis, you only need one copy of it, and that&rsquo;s the one in your puppet $confdir. Having it scattered to the winds with r10k in the control repo does not give you any extra functionality (yet, someday we might make it enviro aware, but currently is not the case).</p>
+
+<p>So if you&rsquo;re going to run your hiera.yaml into a VCS then do it in it&rsquo;s own monolithic repo. You can symlink it into the $confdir for Puppet.</p>
+
+
+        <hr class="divider-short"/>
+
+        
+      </div>
+    </div>
+  </div>
+</article>
+
+<hr class="divider-short"/>
+
+<div class="archive-link">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        
+          <a class="pull-left" href="/blog/2014/05/04/continous-integration-hooks-with-r10k-and-puppet/" title="Previous Post: Continous Integration Hooks with r10k &amp; Puppet">&laquo; Previous: Continous Integration Hooks with r10k &amp; Puppet</a>
+        
+
+        
+          <a class="pull-right" href="/blog/2014/05/16/r10k-control-repos/" title="Next Post: r10k: Control Repos">Next: r10k: Control Repos &raquo;</a>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+    <footer id="footer" class="her-row">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-1">
+  <a href="/"><h4>Home</h4></a>
+</div>
+
+<div class="col-md-2">
+  <div class="social-icon-list">
+    
+    <a href="https://twitter.com/8bitsofsketch"><img src="/images/glyphicons_social_31_twitter.png"/></a>
+    
+
+    
+    <a href="https://github.com/malnick"><img src="/images/glyphicons_social_21_github.png"/></a>
+    
+
+    
+
+    
+    <a href="mailto:malnick@gmail.com"><img src="/images/glyphicons_social_39_e-mail.png"/></a>
+    
+  </div>
+</div>
+
+<div class="pull-right">
+  <h4>Powered by <a href="http://octopress.org/">Octopress</a>. Designed by <a href="http://AdrianArtiles.com">Adrian Artiles</a>.</h4>
+</div>
+
+
+    </div>
+  </div>
+</footer>
+
+    
+  </body>
+</html>

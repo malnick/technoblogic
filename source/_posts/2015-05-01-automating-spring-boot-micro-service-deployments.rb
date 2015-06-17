@@ -16,14 +16,14 @@ In order to lock down the security of the code base itself we decided to externa
 ## Method 1: External App Properties
 First, lets talk about how we provision a node that runs our backend Spring services. Everything is managed with Puppet, which allows us to take advantage of encrypted YAML as a datasource via [Hiera](https://docs.puppetlabs.com/hiera/1/). We wrote a module around the deployment of our Spring services which takes care of the absolute neccessities for the proper configuration of our service. Via this module we're able to implement:
 
-1. Securely pulling the jar file from S3 with an ephemeral IAM user using the [S3 module](https://github.com/malnick/puppet-s3) given a specific $version
-1. Deploying the service to /opt/sourceclear/$service/$service.jar and symlinking the versioned jar to the executed inode
-1. Logstash & logrotate configuration for the service
-1. Exported balancermember resources for Haproxy for each process of each service that is running on a $node
-1. Externalized application-$app.properties file specifying the passwords, api keys and other encrypted data from eYaml
-1. An init script for init.d which runs 'n' number of processes specified by the $proc_opts hash sc_services::services defined type. 
-1. Configure application metric monitoring for New Relic 
-1. Define JVM Heap size for each process
+- Securely pulling the jar file from S3 with an ephemeral IAM user using the [S3 module](https://github.com/malnick/puppet-s3) given a specific $version
+- Deploying the service to /opt/sourceclear/$service/$service.jar and symlinking the versioned jar to the executed inode
+- Logstash & logrotate configuration for the service
+- Exported balancermember resources for Haproxy for each process of each service that is running on a $node
+- Externalized application-$app.properties file specifying the passwords, api keys and other encrypted data from eYaml
+- An init script for init.d which runs 'n' number of processes specified by the $proc_opts hash sc_services::services defined type. 
+- Configure application metric monitoring for New Relic 
+- Define JVM Heap size for each process
 
 A typical service might have the following deployment in Puppetland:
 

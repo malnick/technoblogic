@@ -13,7 +13,7 @@
   <meta name="author" content="Jeff">
 
   
-  <meta name="description" content="All Posts Automating Spring Boot Micro Service Deployments Spring is a java framework that has been around for the better part of a decade. Though &hellip;">
+  <meta name="description" content="All Posts Vertically Scaled Infrastructure &ldquo;&hellip;but does is scale?&rdquo; When it comes to micro-service architectures that&rsquo;s always &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -55,7 +55,315 @@
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2015/05/02/automating-spring-boot-micro-service-deployments/">Automating Spring Boot Micro Service Deployments</a></h2>
+  <h2><a href="/blog/2015/06/17/vertically-scaled-infrastructure/">Vertically Scaled Infrastructure</a></h2>
+  
+  <p>
+    <h2>&ldquo;&hellip;but does is scale?&rdquo;</h2>
+
+
+
+
+<p>When it comes to micro-service architectures that&rsquo;s always the big question. You can maintain a solid agile development process, design a micro service architecture, and implement seamless CI to ensure developers can launch code from their local test environment into Prod but if you can&rsquo;t respond to the increase in demand for your product then who cares? Unusable products, no matter how cool, won&rsquo;t get traffic and your company will suffer.</p>
+
+
+
+
+<h2>Vertical Scaling</h2>
+
+
+
+
+<p>Scaling starts vertically - or locally - before moving to multiple machines.</p>
+
+
+
+
+<p>It&rsquo;s important to understand how scaling a micro-service works in order to buy into this logic. First, a micro-service architecture is comprised of lots of atomic, REST endpoints, that should be able to generate some meaningful data on their own, with out the help of other services in the ecosystem. As long as service &lsquo;x&rsquo; can talk to your queue and perhaps a datastore of some kind, it should be considered healthy.</p>
+
+
+
+
+<h3>The Essence of a &ldquo;Service&rdquo;</h3>
+
+
+
+
+<p>Starting and stopping service &lsquo;x&rsquo; can be viewed as a <a href="https://en.wikipedia.org/wiki/Unary_operation">unary</a> operation which is <a href="https://en.wikipedia.org/wiki/Idempotence">idempotent</a> across restarts and environment configruation. I tell service &lsquo;x&rsquo; to start on port :4321 with <code>datasource.host=my.postgres.com</code> then no matter where I start the service, as long as those two external services are available, service &lsquo;x&rsquo; should be healthy.</p>
+
+
+
+
+<p>Simple right?</p>
+
+
+
+
+<h3>&hellip;do it again&hellip;</h3>
+
+
+
+
+<p>Now we want to start multiple processes of service &lsquo;x&rsquo; on the same machine. We want to do this in order to fully realize the computing potential of our EC2 instance, Digital Ocean droplet, Heroku dyno (insert name of virtual computing resource here) in order to incrase availability, performance and return on investment of our infrastructure.</p>
+
+
+
+
+<p>Several key factors need to change in order to realize multiples of the same service on a single machine:</p>
+
+
+
+
+<ol>
+<li>Environment or External Configuration of the Application</li>
+<li>Port assignments at the application layer</li>
+<li>Port assignments at the load balancer to proxy requests</li>
+</ol>
+
+
+
+
+<p>We use HaProxy as an internal loadbalancer to proxy requests to our backend micro services. However, you could accomplish the same task with any kind of proxy, whether it&rsquo;s <a href="https://github.com/GoogleCloudPlatform/kubernetes/blob/master/pkg/proxy/loadbalancer.go">written in Go</a> or built on iptables, proxying requests from a single endpoint to multiple instances of service &lsquo;x&rsquo; enables the most basic type of HA via redundency and increases performance generally.</p>
+
+
+
+
+<p>In the previous example we told service &lsquo;x&rsquo; to start on :4321 but we can&rsquo;t do that twice on the same box, we&rsquo;d have a port collision. So we need to run service &lsquo;x&rsquo;(2) on another port, let&rsquo;s say :4322.</p>
+
+
+
+
+<p>Luckily for us, service &lsquo;x&rsquo; can be externally configured via environment variables or using a plain text file called <code>app.service_x_1-properties</code> and <code>app.service_x_2-properties</code>. In fact, we were already using the app.properties type of external config to set passwords and API tokens service &lsquo;x&rsquo; requires since we didn&rsquo;t want to place those sensitive items, hard coded, in our github repository. So we simply modify the app.properties file for each service with <code>service.port</code> definitions to ensure they startup on :4321 and :4322 respectivily.</p>
+
+
+
+
+<h3>Automate it</h3>
+
+
+
+
+<p>Now we have to automate this process, ensuring that service &lsquo;x&rsquo; gets provisioned to a node two times with the correct external config. That&rsquo;s easy enough since our tool (puppet, chef, whatever) can take a simple hash of external config for each instance of service &lsquo;x&rsquo; and write that app.properties file on the box. We can use the same hash, or at least the <code>service.port</code> part, to configure haproxy.cfg on another node, ensuring our service proxy is properly configured.</p>
+
+
+
+
+<p>Succeess! We have vertically scaled our service!</p>
+
+
+
+
+<h3>Orchestrate it</h3>
+
+
+
+
+<p>We could call this success, but does it scale? Let&rsquo;s recap.</p>
+
+
+
+
+<p>Every time we deploy service &lsquo;x&rsquo; or service &lsquo;a&rsquo;, service &lsquo;y&rsquo; or service &lsquo;b&rsquo;, we have to manually assign ports in configuration management to be written to a text file on a node running that service. We now have not 1 but 4 services (&lsquo;x&rsquo;,&lsquo;y&rsquo;,&lsquo;a&rsquo;, and &lsquo;b&rsquo;) each requiring a known range of port assignments so we can simultaniously configure the application port in external config and the port assignemnt for the server in haproxy.cfg.</p>
+
+
+
+
+<p>Those assignments might be a table such as:</p>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>service <span class="s1">&#39;a&#39;</span>: 1000-1010
+</span><span class='line'>service <span class="s1">&#39;b&#39;</span>: 1011-1020
+</span><span class='line'>service <span class="s1">&#39;x&#39;</span>: 1021-1030
+</span><span class='line'>service <span class="s1">&#39;z&#39;</span>: 1031-1040
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<p>This is usable, and it &ldquo;scales&rdquo; to a maximum of 10 nodes since our known port assignment hash goes 10 deep for each service.</p>
+
+
+
+
+<p>Now we have 100 million users, and we need to scale our application&rsquo;s backend services &lsquo;a&rsquo;, &lsquo;b&rsquo;, &lsquo;x&rsquo; and &lsquo;y&rsquo; to <strong><em>FAR</em></strong> more than 10 instances a piece. In fact, we not only need to scale those to more instances, upper management asked us to add features. These features came by adding sevices &lsquo;c&rsquo;, &rsquo;d&#8217;, &lsquo;e&rsquo;, &lsquo;f&rsquo; and &lsquo;z&rsquo;. We have to build a port assignment hash for those as well, and it would be great if this distributed micro-service was also highly available beyond just a single node running multiple instances, so we&rsquo;re going to ensure that services &lsquo;a&rsquo; - &lsquo;f&rsquo; and &lsquo;x&rsquo; - &lsquo;z&rsquo; are running a minimum of 50 processes a piece across a minimum of 3 virtual machines.</p>
+
+
+
+
+<p>Now we&rsquo;ve got:</p>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>service <span class="s1">&#39;a&#39;</span>: 1000-1050
+</span><span class='line'>service <span class="s1">&#39;b&#39;</span>: 1051-1100
+</span><span class='line'>service <span class="s1">&#39;c&#39;</span>: 1101-1150
+</span><span class='line'>service <span class="s1">&#39;d&#39;</span>: 1151-1200
+</span><span class='line'>service <span class="s1">&#39;e&#39;</span>: 1201-1250
+</span><span class='line'>service <span class="s1">&#39;f&#39;</span>: 1251-1300
+</span><span class='line'>service <span class="s1">&#39;x&#39;</span>: 1301-1350
+</span><span class='line'>service <span class="s1">&#39;y&#39;</span>: 1351-1400
+</span><span class='line'>service <span class="s1">&#39;z&#39;</span>: 1401-1450
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<p>Great, we can scale out to 50 instances of each service. Now all I need to do is write all the configuration management code to deploy each one&hellip; each one of <strong><em>450</em></strong> instances across all services.</p>
+
+
+
+
+<p>I call this &ldquo;scaling&rdquo; not scaling.</p>
+
+
+
+
+<h3>$PORT</h3>
+
+
+
+
+<p>This would be so much easier if I could just run these services on $PORT and have our load balancer &ldquo;just know&rdquo; what that $PORT assignment was, reconfigure itself dynamically, and automagically proxy requests to all our services, no matter how many instances are running. That&rsquo;s the dream I call scaling.</p>
+
+
+
+
+<h3>Containers</h3>
+
+
+
+
+<p>The cool thing about containers is they&rsquo;re not only self-contained instances of your application, they&rsquo;re self-contained networks. And the most commonly used LXC wrapper, Docker, ships with its own <a href="https://docs.docker.com/articles/networking/">network proxy</a> to handle port forwarding and routing into and out of a container to the host machine. Docker also allows us to pass in environment variables to the container, environment variables that are as segregated in a similar way to being in separate sub shells. We can leverage both these facets of containers along with new frameworks to orchestrate them (such as Kubernete and Mesosphere).</p>
+
+
+
+
+<p>Those frameworks can assign ephemeral $PORT assignments for our services, and as long as each service <a href="https://docs.docker.com/reference/builder/#expose">EXPOSE</a>&rsquo;s and is configured within the container to run on their given port (each service now only needs a single port mapping since it&rsquo;s executed in it&rsquo;s own network, proxied via $PORT to the host), then those frameworks have their own independant way of loadbalancing requests to the service.</p>
+
+
+
+
+<p>For example, if you run <code>docker ps</code> and service &lsquo;x&rsquo; is running you might see:</p>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>CONTAINER ID        IMAGE             COMMAND  CREATED             STATUS              PORTS                   NAMES
+</span><span class='line'>d7588285b831        service_x:0.5.1   <span class="s2">&quot;java&quot;</span>   <span class="m">57</span> minutes ago      Up <span class="m">57</span> minutes       0.0.0.0:1322-&gt;1301/tcp  stoic_elion
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<p>and in <code>netstat</code> you would see soemthing akin to:</p>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>tcp6       <span class="m">0</span>      <span class="m">0</span> :::1132      :::*      LISTEN      4743/docker-proxy
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<p>You don&rsquo;t need a range of port mappings, you need a single mapping. <code>docker-proxy</code> is proxy&#8217;ing the requests from the host on port 1322 to the container where the service is listening on a base port of 1301.</p>
+
+
+
+
+<p>You don&rsquo;t need to write thousands of lines of configuration management code, you need to build an atomic container and execute it with <code>-p 1322:1301</code>. Orchestration frameworks reduce the configuration further by taking care of the port mapping by bascially running <code>-p $PORT:1301</code>.</p>
+
+
+
+
+<p>Those same orchestration frameworks then update a named loadbalancer to proxy the request to the correct ephemeral $PORT mapping for your service. Magic.</p>
+
+
+
+
+<p>You don&rsquo;t need to manage CM code for each individual service, you need to have a CI job that builds new containers with each release of your service and track only the version tag you want running in your environment.</p>
+
+
+
+
+<p>Might I add that scaling is as easy as POST&#8217;ing to the Mesos master the number of containers you want running for a given service or POST&#8217;ing an updated Replication Controller (RC) in Kubernetes.</p>
+
+
+
+
+<h2>CAP Therom for Scaling</h2>
+
+
+
+
+<p>“This should be simple” is a common platitude outside the hallways of backend engineering. Because vendors and white papers spoon feed the message &ldquo;we make it simple&rdquo;, everyone wants to think their highly available, distribtued, micro-service architectures should be &ldquo;simple&rdquo; and cheap and performant all at the same time. Optimistic and forward thinking executives envision simplicity and effort lying along the same continuum.</p>
+
+
+
+
+<p>In reality, simplicity and engineering effort are inversely related. Simplifying an inherently complex system is essential to scale services within it, but actually requires more effort the simpler the system <em>seems</em> to become. This is because system <em>simplification</em> is most commonly implemented with abstraction layers. Tools that abstract these systems by cofifying or containerizing small pieces of the system are advertised by venders as &ldquo;easy to implement&rdquo; when in practice integrating features, availability, and performance is rarely the easy task the literature or marketing materials would have you believe.</p>
+
+
+
+
+<p>Don&rsquo;t get me wrong, I&rsquo;m all for simple, and cost savings. In fact, I work hard every day to make the most of all system resources by leveraging platforms like docker and container orchestration frameworks. We have some amazing frameworks such as Mesosphere and Kubernete and new frameworks are being created every day, further enabling us to simplify incredibly complex systems. They allow us to minimize codified configuration by atomizing each service; taking the complex orchestration piece and turning it into a scalable solution.</p>
+
+
+
+
+<p>But, like distributed datastores, a back end system generally also obey CAP theorem in terms of cost and complexity; there is always a trade off. Any increase in consistency, availability or partition tolerance increases the cost and complexity of the system, and simplifying it again is tough - somewhere entropy will intrude and suddenly your &ldquo;simple&rdquo; dream is suddenly far more complex. However, these dreams can still be a reality as long as you&rsquo;re using tools to orchestrate the chaos. As we move forward in a containerized world, that&rsquo;s going to be my rule of thumb.</p>
+
+
+  </p>
+  <span class="meta">
+    written 
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-06-17T12:48:27-07:00" pubdate data-updated="true"></time>
+    
+
+
+  </span>
+
+  
+</article>
+
+        </div>
+      </div>
+      
+      
+      <div class="row">
+        <div class="col-md-offset-3 col-md-6">
+          <article>
+  <h2><a href="/blog/2015/05/01/automating-spring-boot-micro-service-deployments/">Automating Spring Boot Micro Service Deployments</a></h2>
   
   <p>
     <p>Spring is a java framework that has been around for the better part of a decade. Though some argue it&rsquo;s growing long in the tooth, it&rsquo;s still a standard among large enterprise to smaller startup style web applications. Spring boot is Springs answer to next generation, easy-to-implement, spring setup. Spring boot has a host of advantages over it&rsquo;s legacy counterpart, chef among them packaging up your application in jar file format vs. war file format, embedded tomcat, and the primary topic of this post: resource configuration based on config files found in the classpath.</p>
@@ -70,7 +378,7 @@
 
 <p>First, lets talk about how we provision a node that runs our backend Spring services. Everything is managed with Puppet, which allows us to take advantage of encrypted YAML as a datasource via <a href="https://docs.puppetlabs.com/hiera/1/">Hiera</a>. We wrote a module around the deployment of our Spring services which takes care of the absolute neccessities for the proper configuration of our service. Via this module we&rsquo;re able to implement:</p>
 
-<ol>
+<ul>
 <li>Securely pulling the jar file from S3 with an ephemeral IAM user using the <a href="https://github.com/malnick/puppet-s3">S3 module</a> given a specific $version</li>
 <li>Deploying the service to /opt/sourceclear/$service/$service.jar and symlinking the versioned jar to the executed inode</li>
 <li>Logstash &amp; logrotate configuration for the service</li>
@@ -79,7 +387,7 @@
 <li>An init script for init.d which runs &lsquo;n&rsquo; number of processes specified by the $proc_opts hash sc_services::services defined type.</li>
 <li>Configure application metric monitoring for New Relic</li>
 <li>Define JVM Heap size for each process</li>
-</ol>
+</ul>
 
 
 <p>A typical service might have the following deployment in Puppetland:</p>
@@ -161,7 +469,7 @@
 
 
 
-<time datetime="2015-05-02T05:05:30+12:00" pubdate data-updated="true"></time>
+<time datetime="2015-05-01T10:05:30-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -177,7 +485,7 @@
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2015/04/16/factory-patterns-rule-number-1/">Factory Patterns: Rule #1</a></h2>
+  <h2><a href="/blog/2015/04/15/factory-patterns-rule-number-1/">Factory Patterns: Rule #1</a></h2>
   
   <p>
     <h1>Factory Patterns</h1>
@@ -387,7 +695,7 @@
 
 
 
-<time datetime="2015-04-16T05:32:31+12:00" pubdate data-updated="true"></time>
+<time datetime="2015-04-15T10:32:31-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -403,7 +711,7 @@
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2015/03/18/jenkins-puppet-ci/">jenkins-puppet-CI</a></h2>
+  <h2><a href="/blog/2015/03/17/jenkins-puppet-ci/">jenkins-puppet-CI</a></h2>
   
   <p>
     <h1>SRC:CLR Deploy - Merge-to-Master -> Jenkins -> Puppet</h1>
@@ -791,7 +1099,7 @@
 
 
 
-<time datetime="2015-03-18T13:05:41+13:00" pubdate data-updated="true"></time>
+<time datetime="2015-03-17T17:05:41-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -807,7 +1115,7 @@
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2015/03/12/logging-analytics/">Logging Analytics</a></h2>
+  <h2><a href="/blog/2015/03/11/logging-analytics/">Logging Analytics</a></h2>
   
   <p>
     <p>What’s the first line of action when dealing with a service that is down? Logs.</p>
@@ -1318,7 +1626,7 @@
 
 
 
-<time datetime="2015-03-12T17:06:53+13:00" pubdate data-updated="true"></time>
+<time datetime="2015-03-11T21:06:53-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -1334,7 +1642,7 @@
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2015/02/21/why-devops-isnt-a-job-its-a-culture/">Why DevOps Isn&#8217;t a Job, It&#8217;s a Culture</a></h2>
+  <h2><a href="/blog/2015/02/20/why-devops-isnt-a-job-its-a-culture/">Why DevOps Isn&#8217;t a Job, It&#8217;s a Culture</a></h2>
   
   <p>
     <p>DevOps is not a job, it&rsquo;s a culture. DevOps is a shift in how you decide to manage, deploy, develop, monitor, and interact with your application code and your infrastructure as a whole. DevOps is a holistic approach to enacting the now bankrupt term &ldquo;agile&rdquo; as a method of development and operations engineering in an organization.</p>
@@ -1430,7 +1738,7 @@
 
 
 
-<time datetime="2015-02-21T04:22:08+13:00" pubdate data-updated="true"></time>
+<time datetime="2015-02-20T07:22:08-08:00" pubdate data-updated="true"></time>
     
 
 
@@ -1446,7 +1754,7 @@
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2015/02/09/puppet-s3/">puppet-s3 & continuous integration with Puppet, Jenkins and AWS</a></h2>
+  <h2><a href="/blog/2015/02/08/puppet-s3/">puppet-s3 & continuous integration with Puppet, Jenkins and AWS</a></h2>
   
   <p>
     <p>The (puppet-s3)[<a href="https://www.github.com/malnick/puppet-s3">https://www.github.com/malnick/puppet-s3</a>] module.</p>
@@ -1618,7 +1926,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
 
 
 
-<time datetime="2015-02-09T12:29:47+13:00" pubdate data-updated="true"></time>
+<time datetime="2015-02-08T15:29:47-08:00" pubdate data-updated="true"></time>
     
 
 
@@ -1634,7 +1942,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2015/02/07/puppet-webhook/">puppet-webhook</a></h2>
+  <h2><a href="/blog/2015/02/06/puppet-webhook/">puppet-webhook</a></h2>
   
   <p>
     <h1>puppet-webhook</h1>
@@ -2087,7 +2395,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
 
 
 
-<time datetime="2015-02-07T03:52:36+13:00" pubdate data-updated="true"></time>
+<time datetime="2015-02-06T06:52:36-08:00" pubdate data-updated="true"></time>
     
 
 
@@ -2103,7 +2411,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/12/24/using-dns-for-applying-roles-to-nodes-in-puppet/">DNS-based role classification</a></h2>
+  <h2><a href="/blog/2014/12/23/using-dns-for-applying-roles-to-nodes-in-puppet/">DNS-based role classification</a></h2>
   
   <p>
     <p>The first place you&rsquo;d probably look for developing a role-based hiera layer is probably a fact-based role. Facts are great, they allow you to execute code on a node and generate dynamic information about your infrastructure. You could go ahead and do this very easily if you have solid domain naming mechanisms.</p>
@@ -2328,7 +2636,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
 
 
 
-<time datetime="2014-12-24T13:49:37+13:00" pubdate data-updated="true"></time>
+<time datetime="2014-12-23T16:49:37-08:00" pubdate data-updated="true"></time>
     
 
 
@@ -2344,7 +2652,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/11/04/hiera-template/">hiera-template</a></h2>
+  <h2><a href="/blog/2014/11/03/hiera-template/">hiera-template</a></h2>
   
   <p>
     <p>Every time we create a new profile, or update a profile, we have to update our hiera data. This process is error prone and time consuming. Hiera leverages almost any data interchange format (in fact I&rsquo;d bet if you can write the backend for it, it&rsquo;ll support it). The writing of that data can easily be automated, so a tool to write the data files for us was an obvious decision.</p>
@@ -2534,7 +2842,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
 
 
 
-<time datetime="2014-11-04T02:02:03+13:00" pubdate data-updated="true"></time>
+<time datetime="2014-11-03T05:02:03-08:00" pubdate data-updated="true"></time>
     
 
 
@@ -2550,7 +2858,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/11/01/the-benefits-of-being-sheep/">The Benefits of being Sheep</a></h2>
+  <h2><a href="/blog/2014/10/31/the-benefits-of-being-sheep/">The Benefits of being Sheep</a></h2>
   
   <p>
     <p>Sometimes we have to check our ego&rsquo;s. This post is a completely opinionated piece on why following community practice is a best practice. Sometimes people refer to this as being &ldquo;sheep&rdquo;.</p>
@@ -2591,7 +2899,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
 
 
 
-<time datetime="2014-11-01T02:44:08+13:00" pubdate data-updated="true"></time>
+<time datetime="2014-10-31T06:44:08-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -2607,7 +2915,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/10/30/the-proxy-module/">The Proxy Module</a></h2>
+  <h2><a href="/blog/2014/10/29/the-proxy-module/">The Proxy Module</a></h2>
   
   <p>
     <p>In puppet land there are a lot of different phrases and keywords that float around: &ldquo;atomic modules&rdquo;, &ldquo;Roles and Profiles&rdquo;, &ldquo;wrapper modules&rdquo;.</p>
@@ -2786,7 +3094,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
 
 
 
-<time datetime="2014-10-30T16:50:15+13:00" pubdate data-updated="true"></time>
+<time datetime="2014-10-29T20:50:15-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -2802,7 +3110,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/10/08/streamlining-puppet-dev-part-duce-branch-the-enviro/">Streamlining Puppet Dev Part Duce: Branch the enviro</a></h2>
+  <h2><a href="/blog/2014/10/07/streamlining-puppet-dev-part-duce-branch-the-enviro/">Streamlining Puppet Dev Part Duce: Branch the enviro</a></h2>
   
   <p>
     <p>Most companies don&rsquo;t have a single monolithic application, today most applications evolve out of lots of atomic services: thus, service oriented architecture.</p>
@@ -3261,7 +3569,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
 
 
 
-<time datetime="2014-10-08T10:31:39+13:00" pubdate data-updated="true"></time>
+<time datetime="2014-10-07T14:31:39-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -3277,7 +3585,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/09/01/arbitrary-commandline-functions-for-mco/">Arbitrary Commandline Functions for MCO</a></h2>
+  <h2><a href="/blog/2014/08/31/arbitrary-commandline-functions-for-mco/">Arbitrary Commandline Functions for MCO</a></h2>
   
   <p>
     <p>mCollective is a funny tool. The idea behind it is obvious and great: a message bus for node orchestration. But the API and underpinnings are often a black box for many Puppet noobs and even other automation professionals. They mostly stick to the Puppet Enterprise Live Management console to interact with the mCollective back-end, never <code>su peadmin</code> and running a few <code>mco $some_application -F $some_fact</code>.</p>
@@ -3561,7 +3869,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
 
 
 
-<time datetime="2014-09-01T03:16:59+12:00" pubdate data-updated="true"></time>
+<time datetime="2014-08-31T08:16:59-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -3577,7 +3885,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/08/04/deploying-box-files-from-virtualbox-for-vagrant/">Deploying .box Files from VirtualBox for Vagrant</a></h2>
+  <h2><a href="/blog/2014/08/03/deploying-box-files-from-virtualbox-for-vagrant/">Deploying .box Files from VirtualBox for Vagrant</a></h2>
   
   <p>
     <p>There are several tools available that streamline the production of the .box format for Vagrant from any open virtualization format (OVF).</p>
@@ -4433,7 +4741,7 @@ Easily converts an ISO to VM formats. Kinda like Packer but not, so Packer made 
 
 
 
-<time datetime="2014-08-04T12:22:54+12:00" pubdate data-updated="true"></time>
+<time datetime="2014-08-03T17:22:54-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -4449,7 +4757,7 @@ Easily converts an ISO to VM formats. Kinda like Packer but not, so Packer made 
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/07/22/agile-dev-environment-for-puppet-code/">Agile Dev Environment for Puppet Code</a></h2>
+  <h2><a href="/blog/2014/07/21/agile-dev-environment-for-puppet-code/">Agile Dev Environment for Puppet Code</a></h2>
   
   <p>
     <p>When ever I am creating a new Puppet module or working on someone else&rsquo;s Puppet module I constantly look for ways to make more efficient the development process.</p>
@@ -4994,7 +5302,7 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
 
 
 
-<time datetime="2014-07-22T07:15:51+12:00" pubdate data-updated="true"></time>
+<time datetime="2014-07-21T12:15:51-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -5010,7 +5318,7 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/07/15/managing-git-repos-over-jump-hosts-using-persistant-sockets/">Managing Git Repos over Jump Hosts using Persistant Sockets</a></h2>
+  <h2><a href="/blog/2014/07/14/managing-git-repos-over-jump-hosts-using-persistant-sockets/">Managing Git Repos over Jump Hosts using Persistant Sockets</a></h2>
   
   <p>
     <p>I was recently helping a customer who had a somewhat complicated git workflow to production. All their Puppet code was in a locally accessible Gitlab server which was used by all the Automation dev&rsquo;s to develop, test and push to.</p>
@@ -5402,7 +5710,7 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
 
 
 
-<time datetime="2014-07-15T02:09:09+12:00" pubdate data-updated="true"></time>
+<time datetime="2014-07-14T07:09:09-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -5418,7 +5726,7 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/06/25/a-simple-nagios-docker-plugin/">A Simple Nagios Docker Plugin</a></h2>
+  <h2><a href="/blog/2014/06/24/a-simple-nagios-docker-plugin/">A Simple Nagios Docker Plugin</a></h2>
   
   <p>
     <p>Docker is an amazing tool with a lot great functional command line interfaces. A typical docker deployment might have a webapp running inside a container. In order to observe the beahvior of this container you might want to setup a Nagios plugin to monitor log output.</p>
@@ -6195,7 +6503,7 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
 
 
 
-<time datetime="2014-06-25T07:19:43+12:00" pubdate data-updated="true"></time>
+<time datetime="2014-06-24T12:19:43-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -6211,7 +6519,7 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/06/04/continuous-integration-with-puppet-code/">Continuous Integration with Puppet Code</a></h2>
+  <h2><a href="/blog/2014/06/03/continuous-integration-with-puppet-code/">Continuous Integration with Puppet Code</a></h2>
   
   <p>
     <iframe src="http://www.slideshare.net/slideshow/embed_code/35435020" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px 1px 0; margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe>
@@ -6237,7 +6545,7 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
 
 
 
-<time datetime="2014-06-04T02:54:12+12:00" pubdate data-updated="true"></time>
+<time datetime="2014-06-03T07:54:12-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -6253,7 +6561,7 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/05/31/what-is-this-module-doing/">What is this module doing? </a></h2>
+  <h2><a href="/blog/2014/05/30/what-is-this-module-doing/">What is this module doing? </a></h2>
   
   <p>
     
@@ -6273,7 +6581,7 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
 
 
 
-<time datetime="2014-05-31T10:58:12+12:00" pubdate data-updated="true"></time>
+<time datetime="2014-05-30T15:58:12-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -6289,7 +6597,7 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/05/30/packer-templates-and-vmware/">Packer Templates &amp; VMWare</a></h2>
+  <h2><a href="/blog/2014/05/29/packer-templates-and-vmware/">Packer Templates &amp; VMWare</a></h2>
   
   <p>
     <h2>tl;dr</h2>
@@ -6455,7 +6763,7 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
 
 
 
-<time datetime="2014-05-30T07:19:53+12:00" pubdate data-updated="true"></time>
+<time datetime="2014-05-29T12:19:53-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -6471,7 +6779,7 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/05/17/r10k-control-repos.markdown/">r10k: Control Repos</a></h2>
+  <h2><a href="/blog/2014/05/16/r10k-control-repos.markdown/">r10k: Control Repos</a></h2>
   
   <p>
     <p>This document explains the architecture and deployment of a control repository for syncing multiple puppet environments, their associated puppet code (modules) and their assocaited data (hiera). This document does not review how to deploy r10k, however that is discussed in relevant detail <a href="https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff">here</a>.</p>
@@ -6842,7 +7150,7 @@ Notice: Finished catalog run in 0.25 seconds
 
 
 
-<time datetime="2014-05-17T07:34:33+12:00" pubdate data-updated="true"></time>
+<time datetime="2014-05-16T12:34:33-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -6858,7 +7166,7 @@ Notice: Finished catalog run in 0.25 seconds
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/05/17/r10k-control-repos.markdown/">r10k: Control Repos</a></h2>
+  <h2><a href="/blog/2014/05/16/r10k-control-repos.markdown/">r10k: Control Repos</a></h2>
   
   <p>
     <p>This document explains the architecture and deployment of a control repository for syncing multiple puppet environments, their associated puppet code (modules) and their assocaited data (hiera). This document does not review how to deploy r10k, however that is discussed in relevant detail <a href="https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff">here</a>.</p>
@@ -7229,7 +7537,7 @@ Notice: Finished catalog run in 0.25 seconds
 
 
 
-<time datetime="2014-05-17T07:34:33+12:00" pubdate data-updated="true"></time>
+<time datetime="2014-05-16T12:34:33-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -7245,7 +7553,7 @@ Notice: Finished catalog run in 0.25 seconds
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/05/17/r10k-control-repos/">r10k: Control Repos</a></h2>
+  <h2><a href="/blog/2014/05/16/r10k-control-repos/">r10k: Control Repos</a></h2>
   
   <p>
     <p>This document explains the architecture and deployment of a control repository for syncing multiple puppet environments, their associated puppet code (modules) and their assocaited data (hiera). This document does not review how to deploy r10k, however that is discussed in relevant detail <a href="https://github.com/puppetlabs/prosvcs-malnick/blob/master/README.md#deploy-git-r10k-and-stuff">here</a>.</p>
@@ -8037,7 +8345,7 @@ Puppetfile
 
 
 
-<time datetime="2014-05-17T07:34:33+12:00" pubdate data-updated="true"></time>
+<time datetime="2014-05-16T12:34:33-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -8053,7 +8361,7 @@ Puppetfile
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/05/16/hiera-and-r10k/">Why I don&#8217;t place a hiera.yaml in my CR</a></h2>
+  <h2><a href="/blog/2014/05/15/hiera-and-r10k/">Why I don&#8217;t place a hiera.yaml in my CR</a></h2>
   
   <p>
     <p>Here&rsquo;s a really good reason. First off, unless your hiera.yaml is super complicated, then it probably doesn&rsquo;t need to be in version control. However, for a lot of deployments you need it in VC, but not in your control repo (i.e., the one that r10k will access for Puppetfile, hieradata and build our corrosponding enviros for on your master).</p>
@@ -8199,7 +8507,7 @@ Puppetfile
 
 
 
-<time datetime="2014-05-16T11:12:36+12:00" pubdate data-updated="true"></time>
+<time datetime="2014-05-15T16:12:36-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -8215,7 +8523,7 @@ Puppetfile
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/05/05/continous-integration-hooks-with-r10k-and-puppet/">Continous Integration Hooks with r10k &amp; Puppet</a></h2>
+  <h2><a href="/blog/2014/05/04/continous-integration-hooks-with-r10k-and-puppet/">Continous Integration Hooks with r10k &amp; Puppet</a></h2>
   
   <p>
     <p>A week ago I was modifiying a webhook to run r10k on push to a git repository. The goal here was to sync up r10k everytime a push was made to the repo. However, in doing so I found that the <a href="https://github.com/acidprime/r10k/blob/master/templates/usr/local/bin/webhook.erb">current</a> hook didn&rsquo;t take advantage of deploying a specific puppet environmnet, and instead runs a full r10k sync across all topic branchs and thus all puppet environments.</p>
@@ -8381,7 +8689,7 @@ Puppetfile
 
 
 
-<time datetime="2014-05-05T02:47:05+12:00" pubdate data-updated="true"></time>
+<time datetime="2014-05-04T07:47:05-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -8397,7 +8705,7 @@ Puppetfile
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/04/20/puppet-types-understanding-parameters-and-properties/">Puppet Types: Understanding Parameters and Properties</a></h2>
+  <h2><a href="/blog/2014/04/19/puppet-types-understanding-parameters-and-properties/">Puppet Types: Understanding Parameters and Properties</a></h2>
   
   <p>
     <p>When starting out with Types and Providers for Puppet it&rsquo;s common to misunderstand when something is a <em>Parameter</em> and when something is a <em>Property</em>.</p>
@@ -8511,7 +8819,7 @@ content
 
 
 
-<time datetime="2014-04-20T03:30:28+12:00" pubdate data-updated="true"></time>
+<time datetime="2014-04-19T08:30:28-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -8527,7 +8835,7 @@ content
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/03/21/brief-intro-to-puppetizing-stig-compliance/">Brief Intro to Puppetizing STIG Compliance</a></h2>
+  <h2><a href="/blog/2014/03/20/brief-intro-to-puppetizing-stig-compliance/">Brief Intro to Puppetizing STIG Compliance</a></h2>
   
   <p>
     <p>STIG is a methodology for the implementation of security compliance across heterogeneous operating systems. Every OS has a specific STIG. The STIG for a given OS is maintained and distributed by the Defense Information Systems Agency (DISA). Current STIGs can be found on the <a href="http://iase.disa.mil/stigs/">DISA website</a>.</p>
@@ -8634,7 +8942,7 @@ content
 
 
 
-<time datetime="2014-03-21T06:01:05+13:00" pubdate data-updated="true"></time>
+<time datetime="2014-03-20T10:01:05-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -8650,7 +8958,7 @@ content
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/03/21/rspec-testing-puppet-enterprise-modules/">How To Install Rspec-Puppet on Puppet Enterprise</a></h2>
+  <h2><a href="/blog/2014/03/20/rspec-testing-puppet-enterprise-modules/">How To Install Rspec-Puppet on Puppet Enterprise</a></h2>
   
   <p>
     <p>If you&rsquo;re getting into rspec testing for your manifests you might already know this:  Puppet Enterprise has it&rsquo;s own gem environment. This is a quick post on how to install rspec-puppet to your PE gem environment.</p>
@@ -8774,7 +9082,7 @@ content
 
 
 
-<time datetime="2014-03-21T05:42:50+13:00" pubdate data-updated="true"></time>
+<time datetime="2014-03-20T09:42:50-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -8790,7 +9098,7 @@ content
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/03/18/tls-slash-ssl-dh-cipher-padding-bug-in-activemq/">TLS/SSL DH Cipher Padding Bug in ActiveMQ</a></h2>
+  <h2><a href="/blog/2014/03/17/tls-slash-ssl-dh-cipher-padding-bug-in-activemq/">TLS/SSL DH Cipher Padding Bug in ActiveMQ</a></h2>
   
   <p>
     <h3>Update</h3>
@@ -8980,7 +9288,7 @@ Exception: Invalid Padding length: 239
 
 
 
-<time datetime="2014-03-18T12:23:11+13:00" pubdate data-updated="true"></time>
+<time datetime="2014-03-17T16:23:11-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -8996,7 +9304,7 @@ Exception: Invalid Padding length: 239
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/03/13/debugging-activemq-jvm-heap-memory-errors/">Debugging ActiveMQ JVM Heap Memory Errors</a></h2>
+  <h2><a href="/blog/2014/03/12/debugging-activemq-jvm-heap-memory-errors/">Debugging ActiveMQ JVM Heap Memory Errors</a></h2>
   
   <p>
     <h2>This just happened:</h2>
@@ -9503,7 +9811,7 @@ INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many ope
 
 
 
-<time datetime="2014-03-13T17:08:06+13:00" pubdate data-updated="true"></time>
+<time datetime="2014-03-12T21:08:06-07:00" pubdate data-updated="true"></time>
     
 
 
@@ -9519,7 +9827,7 @@ INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many ope
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/01/18/extracting-json-from-puppet-yaml-report/">Extracting JSON from Puppet YAML Report</a></h2>
+  <h2><a href="/blog/2014/01/17/extracting-json-from-puppet-yaml-report/">Extracting JSON from Puppet YAML Report</a></h2>
   
   <p>
     <h3>YAML -> JSON via Puppet Gen&#8217;ed YAML</h3>
@@ -9683,7 +9991,7 @@ INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many ope
 
 
 
-<time datetime="2014-01-18T03:55:04+13:00" pubdate data-updated="true"></time>
+<time datetime="2014-01-17T06:55:04-08:00" pubdate data-updated="true"></time>
     
 
 
@@ -9699,7 +10007,7 @@ INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many ope
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/01/14/test/">test</a></h2>
+  <h2><a href="/blog/2014/01/13/test/">test</a></h2>
   
   <p>
     
@@ -9719,7 +10027,7 @@ INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many ope
 
 
 
-<time datetime="2014-01-14T06:35:57+13:00" pubdate data-updated="true"></time>
+<time datetime="2014-01-13T09:35:57-08:00" pubdate data-updated="true"></time>
     
 
 
@@ -9735,7 +10043,7 @@ INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many ope
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/01/04/the-need-to-a-replication-provider/">The Need for a Replication Provider</a></h2>
+  <h2><a href="/blog/2014/01/03/the-need-to-a-replication-provider/">The Need for a Replication Provider</a></h2>
   
   <p>
     <h3>Why we need a replication provider for puppet</h3>
@@ -10269,7 +10577,7 @@ The coding for it is far more economical, and we don&rsquo;t have a psudo-bash s
 
 
 
-<time datetime="2014-01-04T06:05:51+13:00" pubdate data-updated="true"></time>
+<time datetime="2014-01-03T09:05:51-08:00" pubdate data-updated="true"></time>
     
 
 in
@@ -10292,7 +10600,7 @@ in
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2014/01/03/blog-post-number-1/">Blog Post #1</a></h2>
+  <h2><a href="/blog/2014/01/02/blog-post-number-1/">Blog Post #1</a></h2>
   
   <p>
     <p>Is this thing on?</p>
@@ -10313,7 +10621,7 @@ in
 
 
 
-<time datetime="2014-01-03T07:52:00+13:00" pubdate data-updated="true"></time>
+<time datetime="2014-01-02T10:52:00-08:00" pubdate data-updated="true"></time>
     
 
 in

@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>TLS/SSL DH Cipher Padding Bug in ActiveMQ - What we observe is not nature itself, but nature exposed to our method of questioning</title>
+  <meta name="author" content="Jeff">
+
+  
+  <meta name="description" content="TLS/SSL DH Cipher Padding Bug in ActiveMQ written Update As of March 18 it appears that Oracle has implemented a fix in their release of JDK and &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="httpL://www.jeffmalnick.com/blog/2014/03/17/tls-slash-ssl-dh-cipher-padding-bug-in-activemq">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="What we observe is not nature itself, but nature exposed to our method of questioning" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+  <body>
+    <a href="/" class="home-icon">
+      <img src="/images/home.png"/>
+    </a>
+
+    <article role="article" class="full-single-article">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <h1>TLS/SSL DH Cipher Padding Bug in ActiveMQ</h1>
+        <div class="meta">
+          written 
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2014-03-17T16:23:11-07:00" pubdate data-updated="true"></time>
+          
+
+
+        </div>
+        <h3>Update</h3>
+
+<p>As of March 18 it appears that Oracle has implemented a fix in their release of <a href="http://www.oracle.com/technetwork/java/javase/8train-relnotes-latest-2153846.html">JDK and Java Standard Edition version 8</a> and it&rsquo;s assocaited <a href="http://docs.oracle.com/javase/8/docs/technotes/guides/security/enhancements-8.html">security extensions</a>:</p>
+
+<p>&ldquo;Support stronger ephemeral DH keys in the SunJSSE provider: Make ephemeral DH key match the length of the certificate key during SSL/TLS handshaking in the SunJSSE provider. A new system property, jdk.tls.ephemeralDHKeySize, is defined to customize the ephemeral DH key sizes. The minimum acceptable DH key size is 1024 bits, except for exportable cipher suites or legacy mode (jdk.tls.ephemeralDHKeySize=legacy). See Customizing Size of Ephemeral DH Keys and RFE 6956398.&rdquo;</p>
+
+<hr />
+
+<p>In helping a client with an ActiveMQ issue in Puppet Enterprise I recently stumbled across this line in their wrapper log:</p>
+
+<pre><code>INFO | jvm 1 | 2014/02/26 12:47:20 | WARN | Transport Connection to: tcp://ip.removed:49867 failed: javax.net.ssl.SSLHandshake
+Exception: Invalid Padding length: 239
+</code></pre>
+
+<p>The client thought this may have been exacberating a JVM memory problem, however I found it actually is a not related but in and of itself it&rsquo;s own  bug in the Java Security Extensions for Diffe-Helman cipher implementation over SSL.</p>
+
+<p>We have seen similar issues in JDK 1.7x security extensions in other Java-powered backends for Puppet Enterprise such as <a href="http://projects.puppetlabs.com/issues/19884">PuppetDB</a>. It has also been documented on the <a href="https://issues.apache.org/jira/browse/APLO-287">Apache ActiveMQ ticket board</a> and the <a href="https://community.oracle.com/message/11001587">Oracle community</a> board.</p>
+
+<p>The issue is dependant on:</p>
+
+<pre><code>* OpenJDK Runtime Environment (PE Java 1.7.0.19) 
+* Linux OS's (so far my testing is on CentOS 6x) 
+* TLS_DHE_RSA_WITH_AES_128_CBC_SHA Cipher
+* openssl-1.0.0-27.el6_4.2.x86_64
+</code></pre>
+
+<p>To sum up the problem, every few hundred messages that are encrypted over SSL or TLS using DH ciphers the client gets a handshake exception. The exception is caused by a faulty SSL packet.</p>
+
+<h3>Oracle&rsquo;s Solution</h3>
+
+<p><a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8013059">A ticket was submitted</a> to Java bugs and was set &ldquo;resolved&rdquo; on 2013-10-25. However, and this is a big however, their resolution is, &ldquo;In order to have reliable TLS handshakes, Diffie Hellman key exchanges must be disabled.&rdquo;</p>
+
+<p>I personally don&rsquo;t like this resolution since DH keys are sometimes neccessary, and in terms of security is superior to standard RSA ciphers. DH ciphers provide perfect forward secrecy. That means even if the private key is compromised you can not decrypt past data. Ciper suites which use DHE-RSA-AES128-SHA all implement the slower, more secure ephemeral DH crypto - it&rsquo;s ephemeral since new random numbers that generate the key are used each time. This is also why it&rsquo;s slower. However, it&rsquo;s also harder to run a selected clear text attack on EDH since the private key is used for only authentication and use an independant method to agree on a shared secret - standard RSA ciphers employ the private key for both auth and encryption for better performance in exchange for not providing perfect forward secrecy.</p>
+
+<p>You may now chime in with your own conspiracy theories as to why Oracle would settle for solving this cyrpto issue by simply using a less secure cipher - does the NSA not want Java applications, which function as the backbone to a great deal of web traffic, encrypting data with perfect forward secrecy?</p>
+
+<h3>Workaround in AMQ</h3>
+
+<p>Since there is no good way to get around this problem in JDK 1.7x security extensions you have two choices:</p>
+
+<pre><code>1. Live with the error in approx. 5% of the SSL traffic
+2. Run SSL with a non-DH or DHE cipher  
+</code></pre>
+
+<h4>Door #1</h4>
+
+<p>Example, you&rsquo;ve got an AMQ broker administering messaging for 1000+ AMQ agents in a live management setup in Puppet Enterprise you&rsquo;ll see this error a lot, and it may (warning, assumption) degrade live management performance in such a large deployment.</p>
+
+<p>If you can live with either seeing this error 5% of the time or you can live with the hit in performance sticking it out with DH can still work.</p>
+
+<h4>Door #2</h4>
+
+<p>You need the performance or are a stickler for perfect SSL key exchange.</p>
+
+<p>A possible solution would be modifying the transportConnector in /etc/puppetlabs/activemq/activemq.xml:</p>
+
+<pre><code>&lt;transportConnector name="openwire" uri="ssl://0.0.0.0:61616"/&gt;
+&lt;!-- Puppet mcollective_enable_stomp_ssl=true
+&lt;transportConnector name="stomp+ssl" uri="stomp+ssl://0.0.0.0:61613"/&gt;\
+</code></pre>
+
+<p>With the transport.enabledCipherSuites embedded:</p>
+
+<pre><code>ssl://localhost:61616?transport.enabledCipherSuites=SSL_RSA_WITH_3DES_EDE_CBC_SHA
+</code></pre>
+
+<p>The SSL_RSA_WITH_3DES_EDE_CBC_SHA is non-DH cipher versus the  SSL_DH_anon_WITH_3DES_EDE_CBC_SHA which I think is what AMQ currently uses.</p>
+
+<p>Note syntax:
+    ssl://…?socket.enabledCipherSuites=THE_CIPHER # for agents</p>
+
+<p>and</p>
+
+<pre><code>ssl://…?transport.enabledCipherSuites=THE_CIPHER # for brokers 
+</code></pre>
+
+<p>More information about this can be found on the <a href="https://activemq.apache.org/ssl-transport-reference.html">AMQ reference page</a></p>
+
+
+        <hr class="divider-short"/>
+
+        
+      </div>
+    </div>
+  </div>
+</article>
+
+<hr class="divider-short"/>
+
+<div class="archive-link">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        
+          <a class="pull-left" href="/blog/2014/03/12/debugging-activemq-jvm-heap-memory-errors/" title="Previous Post: Debugging ActiveMQ JVM Heap Memory Errors">&laquo; Previous: Debugging ActiveMQ JVM Heap Memory Errors</a>
+        
+
+        
+          <a class="pull-right" href="/blog/2014/03/20/rspec-testing-puppet-enterprise-modules/" title="Next Post: How To Install Rspec-Puppet on Puppet Enterprise">Next: How To Install Rspec-Puppet on Puppet Enterprise &raquo;</a>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+    <footer id="footer" class="her-row">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-1">
+  <a href="/"><h4>Home</h4></a>
+</div>
+
+<div class="col-md-2">
+  <div class="social-icon-list">
+    
+    <a href="https://twitter.com/8bitsofsketch"><img src="/images/glyphicons_social_31_twitter.png"/></a>
+    
+
+    
+    <a href="https://github.com/malnick"><img src="/images/glyphicons_social_21_github.png"/></a>
+    
+
+    
+
+    
+    <a href="mailto:malnick@gmail.com"><img src="/images/glyphicons_social_39_e-mail.png"/></a>
+    
+  </div>
+</div>
+
+<div class="pull-right">
+  <h4>Powered by <a href="http://octopress.org/">Octopress</a>. Designed by <a href="http://AdrianArtiles.com">Adrian Artiles</a>.</h4>
+</div>
+
+
+    </div>
+  </div>
+</footer>
+
+    
+  </body>
+</html>
