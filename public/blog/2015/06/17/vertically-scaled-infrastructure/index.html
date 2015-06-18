@@ -13,7 +13,10 @@
   <meta name="author" content="Jeff">
 
   
-  <meta name="description" content="Vertically Scaled Infrastructure written &ldquo;&hellip;but does is scale?&rdquo; When it comes to micro-service architectures that&rsquo;s always &hellip;">
+  <meta name="description" content="Vertically Scaled Infrastructure written layout: post
+title: &ldquo;Vertically Scaled Infrastructure&rdquo;
+date: 2015-06-17 12:48:27 -0700
+comments &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,7 +66,16 @@
 
 
         </div>
-        <h2>&ldquo;&hellip;but does is scale?&rdquo;</h2>
+        <hr />
+
+<p>layout: post
+title: &ldquo;Vertically Scaled Infrastructure&rdquo;
+date: 2015-06-17 12:48:27 -0700
+comments: true</p>
+
+<h2>categories: </h2>
+
+<h2>&ldquo;&hellip;but does is scale?&rdquo;</h2>
 
 <p>When it comes to micro-service architectures that&rsquo;s always the big question. You can maintain a solid agile development process, design a micro service architecture, and implement seamless CI to ensure developers can launch code from their local test environment into Prod but if you can&rsquo;t respond to the increase in demand for your product then who cares? Unusable products, no matter how cool, won&rsquo;t get traffic and your company will suffer.</p>
 
@@ -71,17 +83,17 @@
 
 <p>Scaling starts vertically - or locally - before moving to multiple machines.</p>
 
-<p>It&rsquo;s important to understand how scaling a micro-service works in order to buy into this logic. First, a micro-service architecture is comprised of lots of atomic, REST endpoints, that should be able to generate some meaningful data on their own, with out the help of other services in the ecosystem. As long as service &lsquo;x&rsquo; can talk to your queue and perhaps a datastore of some kind, it should be considered healthy.</p>
+<p>It&rsquo;s important to understand how scaling a micro-service works in order to buy into this logic. First, a micro-service architecture is comprised of lots of atomic, REST endpoints, which should be able to generate some meaningful data on their own, with out the help of other services in the ecosystem. As long as service &lsquo;x&rsquo; can talk to your queue and perhaps a datastore of some kind, it should be considered healthy.</p>
 
 <h3>The Essence of a &ldquo;Service&rdquo;</h3>
 
-<p>Starting and stopping service &lsquo;x&rsquo; can be viewed as a <a href="https://en.wikipedia.org/wiki/Unary_operation">unary</a> operation which is <a href="https://en.wikipedia.org/wiki/Idempotence">idempotent</a> across restarts and environment configruation. I tell service &lsquo;x&rsquo; to start on port :4321 with <code>datasource.host=my.postgres.com</code> then no matter where I start the service, as long as those two external services are available, service &lsquo;x&rsquo; should be healthy.</p>
+<p>Starting and stopping service &lsquo;x&rsquo; can be viewed as a <a href="https://en.wikipedia.org/wiki/Unary_operation">unary</a> operation which is <a href="https://en.wikipedia.org/wiki/Idempotence">idempotent</a> across restarts and environment. If I tell service &lsquo;x&rsquo; to start on port :4321 with <code>datasource.host=my.postgres.com</code> then no matter where I start the service, as long as those two external services are available, service &lsquo;x&rsquo; should be healthy.</p>
 
 <p>Simple right?</p>
 
 <h3>&hellip;do it again&hellip;</h3>
 
-<p>Now we want to start multiple processes of service &lsquo;x&rsquo; on the same machine. We want to do this in order to fully realize the computing potential of our EC2 instance, Digital Ocean droplet, Heroku dyno (insert name of virtual computing resource here) in order to incrase availability, performance and return on investment of our infrastructure.</p>
+<p>Now we want to start multiple processes of service &lsquo;x&rsquo; on the same machine. We want to do this in order to fully realize the computing potential of our EC2 instance, Digital Ocean droplet, Heroku dyno (insert name of virtual computing resource here) in order to increase availability, performance and return on investment of our infrastructure.</p>
 
 <p>Several key factors need to change in order to realize multiples of the same service on a single machine:</p>
 
@@ -92,23 +104,23 @@
 </ol>
 
 
-<p>We use HaProxy as an internal loadbalancer to proxy requests to our backend micro services. However, you could accomplish the same task with any kind of proxy, whether it&rsquo;s <a href="https://github.com/GoogleCloudPlatform/kubernetes/blob/master/pkg/proxy/loadbalancer.go">written in Go</a> or built on iptables, proxying requests from a single endpoint to multiple instances of service &lsquo;x&rsquo; enables the most basic type of HA via redundency and increases performance generally.</p>
+<p>We use HaProxy as an internal load balancer to proxy requests to our backend micro services. However, you could accomplish the same task with any kind of proxy. Whether it&rsquo;s <a href="https://github.com/GoogleCloudPlatform/kubernetes/blob/master/pkg/proxy/loadbalancer.go">written in Go</a> or built on iptables, proxying requests from a single endpoint to multiple instances of service &lsquo;x&rsquo; enables the most basic type of HA via redundancy and increases performance generally.</p>
 
 <p>In the previous example we told service &lsquo;x&rsquo; to start on :4321 but we can&rsquo;t do that twice on the same box, we&rsquo;d have a port collision. So we need to run service &lsquo;x&rsquo;(2) on another port, let&rsquo;s say :4322.</p>
 
-<p>Luckily for us, service &lsquo;x&rsquo; can be externally configured via environment variables or using a plain text file called <code>app.service_x_1-properties</code> and <code>app.service_x_2-properties</code>. In fact, we were already using the app.properties type of external config to set passwords and API tokens service &lsquo;x&rsquo; requires since we didn&rsquo;t want to place those sensitive items, hard coded, in our github repository. So we simply modify the app.properties file for each service with <code>service.port</code> definitions to ensure they startup on :4321 and :4322 respectivily.</p>
+<p>Luckily for us, service &lsquo;x&rsquo; can be externally configured via environment variables or using a plain text file called <code>app.service_x_1-properties</code> and <code>app.service_x_2-properties</code>. In fact, we were already using the app.properties type of external config to set passwords and API tokens service &lsquo;x&rsquo; requires since we didn&rsquo;t want to place those sensitive items, hard coded, in our github repository. So we simply modify the app.properties file for each service with <code>service.port</code> definitions to ensure they startup on :4321 and :4322 respectively.</p>
 
 <h3>Automate it</h3>
 
 <p>Now we have to automate this process, ensuring that service &lsquo;x&rsquo; gets provisioned to a node two times with the correct external config. That&rsquo;s easy enough since our tool (puppet, chef, whatever) can take a simple hash of external config for each instance of service &lsquo;x&rsquo; and write that app.properties file on the box. We can use the same hash, or at least the <code>service.port</code> part, to configure haproxy.cfg on another node, ensuring our service proxy is properly configured.</p>
 
-<p>Succeess! We have vertically scaled our service!</p>
+<p>Success! We have vertically scaled our service!</p>
 
 <h3>Orchestrate it</h3>
 
 <p>We could call this success, but does it scale? Let&rsquo;s recap.</p>
 
-<p>Every time we deploy service &lsquo;x&rsquo; or service &lsquo;a&rsquo;, service &lsquo;y&rsquo; or service &lsquo;b&rsquo;, we have to manually assign ports in configuration management to be written to a text file on a node running that service. We now have not 1 but 4 services (&lsquo;x&rsquo;,&lsquo;y&rsquo;,&lsquo;a&rsquo;, and &lsquo;b&rsquo;) each requiring a known range of port assignments so we can simultaniously configure the application port in external config and the port assignemnt for the server in haproxy.cfg.</p>
+<p>Every time we deploy service &lsquo;x&rsquo; or service &lsquo;a&rsquo;, service &lsquo;y&rsquo; or service &lsquo;b&rsquo;, we have to manually assign ports in configuration management to be written to a text file on a node running that service. We now have not 1 but 4 services (&lsquo;x&rsquo;,&lsquo;y&rsquo;,&lsquo;a&rsquo;, and &lsquo;b&rsquo;) each requiring a known range of port assignments so we can simultaneously configure the application port in external config and the port assignment for the server in haproxy.cfg.</p>
 
 <p>Those assignments might be a table such as:</p>
 
@@ -125,7 +137,7 @@
 
 <p>This is usable, and it &ldquo;scales&rdquo; to a maximum of 10 nodes since our known port assignment hash goes 10 deep for each service.</p>
 
-<p>Now we have 100 million users, and we need to scale our application&rsquo;s backend services &lsquo;a&rsquo;, &lsquo;b&rsquo;, &lsquo;x&rsquo; and &lsquo;y&rsquo; to <strong><em>FAR</em></strong> more than 10 instances a piece. In fact, we not only need to scale those to more instances, upper management asked us to add features. These features came by adding sevices &lsquo;c&rsquo;, &rsquo;d&#8217;, &lsquo;e&rsquo;, &lsquo;f&rsquo; and &lsquo;z&rsquo;. We have to build a port assignment hash for those as well, and it would be great if this distributed micro-service was also highly available beyond just a single node running multiple instances, so we&rsquo;re going to ensure that services &lsquo;a&rsquo; - &lsquo;f&rsquo; and &lsquo;x&rsquo; - &lsquo;z&rsquo; are running a minimum of 50 processes a piece across a minimum of 3 virtual machines.</p>
+<p>Now we have 100 million users, and we need to scale our application&rsquo;s backend services &lsquo;a&rsquo;, &lsquo;b&rsquo;, &lsquo;x&rsquo; and &lsquo;y&rsquo; to <strong><em>FAR</em></strong> more than 10 instances a piece. In fact, we not only need to scale those to more instances, upper management asked us to add features. These features came by adding services &lsquo;c&rsquo;, &rsquo;d&#8217;, &lsquo;e&rsquo;, &lsquo;f&rsquo; and &lsquo;z&rsquo;. We have to build a port assignment hash for those as well, and it would be great if this distributed micro-service was also highly available beyond just a single node running multiple instances, so we&rsquo;re going to ensure that services &lsquo;a&rsquo; - &lsquo;f&rsquo; and &lsquo;x&rsquo; - &lsquo;z&rsquo; are running a minimum of 50 processes a piece across a minimum of 3 virtual machines.</p>
 
 <p>Now we&rsquo;ve got:</p>
 
@@ -156,13 +168,13 @@
 
 <h3>$PORT</h3>
 
-<p>This would be so much easier if I could just run these services on $PORT and have our load balancer &ldquo;just know&rdquo; what that $PORT assignment was, reconfigure itself dynamically, and automagically proxy requests to all our services, no matter how many instances are running. That&rsquo;s the dream I call scaling.</p>
+<p>This process would be so much easier if we could just run these services on $PORT and have our load balancer &ldquo;just know&rdquo; what that $PORT assignment was, reconfigure itself dynamically, and automagically proxy requests to all our services, no matter how many instances are running. That&rsquo;s the dream I call scaling and is made possible by containers.</p>
 
 <h3>Containers</h3>
 
 <p>The cool thing about containers is they&rsquo;re not only self-contained instances of your application, they&rsquo;re self-contained networks. And the most commonly used LXC wrapper, Docker, ships with its own <a href="https://docs.docker.com/articles/networking/">network proxy</a> to handle port forwarding and routing into and out of a container to the host machine. Docker also allows us to pass in environment variables to the container, environment variables that are as segregated in a similar way to being in separate sub shells. We can leverage both these facets of containers along with new frameworks to orchestrate them (such as Kubernete and Mesosphere).</p>
 
-<p>Those frameworks can assign ephemeral $PORT assignments for our services, and as long as each service <a href="https://docs.docker.com/reference/builder/#expose">EXPOSE</a>&rsquo;s and is configured within the container to run on their given port (each service now only needs a single port mapping since it&rsquo;s executed in it&rsquo;s own network, proxied via $PORT to the host), then those frameworks have their own independant way of loadbalancing requests to the service.</p>
+<p>Those frameworks can assign ephemeral $PORT mappings for our services, as long as each service <a href="https://docs.docker.com/reference/builder/#expose">EXPOSE</a>&rsquo;s and is configured within the container to run on their given port (each service now only needs a single port mapping since it&rsquo;s executed in it&rsquo;s own network, proxied via $PORT to the host), then those frameworks have their own independent way of load balancing requests to the service.</p>
 
 <p>For example, if you run <code>docker ps</code> and service &lsquo;x&rsquo; is running you might see:</p>
 
@@ -173,32 +185,32 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>and in <code>netstat</code> you would see soemthing akin to:</p>
+<p>and in <code>netstat</code> you would see something akin to:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='sh'><span class='line'>tcp6       <span class="m">0</span>      <span class="m">0</span> :::1132      :::*      LISTEN      4743/docker-proxy
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>You don&rsquo;t need a range of port mappings, you need a single mapping. <code>docker-proxy</code> is proxy&#8217;ing the requests from the host on port 1322 to the container where the service is listening on a base port of 1301.</p>
+<p>We don&rsquo;t need a range of port mappings; we need a single mapping. <code>docker-proxy</code> is proxy&#8217;ing the requests from the host on port 1322 to the container where the service is listening on a base port of 1301.</p>
 
-<p>You don&rsquo;t need to write thousands of lines of configuration management code, you need to build an atomic container and execute it with <code>-p 1322:1301</code>. Orchestration frameworks reduce the configuration further by taking care of the port mapping by bascially running <code>-p $PORT:1301</code>.</p>
+<p>Instead of writing hundreds of lines of configuration management code, we need to build an atomic container and execute it with <code>-p 1322:1301</code>. Orchestration frameworks reduce the configuration further by taking care of the port mapping: basically running <code>-p $PORT:1301</code>.</p>
 
-<p>Those same orchestration frameworks then update a named loadbalancer to proxy the request to the correct ephemeral $PORT mapping for your service. Magic.</p>
+<p>Those same orchestration frameworks then update a named load balancer to proxy the request to the correct ephemeral $PORT mapping for your service. Magic.</p>
 
 <p>You don&rsquo;t need to manage CM code for each individual service, you need to have a CI job that builds new containers with each release of your service and track only the version tag you want running in your environment.</p>
 
-<p>Might I add that scaling is as easy as POST&#8217;ing to the Mesos master the number of containers you want running for a given service or POST&#8217;ing an updated Replication Controller (RC) in Kubernetes.</p>
+<p>Might I add that scaling is as easy as POST&#8217;ing to the Mesos master the number of containers you want running for a given service or POST&#8217;ing an updated Replication Controller (RC) in Kubernetes. Although scaling an application is simplified once these frameworks are in place, putting them to use in production is anything but.</p>
 
-<h2>CAP Therom for Scaling</h2>
+<h2>CAP Theorem for Scaling</h2>
 
-<p>“This should be simple” is a common platitude outside the hallways of backend engineering. Because vendors and white papers spoon feed the message &ldquo;we make it simple&rdquo;, everyone wants to think their highly available, distribtued, micro-service architectures should be &ldquo;simple&rdquo; and cheap and performant all at the same time. Optimistic and forward thinking executives envision simplicity and effort lying along the same continuum.</p>
+<p>“This should be simple” is a common platitude outside the hallways of backend engineering. Because vendors and white papers spoon feed the message &ldquo;we make it simple&rdquo;, everyone wants to think their highly available, distributed, micro-service architectures should be &ldquo;simple&rdquo; and cheap and performant all at the same time. Optimistic and forward thinking executives envision simplicity and effort lying along the same continuum.</p>
 
-<p>In reality, simplicity and engineering effort are inversely related. Simplifying an inherently complex system is essential to scale services within it, but actually requires more effort the simpler the system <em>seems</em> to become. This is because system <em>simplification</em> is most commonly implemented with abstraction layers. Tools that abstract these systems by cofifying or containerizing small pieces of the system are advertised by venders as &ldquo;easy to implement&rdquo; when in practice integrating features, availability, and performance is rarely the easy task the literature or marketing materials would have you believe.</p>
+<p>In reality, simplicity and engineering effort are inversely related. Simplifying an inherently complex system is essential to scale services within it, but actually requires more effort the simpler the system <em>seems</em> to become. This is because system <em>simplification</em> is most commonly implemented with abstraction layers. Tools that abstract these systems by codifying or containerizing small pieces of the system are advertised by venders as &ldquo;easy to implement&rdquo; when in practice integrating features, availability, and performance is rarely the easy task the literature or marketing materials would have you believe.</p>
 
 <p>Don&rsquo;t get me wrong, I&rsquo;m all for simple, and cost savings. In fact, I work hard every day to make the most of all system resources by leveraging platforms like docker and container orchestration frameworks. We have some amazing frameworks such as Mesosphere and Kubernete and new frameworks are being created every day, further enabling us to simplify incredibly complex systems. They allow us to minimize codified configuration by atomizing each service; taking the complex orchestration piece and turning it into a scalable solution.</p>
 
-<p>But, like distributed datastores, a back end system generally also obey CAP theorem in terms of cost and complexity; there is always a trade off. Any increase in consistency, availability or partition tolerance increases the cost and complexity of the system, and simplifying it again is tough - somewhere entropy will intrude and suddenly your &ldquo;simple&rdquo; dream is suddenly far more complex. However, these dreams can still be a reality as long as you&rsquo;re using tools to orchestrate the chaos. As we move forward in a containerized world, that&rsquo;s going to be my rule of thumb.</p>
+<p>But, like distributed data stores, a back end system generally also obey CAP theorem in terms of cost and complexity; there is always a trade off. Any increase in consistency, availability or partition tolerance increases the cost and complexity of the system, and simplifying it again is tough - somewhere entropy will intrude and suddenly your &ldquo;simple&rdquo; dream is suddenly far more complex. However, these dreams can still be a reality as long as you&rsquo;re using tools to orchestrate the chaos. As we move forward in a containerized world, that&rsquo;s going to be my rule of thumb.</p>
 
 
         <hr class="divider-short"/>
