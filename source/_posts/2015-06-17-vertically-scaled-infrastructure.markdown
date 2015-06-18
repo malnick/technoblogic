@@ -5,13 +5,6 @@ date: 2015-06-17 12:48:27 -0700
 comments: true
 categories: 
 ---
----
-layout: post
-title: "Vertically Scaled Infrastructure"
-date: 2015-06-17 12:48:27 -0700
-comments: true
-categories: 
----
 ## "...but does is scale?" 
 
 When it comes to micro-service architectures that's always the big question. You can maintain a solid agile development process, design a micro service architecture, and implement seamless CI to ensure developers can launch code from their local test environment into Prod but if you can't respond to the increase in demand for your product then who cares? Unusable products, no matter how cool, won't get traffic and your company will suffer. 
