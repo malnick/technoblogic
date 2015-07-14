@@ -68,7 +68,7 @@
 
 
 
-<p>But let&rsquo;s think about it for a minute: how does configuration management work? The idea is to codify machine state into a static code base that can abstract a more complex system into simple resource statements. Then those resource statements are parsed and compiled into an (directed acyclic graph)[<a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">https://en.wikipedia.org/wiki/Directed_acyclic_graph</a>].</p>
+<p>But let&rsquo;s think about it for a minute: how does configuration management work? The idea is to codify machine state into a static code base that can abstract a more complex system into simple resource statements. Then those resource statements are parsed and compiled into a <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">directed acyclic graph</a>.</p>
 
 
 
@@ -181,7 +181,7 @@ In the end, this is still a static configuration and is extraordinarily complex.
 
 
 
-<p>Dynamic configuration, at its core, assumes some master process provisions a service on demand, anywhere. It&rsquo;s not bound by classification, it&rsquo;s only requirement is that memory and CPU resources are available to execute a scheduled task. It monitors these processes all the time, ensuring they&rsquo;re running and restarts them when they die.</p>
+<p>Dynamic configuration, at its core, assumes some master process provisions a service on demand, anywhere. It&rsquo;s not bound by classification, its only requirement is that memory and CPU resources are available to execute a scheduled task. It monitors these processes all the time, ensuring they&rsquo;re running and restarts them when they die.</p>
 
 
 
@@ -196,12 +196,12 @@ In the end, this is still a static configuration and is extraordinarily complex.
 
 
 
-<p>The <a href="http://mesos.apache.org/">Apache Mesos project</a> satisfies that latter sentiment: it gathers resource information from all nodes in a cluster, then schedules and executes tasks against the available resources. An entire company, Mesosphere, has built the <a href="https://mesosphere.com/product/">Data Center Operating System</a> around Mesos, allowing seamless deployment of services across a cluster of machines, without configuration management to statically deploy them. Developers can write their own schedulers and executors or simply leverage the Docker executor to deploy services across an entire DC. No classification required.</p>
+<p>The <a href="http://mesos.apache.org/">Apache Mesos project</a> satisfies that requirement: it gathers resource information from all nodes in a cluster, then schedules and executes tasks against the available resources. An entire company, Mesosphere, has built the <a href="https://mesosphere.com/product/">Data Center Operating System</a> around Mesos, allowing seamless deployment of services across a cluster of machines, without configuration management to statically deploy them. Developers can write their own schedulers and executors or simply leverage the Docker executor to deploy services across an entire DC. No classification required.</p>
 
 
 
 
-<p>At SRC:CLR we see the value in such a system as it simplifies our already complex configuration management around our back end micro services. We&rsquo;ve brought the number of modules for Puppet that we need to deploy our stack from the mid 70&rsquo;s down to less than 10. This isn&rsquo;t to say configuration management isn&rsquo;t needed: it&rsquo;s needed. However, we&rsquo;ve found that configuration management isn&rsquo;t a service scheduler - it&rsquo;s great at static provisioning. In the end we still need a way to manage all the basics like log rotation, the installation of Mesos, docker and other necessary packages, and all the other stuff that sits outside the realm of our immediate stack but is required by it.</p>
+<p>At SRC:CLR we see the value in such a system as it simplifies our already complex configuration management around our back end micro services. This isn&rsquo;t to say configuration management isn&rsquo;t needed: it&rsquo;s needed. However, we&rsquo;ve found that configuration management isn&rsquo;t a service scheduler - it&rsquo;s great at static provisioning. But in the end we still need a way to manage all the basics like log rotation, the installation of Mesos, docker and other necessary packages, and all the other stuff that sits outside the realm of our immediate stack but is required by it.</p>
 
 
 
