@@ -13,7 +13,7 @@
   <meta name="author" content="Jeff">
 
   
-  <meta name="description" content="All Posts Vertically Scaled Infrastructure &ldquo;&hellip;but does is scale?&rdquo; When it comes to micro-service architectures that&rsquo;s always &hellip;">
+  <meta name="description" content="All Posts Static Service Provisioning Sucks Many tools exist to help automate and orchestrate provisioning servers. Each tool serves a purpose, or &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -50,6 +50,191 @@
 
   <div class="article-list">
     <div class="container">
+      
+      
+      <div class="row">
+        <div class="col-md-offset-3 col-md-6">
+          <article>
+  <h2><a href="/blog/2015/07/14/static-service-provisioning-sucks/">Static Service Provisioning Sucks</a></h2>
+  
+  <p>
+    <p>Many tools exist to help automate and orchestrate provisioning servers. Each tool serves a purpose, or is tailored for a specific task. One realization I had not to long ago was that configuration management tools, as a framework, suck at provisioning micro services. I say that at the risk of bringing on the deluge of comments that often accompany such a blunt, over arching statement.</p>
+
+
+
+
+<h2>Configuration Management Primer</h2>
+
+
+
+
+<p>But let&rsquo;s think about it for a minute: how does configuration management work? The idea is to codify machine state into a static code base that can abstract a more complex system into simple resource statements. Then those resource statements are parsed and compiled into an (directed acyclic graph)[<a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">https://en.wikipedia.org/wiki/Directed_acyclic_graph</a>].</p>
+
+
+
+
+<p>This graph is created every time an &lsquo;agent&rsquo; of some sort checks in or is manually kicked off by some other means. Each node in the graph represents the abstract state of some resource on the system, files, services, packages, and compares the state of the resource node in the graph to that of the resource which exists on the system. If it&rsquo;s different, it converges the state to match that of the graph.</p>
+
+
+
+
+<h2>Service Primer</h2>
+
+
+
+
+<p>In terms of services, we might have an abstract service definition that looks like this:</p>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">service</span> <span class="p">{</span> <span class="s1">&#39;haproxy&#39;</span><span class="p">:</span>
+</span><span class='line'>  <span class="k">ensure</span> <span class="o">=&gt;</span> <span class="n">running</span><span class="p">,</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<p>or</p>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">service</span> <span class="s1">&#39;nginx&#39;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">action</span> <span class="ss">:start</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<p>Each statement tells Puppet or Chef, respectively, to make sure the service for Nginx is running. How this would go down in real life is that Chef or Puppet would run, and if they find the service Nginx not running, it would be started. If it is found running, nothing occurs in order to maintain performance via idempotent actions.</p>
+
+
+
+
+<p>The problem is services are running all the time, and are highly dynamic. They might crash for any number of reasons, and until configuration management kicks in, your service is unavailable.</p>
+
+
+
+
+<p>That is, unless, it&rsquo;s monitored by a parent process that can track service state.</p>
+
+
+
+
+<p>And in a lot of respects, framworks such as Docker aim to fill in this hole. The Docker daemon acts as that parent process that can monitor the child containers, ensuring they&rsquo;re always running or force restarts when they die. The Docker daemon is always running, unlike configuration management which only runs on regular intervals, and hopefully not to often for performance reasons.</p>
+
+
+
+
+<p>Well what happens when the Docker daemon dies, you might ask? Who cares, it&rsquo;s still better than configuration management acting as the sole service schedular.</p>
+
+
+
+
+<p>Many people have already realized this added benefit of Docker monitoring their service state. In that same vain, containerizing your services via Docker removes a lot of configuration management code. Where previously you had to maintain a package, a file, a service and all the other dependencies around your specific service via configuration management you can now simply tell configuration management to install docker and run this container.</p>
+
+
+
+
+<h2>Static vs. Dynamic</h2>
+
+
+
+
+<p>The hills rejoiced to the sound of sweet harmony of constantly running services!</p>
+
+
+
+
+<p>But this isn&rsquo;t the end of the story. Whether you&rsquo;re running your service via some executable you provision with configuration management or via a docker container executed via configuration management, those services are still statically provisioned.</p>
+
+
+
+
+<p>By static provisioning, I mean that you have some how hard coded a $role for a node classified as &lsquo;x&rsquo; and told your configuration management system to run service &lsquo;y&rsquo; for all machines with that classification. This is hard coded and static. The machine that runs this service does not change unless you hard code something else to tell it to do so.</p>
+
+
+
+
+<p>That might be acceptable for simple applications, but when scaled you run into another issue: resource utilization.</p>
+
+
+
+
+<p>At SRC:CLR we have a meager 70 node deployment. The resources of each node are unknown to other nodes, and we fall into the pitfall of underutilized infrastructure. We&rsquo;re not an enterprise, but recent studies show total DC utilization at <a href="https://gigaom.com/2013/11/30/the-sorry-state-of-server-utilization-and-the-impending-post-hypervisor-era/">around 6%</a>. We average around 1-2% total resource utilization. This tells me we&rsquo;re wasting at best 68% of our monthly DC costs (I would prefer 70% resource utilization, allowing for a comfortable 30% in over engineering for capacity).</p>
+
+
+
+
+<p>It&rsquo;s easy to fall into this pitfall if your entire stack is managed by a static code base - it&rsquo;s programmatically difficult to classify a node in configuration management with a lot of different roles. You would need to instrument each node heavily to ensure proper resource utilization, and go to great lengths to ensure you&rsquo;re not creating hot spots - machines that are running hot, consuming too many resources while others sit idle with low intensity applications.
+In the end, this is still a static configuration and is extraordinarily complex.</p>
+
+
+
+
+<p>Dynamic configuration, at its core, assumes some master process provisions a service on demand, anywhere. It&rsquo;s not bound by classification, it&rsquo;s only requirement is that memory and CPU resources are available to execute a scheduled task. It monitors these processes all the time, ensuring they&rsquo;re running and restarts them when they die.</p>
+
+
+
+
+<p>This system sounds a lot like a Kernel in an operating system: it accepts IO to execute tasks and leverages a scheduler to execute those tasks across available memory and CPU resources.</p>
+
+
+
+
+<h2>Mesos</h2>
+
+
+
+
+<p>The <a href="http://mesos.apache.org/">Apache Mesos project</a> satisfies that latter sentiment: it gathers resource information from all nodes in a cluster, then schedules and executes tasks against the available resources. An entire company, Mesosphere, has built the <a href="https://mesosphere.com/product/">Data Center Operating System</a> around Mesos, allowing seamless deployment of services across a cluster of machines, without configuration management to statically deploy them. Developers can write their own schedulers and executors or simply leverage the Docker executor to deploy services across an entire DC. No classification required.</p>
+
+
+
+
+<p>At SRC:CLR we see the value in such a system as it simplifies our already complex configuration management around our back end micro services. We&rsquo;ve brought the number of modules for Puppet that we need to deploy our stack from the mid 70&rsquo;s down to less than 10. This isn&rsquo;t to say configuration management isn&rsquo;t needed: it&rsquo;s needed. However, we&rsquo;ve found that configuration management isn&rsquo;t a service scheduler - it&rsquo;s great at static provisioning. In the end we still need a way to manage all the basics like log rotation, the installation of Mesos, docker and other necessary packages, and all the other stuff that sits outside the realm of our immediate stack but is required by it.</p>
+
+
+
+
+<p>Our goal for the future of our stack is to have Puppet manage the intermediate state of our infrastructure, bringing up a healthy cluster of nodes running Mesos which we can deploy our containerized stack on. Of course this brings about a whole new set of challenges around managing logs and security, topics I&rsquo;ll be covering more in later posts. In the end the move to leveraging a service that handles dynamic scheduling of our services allows us to scale faster while simultaneously using more available resources, which means a decrease in Ec2 instances and incurred costs. That&rsquo;s a huge win for a small company making ends meet on borrowed dollars.</p>
+
+
+  </p>
+  <span class="meta">
+    written 
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-07-14T13:05:01-07:00" pubdate data-updated="true"></time>
+    
+
+
+  </span>
+
+  
+</article>
+
+        </div>
+      </div>
       
       
       <div class="row">
@@ -6816,9 +7001,9 @@ Puppetfile
 git remote add origin git@whatever.com:your_name/control_repo.git
 git branch -m master production
 git add Puppetfile
-git add hiera.yaml[root@master puppet] r10k really doesn't need this but we'll add it anyways. 
+git add hiera.yaml # r10k really doesn't need this but we'll add it anyways. 
 git add hieradata/
-git push -u origin production:production[root@master puppet] or whatever branch, maybe production?
+git push -u origin production:production # or whatever branch, maybe production?
 </code></pre>
 
 <h3>Configure hiera.yaml for dynamic environments</h3>
@@ -6869,7 +7054,7 @@ r10k deploy environment -pv
 </ul>
 
 
-<pre><code class="bash">git branch[root@master puppet] check your branch, make sure it's still development
+<pre><code class="bash">git branch # check your branch, make sure it's still development
 git commit -am hieradata
 git push 
 r10k deploy environment -pv
@@ -7203,9 +7388,9 @@ Puppetfile
 git remote add origin git@whatever.com:your_name/control_repo.git
 git branch -m master production
 git add Puppetfile
-git add hiera.yaml # r10k really doesn't need this but we'll add it anyways. 
+git add hiera.yaml[root@master puppet] r10k really doesn't need this but we'll add it anyways. 
 git add hieradata/
-git push -u origin production:production # or whatever branch, maybe production?
+git push -u origin production:production[root@master puppet] or whatever branch, maybe production?
 </code></pre>
 
 <h3>Configure hiera.yaml for dynamic environments</h3>
@@ -7256,7 +7441,7 @@ r10k deploy environment -pv
 </ul>
 
 
-<pre><code class="bash">git branch # check your branch, make sure it's still development
+<pre><code class="bash">git branch[root@master puppet] check your branch, make sure it's still development
 git commit -am hieradata
 git push 
 r10k deploy environment -pv
