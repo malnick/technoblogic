@@ -4,7 +4,7 @@
   <title><![CDATA[]]></title>
   <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
   <link href="httpL://www.jeffmalnick.com/"/>
-  <updated>2015-07-21T12:27:44-07:00</updated>
+  <updated>2015-07-31T07:16:21-07:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
@@ -12,6 +12,14 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2015/07/31/using-golang-for-more-performant-devops-tasks/"/>
+    <updated>2015-07-31T06:05:55-07:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2015/07/31/using-golang-for-more-performant-devops-tasks</id>
+    <content type="html"><![CDATA[]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[]]></title>
@@ -162,14 +170,6 @@
     <link href="httpL://www.jeffmalnick.com/blog/2014/07/14/managing-git-repos-over-jump-hosts-using-persistant-sockets/"/>
     <updated>2014-07-14T07:09:09-07:00</updated>
     <id>httpL://www.jeffmalnick.com/blog/2014/07/14/managing-git-repos-over-jump-hosts-using-persistant-sockets</id>
-    <content type="html"><![CDATA[]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2014/06/24/a-simple-nagios-docker-plugin/"/>
-    <updated>2014-06-24T12:19:43-07:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2014/06/24/a-simple-nagios-docker-plugin</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   
