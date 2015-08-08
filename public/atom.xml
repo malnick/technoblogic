@@ -4,7 +4,7 @@
   <title><![CDATA[]]></title>
   <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
   <link href="httpL://www.jeffmalnick.com/"/>
-  <updated>2015-07-31T07:16:21-07:00</updated>
+  <updated>2015-08-08T09:18:16-07:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2015/07/31/using-golang-for-more-performant-devops-tasks/"/>
-    <updated>2015-07-31T06:05:55-07:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2015/07/31/using-golang-for-more-performant-devops-tasks</id>
+    <link href="httpL://www.jeffmalnick.com/blog/2015/08/08/a-restful-haproxy-service-abstraction/"/>
+    <updated>2015-08-08T00:00:00-07:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2015/08/08/a-restful-haproxy-service-abstraction</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   
