@@ -74,3 +74,33 @@ Sync depth = time in minutes to go back in the ES datastore. Default: 10 minutes
 ```
 
 ^^ Queries logs from the last 1 minute, refreshing every 10 seconds.
+
+### Closing Thoughts
+The great thing about this system is the outputs are "${hostname} ${message}" which is the main thing we end up sorting by.
+
+Sometimes we just run a search on "*" when new services come up, and we keep an eye out for errors.
+
+With logit, we can execute this on the CLI:
+
+```
+logit -d "*"
+```
+ 
+Then when we get a stack trace, we can see the host(s) that the stack trace occured and update our query:
+
+```
+logit -d "\"host-name-internal\""
+```
+
+We can also search back to the stacktrace if it occured more than 10 minutes ago:
+
+```
+logit -sd 20 -d "\"host-name-internal\""
+```
+
+That will dump the last 20 minutes of log data, or 500 queries in asending order. 
+
+We love Kibana, but sometimes it's just faster to have a CLI utility to do the mundane things. We really like this tool, and we hope you will to. If you have any suggestions, please reach out malnick at google mail dot com.
+
+
+

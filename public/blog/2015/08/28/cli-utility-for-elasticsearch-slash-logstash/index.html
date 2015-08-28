@@ -152,6 +152,37 @@ Sync depth = time in minutes to go back in the ES datastore. Default: 10 minutes
 
 <p>^^ Queries logs from the last 1 minute, refreshing every 10 seconds.</p>
 
+<h3>Closing Thoughts</h3>
+
+<p>The great thing about this system is the outputs are &ldquo;${hostname} ${message}&rdquo; which is the main thing we end up sorting by.</p>
+
+<p>Sometimes we just run a search on &ldquo;*&rdquo; when new services come up, and we keep an eye out for errors.</p>
+
+<p>With logit, we can execute this on the CLI:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">logit -d &quot;*&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then when we get a stack trace, we can see the host(s) that the stack trace occured and update our query:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">logit -d &quot;\&quot;host-name-internal\&quot;&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We can also search back to the stacktrace if it occured more than 10 minutes ago:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">logit -sd 20 -d &quot;\&quot;host-name-internal\&quot;&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>That will dump the last 20 minutes of log data, or 500 queries in asending order.</p>
+
+<p>We love Kibana, but sometimes it&rsquo;s just faster to have a CLI utility to do the mundane things. We really like this tool, and we hope you will to. If you have any suggestions, please reach out malnick at google mail dot com.</p>
+
 
         <hr class="divider-short"/>
 
