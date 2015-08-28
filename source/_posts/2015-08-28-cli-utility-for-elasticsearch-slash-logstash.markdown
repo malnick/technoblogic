@@ -42,22 +42,30 @@ Execute your first query:
 ...
 ```
 
-```./logit -s webhooks_frontend```
+```
+./logit -s webhooks_frontend
+```
 
 #### Do a defined query on the CLI
 
-```./logit -d "some_value AND another_value"```
+```
+./logit -d "some_value AND another_value"
+```
 
 #### Something is broken
 
-```./logit -d my_query -v```
+```
+./logit -d my_query -v
+```
 
 #### Override the sync and depth interval
 
 Sync interval = time in seconds to refresh the logs. Default: 5 seconds.
 Sync depth = time in minutes to go back in the ES datastore. Default: 10 minutes.
 
-```./logit -d my_query -si 10 -sd 1```
+```
+./logit -d my_query -si 10 -sd 1
+```
 
 ^^ Queries logs from the last 1 minute, refreshing every 10 seconds.
 

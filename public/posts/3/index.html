@@ -131,6 +131,82 @@
 
 
 
+<h4>Add some queries to config.yaml</h4>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
+</span><span class='line'>  <span class="c1"># Defined services</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">define</span><span class="p-Indicator">:</span>
+</span><span class='line'>    <span class="l-Scalar-Plain">my_example_service</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">some_value AND another_value</span>
+</span><span class='line'>    <span class="l-Scalar-Plain">webhooks_frontend</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">webhooks AND haproxy</span>
+</span><span class='line'><span class="nn">...</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">./logit -s webhooks_frontend</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<h4>Do a defined query on the CLI</h4>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">./logit -d &quot;some_value AND another_value&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<h4>Something is broken</h4>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">./logit -d my_query -v</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<h4>Override the sync and depth interval</h4>
+
+
+
+
+<p>Sync interval = time in seconds to refresh the logs. Default: 5 seconds.
+Sync depth = time in minutes to go back in the ES datastore. Default: 10 minutes.</p>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">./logit -d my_query -si 10 -sd 1</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<p>^^ Queries logs from the last 1 minute, refreshing every 10 seconds.</p>
+
+
+
+
 <h2>Screen Grabs!</h2>
 
 
