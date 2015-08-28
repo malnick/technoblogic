@@ -17,19 +17,25 @@ Logit was written in Go, so you know it's performant and lightweight.
 ## How it works
 First, download and build the go binary:
 
-1. ```git clone https://github.com/malnick/logit```
-1. ```cd logit```
-1. ```go build logit.go```
+```bash
+git clone https://github.com/malnick/logit
+cd logit
+go build logit.go
+```
 
 Configure the config.yaml:
 
-1. ```vi config.yaml```
+```
+vi config.yaml
+```
 
 Update your Elasticsearch URI, and add some service abstractions to the 'define' section. 
 
 Execute your first query:
 
-1. ```./logit -s my_example_service```
+```
+./logit -s my_example_service
+```
 
 #### Add some queries to config.yaml
 
