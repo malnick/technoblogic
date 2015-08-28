@@ -31,6 +31,37 @@ Execute your first query:
 
 1. ```./logit -s my_example_service```
 
+#### Add some queries to config.yaml
+
+```yaml
+---
+  # Defined services
+  define:
+    my_example_service: some_value AND another_value
+    webhooks_frontend: webhooks AND haproxy
+...
+```
+
+```./logit -s webhooks_frontend```
+
+#### Do a defined query on the CLI
+
+```./logit -d "some_value AND another_value"```
+
+#### Something is broken
+
+```./logit -d my_query -v```
+
+#### Override the sync and depth interval
+
+Sync interval = time in seconds to refresh the logs. Default: 5 seconds.
+Sync depth = time in minutes to go back in the ES datastore. Default: 10 minutes.
+
+```./logit -d my_query -si 10 -sd 1```
+
+^^ Queries logs from the last 1 minute, refreshing every 10 seconds.
+
+
 ## Screen Grabs!
 Here is a masked screen grab of a logit query, only showing the first of the 500 lines that would be returned: 
 
