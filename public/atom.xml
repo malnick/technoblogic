@@ -4,7 +4,7 @@
   <title><![CDATA[]]></title>
   <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
   <link href="httpL://www.jeffmalnick.com/"/>
-  <updated>2015-08-08T09:18:16-07:00</updated>
+  <updated>2015-08-28T12:57:29-07:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff]]></name>
@@ -12,6 +12,22 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2015/08/28/cli-utility-for-elasticsearch-slash-logstash/"/>
+    <updated>2015-08-28T12:19:11-07:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2015/08/28/cli-utility-for-elasticsearch-slash-logstash</id>
+    <content type="html"><![CDATA[]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2015/08/13/version-management-in-soa/"/>
+    <updated>2015-08-13T08:47:19-07:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2015/08/13/version-management-in-soa</id>
+    <content type="html"><![CDATA[]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[]]></title>
@@ -154,22 +170,6 @@
     <link href="httpL://www.jeffmalnick.com/blog/2014/08/03/deploying-box-files-from-virtualbox-for-vagrant/"/>
     <updated>2014-08-03T17:22:54-07:00</updated>
     <id>httpL://www.jeffmalnick.com/blog/2014/08/03/deploying-box-files-from-virtualbox-for-vagrant</id>
-    <content type="html"><![CDATA[]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2014/07/21/agile-dev-environment-for-puppet-code/"/>
-    <updated>2014-07-21T12:15:51-07:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2014/07/21/agile-dev-environment-for-puppet-code</id>
-    <content type="html"><![CDATA[]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2014/07/14/managing-git-repos-over-jump-hosts-using-persistant-sockets/"/>
-    <updated>2014-07-14T07:09:09-07:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2014/07/14/managing-git-repos-over-jump-hosts-using-persistant-sockets</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   
