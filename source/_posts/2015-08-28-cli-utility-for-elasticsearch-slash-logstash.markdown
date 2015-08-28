@@ -74,8 +74,3 @@ Sync depth = time in minutes to go back in the ES datastore. Default: 10 minutes
 ```
 
 ^^ Queries logs from the last 1 minute, refreshing every 10 seconds.
-
-## Screen Grabs!
-Here is a masked screen grab of a logit query, only showing the first of the 500 lines that would be returned: 
-
-<img style="float: center;" src="https://dl.dropboxusercontent.com/u/77193293/masked_logitexample.png">
