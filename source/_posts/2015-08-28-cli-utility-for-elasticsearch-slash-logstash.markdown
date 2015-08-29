@@ -18,7 +18,7 @@ logasurous was written in Go, so you know it's performant and lightweight.
 First, download and build the go binary:
 
 ```bash
-git clone https://github.com/sourceclear/logasurous
+git clone https://github.com/malnick/logasurous
 cd logasurous
 go build loga.go
 ```
