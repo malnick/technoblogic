@@ -13,7 +13,7 @@
   <meta name="author" content="Jeff">
 
   
-  <meta name="description" content="All Posts Logit: A CLI Utility for Elasticsearch / Logstash Like most operations teams, at SRC:CLR we&rsquo;re offloading our logs to a aggregated &hellip;">
+  <meta name="description" content="All Posts logasurous: A CLI Utility for Elasticsearch / Logstash Like most operations teams, at SRC:CLR we&rsquo;re offloading our logs to a &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -55,10 +55,10 @@
       <div class="row">
         <div class="col-md-offset-3 col-md-6">
           <article>
-  <h2><a href="/blog/2015/08/28/cli-utility-for-elasticsearch-slash-logstash/">Logit: A CLI Utility for Elasticsearch / Logstash</a></h2>
+  <h2><a href="/blog/2015/08/28/cli-utility-for-elasticsearch-slash-logstash/">logasurous: A CLI Utility for Elasticsearch / Logstash</a></h2>
   
   <p>
-    <p><img style="float: center;" src="https://dl.dropboxusercontent.com/u/77193293/masked_logitexample.png"></p>
+    <p><img style="float: center;" src="https://dl.dropboxusercontent.com/u/77193293/logasaurous.png"></p>
 
 
 
@@ -68,17 +68,17 @@
 
 
 
-<h2>So we wrote <a href="https://github.com/malnick/logit">Logit</a></h2>
+<h2>So we wrote <a href="https://github.com/sourceclear/logasaurous">logasurous</a></h2>
 
 
 
 
-<p>Logit runs in realtime, just like Kibana, on similar searches. This is great if your workflow is primarily in the console, and you&rsquo;re using Kibana mainly for query operations. You can use your tmux copy/paste shortcuts to grab data quickly. Queries are just as fast.</p>
+<p>logasurous runs in realtime, just like Kibana, on similar searches. This is great if your workflow is primarily in the console, and you&rsquo;re using Kibana mainly for query operations. You can use your tmux copy/paste shortcuts to grab data quickly. Queries are just as fast.</p>
 
 
 
 
-<p>Logit was written in Go, so you know it&rsquo;s performant and lightweight.</p>
+<p>logasurous was written in Go, so you know it&rsquo;s performant and lightweight.</p>
 
 
 
@@ -96,9 +96,9 @@
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>git clone https://github.com/malnick/logit
-</span><span class='line'><span class="nb">cd </span>logit
-</span><span class='line'>go build logit.go
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>git clone https://github.com/sourceclear/logasurous
+</span><span class='line'><span class="nb">cd </span>logasurous
+</span><span class='line'>go build loga.go
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -127,7 +127,7 @@
 
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>./logit -s my_example_service
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>./loga -s my_example_service
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -156,7 +156,7 @@
 
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">./logit -s webhooks_frontend</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">./loga -s webhooks_frontend</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -168,7 +168,7 @@
 
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">./logit -d &quot;some_value AND another_value&quot;</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">./loga -d &quot;some_value AND another_value&quot;</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -180,7 +180,7 @@
 
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">./logit -d my_query -v</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">./loga -d my_query -v</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -198,7 +198,7 @@ Sync depth = time in minutes to go back in the ES datastore. Default: 10 minutes
 
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">./logit -d my_query -si 10 -sd 1</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">./loga -d my_query -si 10 -sd 1</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -224,13 +224,13 @@ Sync depth = time in minutes to go back in the ES datastore. Default: 10 minutes
 
 
 
-<p>With logit, we can execute this on the CLI:</p>
+<p>With loga, we can execute this on the CLI:</p>
 
 
 
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">logit -d &quot;*&quot;</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">loga -d &quot;*&quot;</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -242,7 +242,7 @@ Sync depth = time in minutes to go back in the ES datastore. Default: 10 minutes
 
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">logit -d &quot;\&quot;host-name-internal\&quot;&quot;</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">loga -d &quot;\&quot;host-name-internal\&quot;&quot;</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -254,7 +254,7 @@ Sync depth = time in minutes to go back in the ES datastore. Default: 10 minutes
 
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">logit -sd 20 -d &quot;\&quot;host-name-internal\&quot;&quot;</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">loga -sd 20 -d &quot;\&quot;host-name-internal\&quot;&quot;</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
