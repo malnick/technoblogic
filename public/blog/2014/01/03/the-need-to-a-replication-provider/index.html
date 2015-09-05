@@ -3,17 +3,13 @@
 <!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
 <!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
-<!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>The Need for a Replication Provider - What we observe is not nature itself, but nature exposed to our method of questioning</title>
-  <meta name="author" content="Jeff">
+  <title>The Need for a Replication Provider - Technoblogic</title>
+  <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content="The Need for a Replication Provider written in providers, puppet, ruby Why we need a replication provider for puppet I&rsquo;ve been using puppet &hellip;">
+  <meta name="description" content="Why we need a replication provider for puppet I&rsquo;ve been using puppet for over a year now. I started using it at the request of a friend who &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -22,55 +18,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="httpL://www.jeffmalnick.com/blog/2014/01/03/the-need-to-a-replication-provider">
+  <link rel="canonical" href="httpL://www.jeffmalnick.com/blog/2014/01/03/the-need-to-a-replication-provider/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="What we observe is not nature itself, but nature exposed to our method of questioning" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
   
 
 </head>
 
-  <body>
-    <a href="/" class="home-icon">
-      <img src="/images/home.png"/>
-    </a>
-
-    <article role="article" class="full-single-article">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-8 col-md-offset-2">
-        <h1>The Need for a Replication Provider</h1>
-        <div class="meta">
-          written 
-
-
-
-
-
-
-
-
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Technoblogic</a></h1>
   
-
-
-
-<time datetime="2014-01-03T09:05:51-08:00" pubdate data-updated="true"></time>
-          
-
-in
-<span class="categories">
+    <h2>Musings on DevOps</h2>
   
-    <a class='category' href='//providers/'>providers</a>, <a class='category' href='//puppet/'>puppet</a>, <a class='category' href='//ruby/'>ruby</a>
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
   
-</span>
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="httpL://www.jeffmalnick.com">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/posts">All Posts</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/resume">Resume</a></li>
+  <li><a href="/blog/about">About Jeff</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">The Need for a Replication Provider</h1>
+    
+    
+      <p class="meta">
+        
 
 
-        </div>
-        <h3>Why we need a replication provider for puppet</h3>
+
+
+<time class='entry-date' datetime='2014-01-03T09:05:51-08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2014</span></span> <span class='time'>9:05 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h3>Why we need a replication provider for puppet</h3>
 
 <p>I&rsquo;ve been using puppet for over a year now. I started using it at the request of a friend who wanted a simple, one-liner command to boot his e-commerce platform on Vagrant VM&rsquo;s for dev and eventually production. I was impressed by the simplicity, the software defined server-state was easy to create through the elegant package, resource, service workflow. It wasn&rsquo;t very long that we found other more advanced needs for Puppet.</p>
 
@@ -469,68 +485,158 @@ module (*cough .. my replication module, which I did not write with idempotentcy
 The coding for it is far more economical, and we don&rsquo;t have a psudo-bash script written into our Puppet code via exec!</p>
 
 <p>You get to write your puppet code to do puppet stuff and let the provider/type ruby magic do it&rsquo;s work for you. It&rsquo;s a win win, now all we need to do is actually write this thing&hellip;</p>
+</div>
 
 
-        <hr class="divider-short"/>
+  <footer>
+    <p class="meta">
+      
+  
 
-        
-      </div>
-    </div>
-  </div>
+<span class="byline author vcard">Posted by <span class="fn">Jeff Malnick</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2014-01-03T09:05:51-08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2014</span></span> <span class='time'>9:05 am</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='//providers/'>providers</a>, <a class='category' href='//puppet/'>puppet</a>, <a class='category' href='//ruby/'>ruby</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="httpL://www.jeffmalnick.com/blog/2014/01/03/the-need-to-a-replication-provider/" data-via="jmalnick" data-counturl="httpL://www.jeffmalnick.com/blog/2014/01/03/the-need-to-a-replication-provider/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/01/02/blog-post-number-1/" title="Previous Post: Blog Post #1">&laquo; Blog Post #1</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/01/13/test/" title="Next Post: test">test &raquo;</a>
+      
+    </p>
+  </footer>
 </article>
 
-<hr class="divider-short"/>
+</div>
 
-<div class="archive-link">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-8 col-md-offset-2">
-        
-          <a class="pull-left" href="/blog/2014/01/02/blog-post-number-1/" title="Previous Post: Blog Post #1">&laquo; Previous: Blog Post #1</a>
-        
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/08/28/cli-utility-for-elasticsearch-slash-logstash/">Logasurous: A CLI Utility for Elasticsearch / Logstash</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/08/13/version-management-in-soa/">Version Management in SOA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/07/31/a-restful-haproxy-service-abstraction/">A Restful Haproxy Service Abstraction</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/07/21/weak-dh-ciphers/">Weak Diffe-Helman SSL Ciphers</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/07/14/static-service-provisioning-sucks/">Static Service Provisioning Sucks</a>
+      </li>
+    
+  </ul>
+</section>
 
-        
-          <a class="pull-right" href="/blog/2014/01/13/test/" title="Next Post: test">Next: test &raquo;</a>
-        
-      </div>
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/malnick">@malnick</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'malnick',
+            count: 3,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+Included file &#8216;asides/twitter.html&#8217; not found in _includes directory
+  
+</aside>
+
+
     </div>
   </div>
-</div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Jeff Malnick -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
 
-    <footer id="footer" class="her-row">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-1">
-  <a href="/"><h4>Home</h4></a>
-</div>
-
-<div class="col-md-2">
-  <div class="social-icon-list">
-    
-    <a href="https://twitter.com/8bitsofsketch"><img src="/images/glyphicons_social_31_twitter.png"/></a>
-    
-
-    
-    <a href="https://github.com/malnick"><img src="/images/glyphicons_social_21_github.png"/></a>
-    
-
-    
-
-    
-    <a href="mailto:malnick@gmail.com"><img src="/images/glyphicons_social_39_e-mail.png"/></a>
-    
-  </div>
-</div>
-
-<div class="pull-right">
-  <h4>Powered by <a href="http://octopress.org/">Octopress</a>. Designed by <a href="http://AdrianArtiles.com">Adrian Artiles</a>.</h4>
-</div>
-
-
-    </div>
-  </div>
 </footer>
+  
 
-    
-  </body>
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
 </html>

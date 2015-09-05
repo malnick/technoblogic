@@ -3,14 +3,10 @@
 <!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
 <!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
-<!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Category: ruby - What we observe is not nature itself, but nature exposed to our method of questioning</title>
-  <meta name="author" content="Jeff">
+  <title>Category: Ruby - Technoblogic</title>
+  <meta name="author" content="Jeff Malnick">
 
   
   <meta name="description" content="Category: ruby">
@@ -22,545 +18,188 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="httpL://www.jeffmalnick.com/categories/ruby">
+  <link rel="canonical" href="httpL://www.jeffmalnick.com/categories/ruby/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="What we observe is not nature itself, but nature exposed to our method of questioning" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
   
 
 </head>
 
-  <body>
-    <a href="/" class="home-icon">
-      <img src="/images/home.png"/>
-    </a>
-
-    <div class="all-posts">
-  <div class="container">
-    <div class="row">
-      <div class="list-title col-md-offset-3 col-md-6">
-        <h4>Posts in ruby</h4>
-      </div>
-    </div>
-  </div>
-
-  <div class="article-list">
-    <div class="container">
-      
-        
-        <div class="row">
-          <div class="col-md-offset-3 col-md-6">
-            <article>
-  <h2><a href="/blog/2014/01/03/the-need-to-a-replication-provider/">The Need for a Replication Provider</a></h2>
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Technoblogic</a></h1>
   
-  <p>
-    <h3>Why we need a replication provider for puppet</h3>
+    <h2>Musings on DevOps</h2>
+  
+</hgroup>
 
-<p>I&rsquo;ve been using puppet for over a year now. I started using it at the request of a friend who wanted a simple, one-liner command to boot his e-commerce platform on Vagrant VM&rsquo;s for dev and eventually production. I was impressed by the simplicity, the software defined server-state was easy to create through the elegant package, resource, service workflow. It wasn&rsquo;t very long that we found other more advanced needs for Puppet.</p>
-
-<p>One of these needs was booting multiple MySQL server slaves on a single host machine to replicate various MySQL masters. The masters were any one of the customers currently using this e-commerce platform. The distributed nature of the servers and the cost-benefit of running a single slave server (a beefy host nonetheless) for all of them presented a few challenges.</p>
-
-<p>First off, nobody wants to be a sysadmin. This company was small in terms of manpower and everyone was already in a DevOps role, but who wants to sit around running &ldquo;CHANGE MASTER TO&rdquo;&hellip; all day? Not your python dev that&rsquo;s for sure. So we decided it was best to build out a Puppet module that can run on the slave and master hosts that would:</p>
-
-<ol>
-<li>Boot multiple MySQL slaves on one host</li>
-<li>Dump the master MySQL DB and scp to the slave (once the slave was provisioned)</li>
-<li>Import the scp&#8217;ed DB to the slave and start replication from the correct binlog position</li>
-</ol>
-
-
-<p>Simple right? Yeah&hellip; right.</p>
-
-<p>Let&rsquo;s cut the chase: how many lines of puppet code did it take for me to write a unique mysql slave instance onto a host?</p>
-
-<p>167</p>
-
-<p>For each slave I needed to provision:</p>
-
-<ul>
-<li>/var/lib/mysql_instance#</li>
-<li>/var/log/mysql_instance#</li>
-<li>/etc/mysql_instance#</li>
-<li>/etc/mysql_instance#/my.cnf</li>
-<li>Customize that my.cnf for the instance</li>
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="httpL://www.jeffmalnick.com">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/posts">All Posts</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/resume">Resume</a></li>
+  <li><a href="/blog/about">About Jeff</a></li>
 </ul>
 
-
-<p>Which looks like standard Puppet fun:</p>
-
-<p><figure class='code'><figcaption><span>slave.pp </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">&lt;</span><span class="sr">/p&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;h1&gt;All SQL instances get their own directories:&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="n">file</span> <span class="p">{</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">mysql</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;:</span>
-</span><span class='line'>        <span class="k">ensure</span>        <span class="o">=&gt;</span> <span class="n">directory</span><span class="p">,</span>
-</span><span class='line'>        <span class="n">recurse</span>        <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span>
-</span><span class='line'>        <span class="n">owner</span>        <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">mysql</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;,</span>
-</span><span class='line'>        <span class="n">group</span>        <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">mysql</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;,</span>
-</span><span class='line'>        <span class="p">}</span>
-</span><span class='line'><span class="n">file</span> <span class="p">{</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">mysql</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;:</span>
-</span><span class='line'>        <span class="k">ensure</span>        <span class="o">=&gt;</span> <span class="n">directory</span><span class="p">,</span>
-</span><span class='line'>        <span class="n">recurse</span>        <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span>
-</span><span class='line'>        <span class="n">owner</span>        <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">mysql</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;,</span>
-</span><span class='line'>        <span class="n">group</span>        <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">mysql</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;,</span>
-</span><span class='line'>        <span class="p">}</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;h1&gt;All SQL instances get their own /e</span><span class="n">tc</span> <span class="ow">and</span> <span class="ss">cnf</span><span class="p">:</span><span class="o">&lt;</span><span class="sr">/h1&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;p&gt;file { &amp;ldquo;/e</span><span class="n">tc</span><span class="o">/</span><span class="n">mysql</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;:</span>
-</span><span class='line'>        <span class="k">ensure</span>        <span class="o">=&gt;</span> <span class="n">directory</span><span class="p">,</span>
-</span><span class='line'>        <span class="n">recurse</span>        <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span>
-</span><span class='line'>        <span class="n">owner</span>        <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">mysql</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;,</span>
-</span><span class='line'>        <span class="n">group</span>        <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">mysql</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;,</span>
-</span><span class='line'>        <span class="p">}</span>              <span class="o">&lt;</span><span class="n">br</span><span class="o">/&gt;</span>
-</span><span class='line'><span class="n">file</span> <span class="p">{</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">my</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">.</span><span class="n">cnf</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;:</span>
-</span><span class='line'>        <span class="k">ensure</span>         <span class="o">=&gt;</span> <span class="n">file</span><span class="p">,</span>
-</span><span class='line'>        <span class="n">path</span>        <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">mysql</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">/</span><span class="n">my</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">.</span><span class="n">cnf</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;,</span>
-</span><span class='line'>        <span class="n">mode</span>        <span class="o">=&gt;</span> <span class="mo">0644</span><span class="p">,</span>
-</span><span class='line'>        <span class="n">owner</span>         <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">mysql</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;,</span>
-</span><span class='line'>        <span class="n">group</span>         <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">mysql</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;,</span>
-</span><span class='line'>        <span class="n">content</span>        <span class="o">=&gt;</span> <span class="n">template</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">replicate</span><span class="o">/</span><span class="n">my</span><span class="o">.</span><span class="n">cnf</span><span class="o">.</span><span class="n">multi</span><span class="o">.</span><span class="n">erb</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;),</span>
-</span><span class='line'>        <span class="nb">require</span>        <span class="o">=&gt;</span> <span class="no">File</span><span class="o">[&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">mysql</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>        <span class="p">}</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;p&gt;</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p>Then I needed to boot a DB with the datadir, and from that point on it was, well, you know, a bash script basically with a million exec statements:</p>
-
-<p><figure class='code'><figcaption><span>slave.pp </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">&lt;</span><span class="sr">/p&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;h1&gt;Prepare DB:&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="nb">exec</span> <span class="p">{</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="err">$</span><span class="p">{</span><span class="nb">name</span><span class="p">}</span> <span class="no">Initialize</span> <span class="no">Database</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;:</span>
-</span><span class='line'>        <span class="n">path</span>        <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="ss">bin</span><span class="p">:</span><span class="sr">/bin&amp;rsquo;,</span>
-</span><span class='line'><span class="sr">        command        =&gt; &amp;ldquo;mysql_install_db &amp;ndash;user=mysql &amp;ndash;datadir=/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">mysql</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;,</span>
-</span><span class='line'>        <span class="nb">require</span>        <span class="o">=&gt;</span> <span class="o">[</span><span class="no">File</span><span class="o">[&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">mysql</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">]</span><span class="p">,</span><span class="no">File</span><span class="o">[&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">mysql</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">]]</span><span class="p">,</span>
-</span><span class='line'>        <span class="p">}</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;h1&gt;Start SQL instance:&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="nb">exec</span>  <span class="p">{</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="err">$</span> <span class="p">{</span><span class="nb">name</span><span class="p">}</span> <span class="no">Spin</span> <span class="n">up</span> <span class="no">SQL</span> <span class="no">Server</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span> <span class="p">:,</span><span class="n">ca</span>
-</span><span class='line'>        <span class="n">path</span>        <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="o">/</span><span class="ss">bin</span><span class="p">:</span><span class="sr">/usr/</span><span class="ss">bin</span><span class="p">:</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;,</span>
-</span><span class='line'>        <span class="n">command</span>        <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">mysqld_safe</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">defaults</span><span class="o">-</span><span class="n">file</span><span class="o">=</span><span class="sr">/etc/m</span><span class="n">ysql</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">/</span><span class="n">my</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">.</span><span class="n">cnf</span> <span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;,</span>
-</span><span class='line'>        <span class="nb">require</span>        <span class="o">=&gt;</span> <span class="o">[</span><span class="no">Exec</span><span class="o">[&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="err">$</span><span class="p">{</span><span class="nb">name</span><span class="p">}</span> <span class="no">Initialize</span> <span class="no">Database</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">]</span><span class="p">,</span><span class="no">File</span><span class="o">[&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">my</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">.</span><span class="n">cnf</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">]]</span><span class="p">,</span>
-</span><span class='line'>        <span class="p">}</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;h1&gt;Execute CHANGE MASTER TO - TODO: add if conditional for with password mysql commands&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="no">Grant</span> <span class="n">slave</span> <span class="n">user</span> <span class="n">priviledges</span> <span class="k">if</span> <span class="n">without</span> <span class="ss">password</span><span class="p">:</span><span class="o">&lt;</span><span class="sr">/h1&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;p&gt;if $mysql_root_password == &amp;ldquo;false&amp;rdquo;{       &lt;br/</span><span class="o">&gt;</span>
-</span><span class='line'>        <span class="nb">exec</span>  <span class="p">{</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="err">$</span> <span class="p">{</span><span class="nb">name</span><span class="p">}</span> <span class="n">grant</span> <span class="n">privledges</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span> <span class="p">:,</span><span class="n">ca</span>
-</span><span class='line'>                <span class="n">command</span>                <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="vg">$mysql_cmd_root_without_pwd</span> <span class="vg">$mysql_socket</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">execute</span><span class="o">=</span><span class="p">\</span><span class="s2">&quot;GRANT REPLICATION SLAVE, REPLICATION CLIENT ON &lt;em&gt;.&lt;/em&gt; TO &amp;lsquo;$mysql_replication_user&amp;rsquo;@&amp;lsquo;$slave_ip&amp;rsquo; IDENTIFIED BY &amp;lsquo;$mysql_replication_password&amp;rsquo;;\&amp;rdquo;&amp;ldquo;,</span>
-</span><span class='line'><span class="s2">                Require                 =&gt;  Exec [ &amp;rdquo;$ {name} Spin up SQL server&quot;</span> <span class="o">]</span><span class="p">,</span><span class="n">ca</span>
-</span><span class='line'>                <span class="p">}</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;    exec {&quot;stop ${name}&quot;:</span>
-</span><span class='line'><span class="sr">            command                =&amp;gt; &quot;$mysql_cmd_root_without_pwd $mysql_socket --execute=\&quot;STOP SLAVE;\&quot;&quot;,</span>
-</span><span class='line'><span class="sr">            require                =&amp;gt; Exec[&quot;grant ${name} privledges&quot;],</span>
-</span><span class='line'><span class="sr">            }</span>
-</span><span class='line'><span class="sr">    exec {&quot;master info for ${name}&quot;:</span>
-</span><span class='line'><span class="sr">            command        =&amp;gt; &quot;$mysql_cmd_root_without_pwd $mysql_socket --execute=\&quot;CHANGE MASTER TO MASTER_HOST=&#39;$master_host&#39;,MASTER_USER=&#39;$mysql_replication_user&#39;,MASTER_PASSWORD=&#39;$mysql_replication_password&#39;,MASTER_LOG_FILE=&#39;$master_log_file&#39;,MASTER_LOG_POS=$master_log_pos;\&quot;&quot;,</span>
-</span><span class='line'><span class="sr">            require        =&amp;gt; Exec[&quot;stop ${name}&quot;],</span>
-</span><span class='line'><span class="sr">            }</span>
-</span><span class='line'><span class="sr">    exec {&quot;start ${name} instnace on server&quot;:</span>
-</span><span class='line'><span class="sr">            command                =&amp;gt; &quot;$mysql_cmd_root_without_pwd $mysql_socket --execute=\&quot;START SLAVE;\&quot;&quot;,</span>
-</span><span class='line'><span class="sr">            require                =&amp;gt; Exec[&quot;master info for ${name}&quot;],</span>
-</span><span class='line'><span class="sr">            }</span>
-</span><span class='line'><span class="sr">    exec  { &quot;$ {name} restart server&quot; :,ca</span>
-</span><span class='line'><span class="sr">            command        =&amp;gt; &quot;/us</span><span class="n">r</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">mysqladmin</span> <span class="o">-</span><span class="n">S</span> <span class="sr">/var/</span><span class="n">run</span><span class="o">/</span><span class="n">mysqld</span><span class="o">/</span><span class="n">mysqld</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">.</span><span class="n">sock</span> <span class="n">stop</span><span class="p">;</span>
-</span><span class='line'>                                    <span class="sr">/usr/</span><span class="n">bin</span><span class="o">/</span><span class="n">mysqladmin</span> <span class="o">-</span><span class="n">S</span> <span class="sr">/var/</span><span class="n">run</span><span class="o">/</span><span class="n">mysqld</span><span class="o">/</span><span class="n">mysqld</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">.</span><span class="n">sock</span> <span class="n">start</span><span class="s2">&quot;,</span>
-</span><span class='line'><span class="s2">            require        =&amp;gt; Exec[&quot;</span><span class="n">start</span> <span class="err">$</span><span class="p">{</span><span class="nb">name</span><span class="p">}</span> <span class="n">instnace</span> <span class="n">on</span> <span class="n">server</span><span class="s2">&quot;],</span>
-</span><span class='line'><span class="s2">            notify        =&amp;gt; Replicate::Import[&quot;</span><span class="no">Import</span> <span class="err">$</span><span class="p">{</span><span class="n">import</span><span class="p">}</span> <span class="n">onto</span> <span class="err">$</span><span class="p">{</span><span class="nb">name</span><span class="p">}</span><span class="s2">&quot;],</span>
-</span><span class='line'><span class="s2">            }</span>
-</span><span class='line'><span class="s2">&lt;/code&gt;&lt;/pre&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="s2">&lt;p&gt;   }</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p>But WHAT IF THEY&rsquo;RE CRAZY AND HAVE NO PASSWORD????</p>
-
-<p>I made other commands for that too&hellip;</p>
-
-<p><figure class='code'><figcaption><span>slave.pp </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">&lt;</span><span class="sr">/p&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;p&gt;if $mysql_root_password != &amp;ldquo;false&amp;rdquo;{       &lt;br/</span><span class="o">&gt;</span>
-</span><span class='line'><span class="nb">exec</span>  <span class="p">{</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="err">$</span> <span class="p">{</span><span class="nb">name</span><span class="p">}</span> <span class="n">grant</span> <span class="n">privledges</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span> <span class="p">:,</span><span class="n">ca</span>
-</span><span class='line'>        <span class="n">command</span>                <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="vg">$mysql_cmd_root_with_pwd</span> <span class="vg">$mysql_socket</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">execute</span><span class="o">=</span><span class="p">\</span><span class="s2">&quot;GRANT REPLICATION SLAVE, REPLICATION CLIENT ON &lt;em&gt;.&lt;/em&gt; TO &amp;lsquo;$mysql_replication_user&amp;rsquo;@&amp;lsquo;$slave_ip&amp;rsquo; IDENTIFIED BY &amp;lsquo;$mysql_replication_password&amp;rsquo;;\&amp;rdquo;&amp;ldquo;,</span>
-</span><span class='line'><span class="s2">        Require                 =&gt;  Exec [ &amp;rdquo;$ {name} Spin up SQL server&quot;</span> <span class="o">]</span><span class="p">,</span><span class="n">ca</span>
-</span><span class='line'>        <span class="p">}</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;p&gt;exec {&amp;ldquo;stop ${name}&amp;rdquo;:</span>
-</span><span class='line'><span class="sr">        command                =&gt; &amp;ldquo;$mysql_cmd_root_with_pwd $mysql_socket &amp;ndash;execute=\&quot;STOP SLAVE;\&amp;rdquo;&amp;ldquo;,</span>
-</span><span class='line'><span class="sr">        require                =&gt; Exec[&quot;grant ${name} privledges&amp;rdquo;],</span>
-</span><span class='line'><span class="sr">        }</span>
-</span><span class='line'><span class="sr">exec {&amp;ldquo;master info for ${name}&amp;rdquo;:</span>
-</span><span class='line'><span class="sr">        command        =&gt; &amp;ldquo;$mysql_cmd_root_with_pwd $mysql_socket &amp;ndash;execute=\&quot;CHANGE MASTER TO MASTER_HOST=&amp;lsquo;$master_host&amp;rsquo;,MASTER_USER=&amp;lsquo;$mysql_replication_user&amp;rsquo;,MASTER_PASSWORD=&amp;lsquo;$mysql_replication_password&amp;rsquo;,MASTER_LOG_FILE=&amp;lsquo;$master_log_file&amp;rsquo;,MASTER_LOG_POS=$master_log_pos;\&amp;rdquo;&amp;ldquo;,</span>
-</span><span class='line'><span class="sr">        require        =&gt; Exec[&quot;stop ${name}&amp;rdquo;],</span>
-</span><span class='line'><span class="sr">        }</span>
-</span><span class='line'><span class="sr">exec {&amp;ldquo;start ${name} instnace on server&amp;rdquo;:</span>
-</span><span class='line'><span class="sr">        command                =&gt; &amp;ldquo;$mysql_cmd_root_with_pwd $mysql_socket &amp;ndash;execute=\&quot;START SLAVE;\&amp;rdquo;&amp;ldquo;,</span>
-</span><span class='line'><span class="sr">        require                =&gt; Exec[&quot;master info for ${name}&amp;rdquo;],</span>
-</span><span class='line'><span class="sr">        }</span>
-</span><span class='line'><span class="sr">exec  { &amp;ldquo;$ {name} restart server&amp;rdquo; :,ca</span>
-</span><span class='line'><span class="sr">        command        =&gt; &amp;ldquo;/us</span><span class="n">r</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">mysqladmin</span> <span class="o">-</span><span class="n">S</span> <span class="sr">/var/</span><span class="n">run</span><span class="o">/</span><span class="n">mysqld</span><span class="o">/</span><span class="n">mysqld</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">.</span><span class="n">sock</span> <span class="n">stop</span><span class="p">;</span>
-</span><span class='line'>                                <span class="sr">/usr/</span><span class="n">bin</span><span class="o">/</span><span class="n">mysqladmin</span> <span class="o">-</span><span class="n">S</span> <span class="sr">/var/</span><span class="n">run</span><span class="o">/</span><span class="n">mysqld</span><span class="o">/</span><span class="n">mysqld</span><span class="err">$</span><span class="p">{</span><span class="n">slave_server_id</span><span class="p">}</span><span class="o">.</span><span class="n">sock</span> <span class="n">start</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;,</span>
-</span><span class='line'>        <span class="nb">require</span>        <span class="o">=&gt;</span> <span class="no">Exec</span><span class="o">[&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">start</span> <span class="err">$</span><span class="p">{</span><span class="nb">name</span><span class="p">}</span> <span class="n">instnace</span> <span class="n">on</span> <span class="n">server</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>        <span class="n">notify</span>        <span class="o">=&gt;</span> <span class="no">Replicate</span><span class="o">::</span><span class="no">Import</span><span class="o">[&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="no">Import</span> <span class="err">$</span><span class="p">{</span><span class="n">import</span><span class="p">}</span> <span class="n">onto</span> <span class="err">$</span><span class="p">{</span><span class="nb">name</span><span class="p">}</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>        <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p>SO MANY COMMANDS!!!</p>
-
-<p>Any post where you need to exclaim this much in caps says a lot about the code you&rsquo;re writing right? Right. That&rsquo;s a principle.</p>
-
-<p>So this is where providers come in. In Puppet you could write this code to do this work. And I mean, that&rsquo;s what Puppet is for right? Provisioning. Yes,
-that&rsquo;s true, but this isn&rsquo;t really* Puppet code, this is a bunch of exec statements, which is basically a bash script. This isn&rsquo;t very economical, it&rsquo;s
-not very elegant, it&rsquo;s a lot of coding. Would it be nice if we could just:</p>
-
-<p><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">replicate_server</span> <span class="p">{</span> <span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">master</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;:</span>
-</span><span class='line'>    <span class="n">hostname</span>            <span class="o">=&gt;</span> <span class="vg">$:</span><span class="ss">:hostname</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">mysql_repl_password</span> <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="mi">1234</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;,</span>
-</span><span class='line'>    <span class="n">mysql_repl_user</span>     <span class="o">=&gt;</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">repl</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;,</span>
-</span><span class='line'>    <span class="n">server_id</span>           <span class="o">=&gt;</span> <span class="mi">21</span><span class="p">,</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p>&hellip; in our provisioning manifest and not have to write this crazy defined type for each SQL slave? Because right now as it stands my slave.pp for the replicate class is
-167 lines. There are, umm, a lot of other subclasses there to enable this to work. Like the master.pp, my params, some crap about dumping DB&rsquo;s and blowing out
-the old ib_log files and holy shit that&rsquo;s a lot of puppeteering.</p>
-
-<p>I would much rather have a provider that&rsquo;s pure ruby which can provision this for me. (WARNING PSUDO PROVIDER COMING).</p>
-
-<p>Something like this for the commands (of which, as you can see from above, are crazy nuts since it&rsquo;s puppet telling bash telling mysql telling mysql instance&hellip;):</p>
-
-<p><figure class='code'><figcaption><span>/ modules / replicate / lib / puppet / provider / replicate / replication.rb </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="ss">Puppet</span><span class="p">:</span><span class="ss">:Type</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="ss">:replicate</span><span class="p">)</span><span class="o">.</span><span class="n">provide</span><span class="p">(</span><span class="ss">:replication</span><span class="p">)</span> <span class="k">do</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;    #confine :osfamily =&amp;gt; [:debian, :redhat]</span>
-</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;h1&gt;Commands&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="n">commands</span>         <span class="ss">:mysql</span>             <span class="o">=&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="s2">&quot;/usr/bin/mysql&quot;</span>
-</span><span class='line'>    <span class="n">commands</span>         <span class="ss">:mysqladmin</span>        <span class="o">=&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="s2">&quot;/usr/bin/mysqladmin&quot;</span>
-</span><span class='line'>    <span class="n">commands</span>         <span class="ss">:service</span>           <span class="o">=&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="s2">&quot;/etc/init.d/mysql&quot;</span>
-</span><span class='line'><span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p>Ahhhh, ok that&#8217; better than:</p>
-
-<p><figure class='code'><figcaption><span>slave.pp </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="vg">$mysql_cmd_root_without_pwd</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">mysql</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">user</span><span class="o">=</span><span class="vg">$mysql_root_user</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">database</span><span class="o">=</span><span class="vg">$mysql_database</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">host</span><span class="o">=</span><span class="vg">$mysql_root_local_host</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span>
-</span><span class='line'><span class="vg">$mysql_cmd_root_with_pwd</span>    <span class="o">=</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">mysql</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">user</span><span class="o">=</span><span class="vg">$mysql_root_user</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">database</span><span class="o">=</span><span class="vg">$mysql_database</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">host</span><span class="o">=</span><span class="vg">$mysql_root_local_host</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">password</span><span class="o">=</span><span class="vg">$mysql_root_password</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span>
-</span><span class='line'><span class="vg">$mysql_cmd_repl_with_pwd</span>    <span class="o">=</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">mysql</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">user</span><span class="o">=</span><span class="vg">$mysql_replication_user</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">database</span><span class="o">=</span><span class="vg">$mysql_database</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">host</span><span class="o">=</span><span class="vg">$mysql_root_local_host</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">password</span><span class="o">=</span><span class="vg">$mysql_replication_password</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span>
-</span><span class='line'><span class="vg">$mysql_cmd_repl_slave</span>       <span class="o">=</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">mysql</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">user</span><span class="o">=</span><span class="vg">$mysql_replication_user</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">database</span><span class="o">=</span><span class="vg">$mysql_database</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">host</span><span class="o">=</span><span class="vg">$mysql_master_ip_address</span> <span class="o">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="n">password</span><span class="o">=</span><span class="vg">$mysql_replication_password</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p>Then we could write a out a single provider and corresponding type which defines the instance based on &ldquo;roles&rdquo; of &ldquo;master&rdquo; or &ldquo;slave&rdquo;. The provider would figure out if this host
-already has a master or slave instance running on it, which my replication module &hellip; does not do .. which, you guessed it, could break a lot of stuff if you run it twice.</p>
-
-<p>Which brings us to&hellip;</p>
-
-<h4>A provider, when done correctly is idempotent!</h4>
-
-<p>&hellip; and that&rsquo;s not all, if the replication provider is built-in we can use &lsquo;puppet resource replicate&rsquo; on the command line for all things replication related.</p>
-
-<p>Let&rsquo;s say we wanted to query the master SQL instances
-on this host, we could:</p>
-
-<pre><code class="">$ puppet resource replicate role=master 
-</code></pre>
-
-<p>and get something like:</p>
-
-<pre><code>replicate {"master":
-    ensure =&gt; present,
-    }
-</code></pre>
-
-<p>if this host has a master instance running on it.</p>
-
-<p>This is of course provided by the magic of self.instances in the provider. Here&rsquo;s some more psudo ruby of what that might look like:</p>
-
-<p><figure class='code'><figcaption><span>Psudo-Provider </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">instances</span>
-</span><span class='line'>    <span class="n">get_master_instances</span><span class="p">()</span>
-</span><span class='line'><span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;p&gt;def self.get_master_instances()</span>
-</span><span class='line'><span class="sr">    desc &amp;ldquo;get master info&amp;rdquo;</span>
-</span><span class='line'><span class="sr">    mstr_info = {}</span>
-</span><span class='line'><span class="sr">    begin</span>
-</span><span class='line'><span class="sr">            output = &lt;code&gt;mysql -NBe &quot;show master status&quot;&lt;/</span><span class="n">code</span><span class="o">&gt;.</span><span class="n">split</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span> <span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;)</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="ss">:strip</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">rescue</span> <span class="no">Puppet</span><span class="o">::</span><span class="no">ExecutionFailure</span> <span class="o">=&gt;</span> <span class="n">e</span>
-</span><span class='line'>                <span class="k">raise</span> <span class="no">Puppet</span><span class="o">::</span><span class="no">Error</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="no">Oh</span> <span class="n">no</span><span class="p">,</span> <span class="n">execution</span> <span class="n">of</span> <span class="o">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="n">show</span> <span class="n">master</span> <span class="n">status</span><span class="o">&amp;</span><span class="n">rsquo</span><span class="p">;</span> <span class="k">for</span> <span class="no">MySQL</span> <span class="n">failed</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span>
-</span><span class='line'>    <span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;pre&gt;&lt;code&gt;mstr_info[:ensure] = output == nil ? :absent : :present</span>
-</span><span class='line'><span class="sr">mstr_info[:log_position] = output[1].empty? ? nil : output[1]</span>
-</span><span class='line'><span class="sr">mstr_info[:binlog_do_db] = output[2].empty? ? nil : output[2]</span>
-</span><span class='line'><span class="sr">#mstr_info[:provider] = :ruby</span>
-</span><span class='line'><span class="sr">mstr_info[:name] = :binlog_do_db</span>
-</span><span class='line'><span class="sr">mstr_info</span>
-</span><span class='line'><span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="sr">&lt;p&gt;end</span>
-</span></code></pre></td></tr></table></div></figure></p>
-
-<p>And return the instances.</p>
-
-<p>Now the provider would have to be written with the duel nature of master/slave replication in mind. Unless you want to have multiple providers, one for each of the roles of master or slave.
-However I think it would be easier to write it into a single provider that discriminates based on the &lsquo;role&rsquo; parameter in the type.</p>
-
-<p>But I digress, let&rsquo;s get back to the meat of this thing.</p>
-
-<p>The awesome thing about having a provider do this work for us is that we don&rsquo;t have to worry about all the module-related debugging, platform dependancies and none-idempotent nature of a standalone replication
-module (*cough .. my replication module, which I did not write with idempotentcy in mind). We have better integration with puppet through the use of &lsquo;puppet resource&rsquo; - it inherently is far more extendable than a standalone module  and integrates well with most puppet platform distributions.
-The coding for it is far more economical, and we don&rsquo;t have a psudo-bash script written into our Puppet code via exec!</p>
-
-<p>You get to write your puppet code to do puppet stuff and let the provider/type ruby magic do it&rsquo;s work for you. It&rsquo;s a win win, now all we need to do is actually write this thing&hellip;</p>
-
-  </p>
-  <span class="meta">
-    written 
-
-
-
-
-
-
-
-
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article role="article">
   
-
-
-
-<time datetime="2014-01-03T09:05:51-08:00" pubdate data-updated="true"></time>
+  <header>
+    <h1 class="entry-title">Category: Ruby</h1>
     
-
-in
-<span class="categories">
+  </header>
   
-    <a class='category' href='//providers/'>providers</a>, <a class='category' href='//puppet/'>puppet</a>, <a class='category' href='//ruby/'>ruby</a>
+  <div id="blog-archives" class="category">
+
+
+
   
-</span>
+  <h2>2014</h2>
+
+<article>
+  
+<h1><a href="/blog/2014/01/03/the-need-to-a-replication-provider/">The Need for a Replication Provider</a></h1>
+<time datetime="2014-01-03T09:05:51-08:00" pubdate><span class='month'>Jan</span> <span class='day'>03</span> <span class='year'>2014</span></time>
+
+<footer>
+  <span class="categories">posted in <a class='category' href='//providers/'>providers</a>, <a class='category' href='//puppet/'>puppet</a>, <a class='category' href='//ruby/'>ruby</a></span>
+</footer>
 
 
-  </span>
+</article>
+
+</div>
 
   
 </article>
 
-          </div>
-        </div>
-      
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/08/28/cli-utility-for-elasticsearch-slash-logstash/">Logasurous: A CLI Utility for Elasticsearch / Logstash</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/08/13/version-management-in-soa/">Version Management in SOA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/07/31/a-restful-haproxy-service-abstraction/">A Restful Haproxy Service Abstraction</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/07/21/weak-dh-ciphers/">Weak Diffe-Helman SSL Ciphers</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/07/14/static-service-provisioning-sucks/">Static Service Provisioning Sucks</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/malnick">@malnick</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'malnick',
+            count: 3,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+Included file &#8216;asides/twitter.html&#8217; not found in _includes directory
+  
+</aside>
+
+
     </div>
   </div>
-</div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Jeff Malnick -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
 
-    <footer id="footer" class="her-row">
-  <div class="container">
-    <div class="row">
-      <div class="col-md-1">
-  <a href="/"><h4>Home</h4></a>
-</div>
-
-<div class="col-md-2">
-  <div class="social-icon-list">
-    
-    <a href="https://twitter.com/8bitsofsketch"><img src="/images/glyphicons_social_31_twitter.png"/></a>
-    
-
-    
-    <a href="https://github.com/malnick"><img src="/images/glyphicons_social_21_github.png"/></a>
-    
-
-    
-
-    
-    <a href="mailto:malnick@gmail.com"><img src="/images/glyphicons_social_39_e-mail.png"/></a>
-    
-  </div>
-</div>
-
-<div class="pull-right">
-  <h4>Powered by <a href="http://octopress.org/">Octopress</a>. Designed by <a href="http://AdrianArtiles.com">Adrian Artiles</a>.</h4>
-</div>
-
-
-    </div>
-  </div>
 </footer>
+  
 
-    
-  </body>
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
 </html>

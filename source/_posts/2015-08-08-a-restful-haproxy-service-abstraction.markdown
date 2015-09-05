@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "A Restful Haproxy Service Abstraction
+title: "A Restful Haproxy Service Abstraction"
 date: 2015-07-31 06:05:55 -0700
 comments: true
 categories: 
