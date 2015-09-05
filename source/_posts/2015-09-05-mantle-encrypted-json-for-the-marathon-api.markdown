@@ -147,7 +147,7 @@ Mantle was developed with the DevOps process in mind. However, it's unlikely tha
 
 1. ```mantle -generate -u sally```: Mantle will generate pub/private keypair and deposit them in `key_dir` specified in config.yaml.
 
-```log
+```bash
 INFO[0000] Generating PKCS keys...
 INFO[0000] Private Key: /Users/malnick/.mantle/keys/privatekey_sally.pem
 -----BEGIN RSA PRIVATE KEY-----

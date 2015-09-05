@@ -3,8 +3,8 @@
 
   <title><![CDATA[]]></title>
   <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
-  <link href="httpL://www.jeffmalnick.com/archives"/>
-  <updated>2015-09-05T12:47:18-07:00</updated>
+  <link href="httpL://www.jeffmalnick.com/"/>
+  <updated>2015-09-05T13:39:49-07:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff Malnick]]></name>
@@ -12,6 +12,14 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2015/09/05/mantle-encrypted-json-for-the-marathon-api/"/>
+    <updated>2015-09-05T13:00:32-07:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2015/09/05/mantle-encrypted-json-for-the-marathon-api</id>
+    <content type="html"><![CDATA[]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[]]></title>
@@ -162,14 +170,6 @@
     <link href="httpL://www.jeffmalnick.com/blog/2014/08/31/arbitrary-commandline-functions-for-mco/"/>
     <updated>2014-08-31T08:16:59-07:00</updated>
     <id>httpL://www.jeffmalnick.com/blog/2014/08/31/arbitrary-commandline-functions-for-mco</id>
-    <content type="html"><![CDATA[]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2014/08/03/deploying-box-files-from-virtualbox-for-vagrant/"/>
-    <updated>2014-08-03T17:22:54-07:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2014/08/03/deploying-box-files-from-virtualbox-for-vagrant</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   

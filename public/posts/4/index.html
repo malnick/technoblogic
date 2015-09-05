@@ -9,7 +9,7 @@
   <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content="All Posts Logasurous: A CLI Utility for Elasticsearch / Logstash Like most operations teams, at SRC:CLR we&rsquo;re offloading our logs to a &hellip;">
+  <meta name="description" content="All Posts Mantle: Encrypted JSON for the Marathon API Mantle is a go utility that wraps the POST process to Mesosphere&rsquo;s Marathon API. Before &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -75,6 +75,675 @@
 
   <div class="article-list">
     <div class="container">
+      
+      
+      <div class="row">
+        <div class="col-md-offset-3 col-md-6">
+          <article>
+  <h2><a href="/blog/2015/09/05/mantle-encrypted-json-for-the-marathon-api/">Mantle: Encrypted JSON for the Marathon API</a></h2>
+  
+  <p>
+    <p><a href="https://github.com/malnick/mantle.git">Mantle</a> is a go utility that wraps the POST process to Mesosphere&rsquo;s Marathon API. Before, users had to store JSON with cleartext environment variables for their Docker container configuration. With Mantle, users can encrypt the values for the &ldquo;env&rdquo; parameters passed to Marathon using asynchronous public/private key pairs. Mantle is designed to allow operations or deployment teams to build user-level key pairs, and give those public keys to the users&#8217; with the most knowledge of the application&rsquo;s configuration. Those users, can then encode the JSON with Mantle via their public keys and let the deployment team review the JSON and have the final private key to decrypt and deploy to Marathon(s) via Mantle.</p>
+
+
+
+
+<h3>Example Use Case</h3>
+
+
+
+
+<p>Create private/public keys and eyaml data from cleartext in JSON for Marathon:</p>
+
+
+
+
+<ol>
+<li><p><code>mantle -generate</code>: Generates keys for $user defined in config.yaml. User can be overridden with -u. Keys are stored i  n $key_directory specified in config.yaml.</p></li>
+<li><p><code>vi marathon_data.json</code>:</p></li>
+</ol>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;container&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;DOCKER&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;docker&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>      <span class="nt">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;some_repo/some_container_image&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="nt">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;BRIDGE&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="nt">&quot;portMappings&quot;</span><span class="p">:</span> <span class="p">[</span>
+</span><span class='line'>        <span class="p">{</span> <span class="nt">&quot;containerPort&quot;</span><span class="p">:</span> <span class="mi">5050</span><span class="p">,</span> <span class="nt">&quot;hostPort&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nt">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;tcp&quot;</span> <span class="p">}</span>
+</span><span class='line'>      <span class="p">]</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>  <span class="p">},</span>
+</span><span class='line'>  <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;my-service&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;MY_LICENSE_KEY&quot;</span><span class="p">:</span> <span class="s2">&quot;ENC[my_license_key:12345]&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;MONGO_PASSWORD&quot;</span><span class="p">:</span> <span class="s2">&quot;ENC[qa_mongo_pw:$ecretp@$$word]&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;JEFFS_SECRET&quot;</span><span class="p">:</span> <span class="s2">&quot;ENC[production_secret:13adfafd%^$^$&amp;DFS]&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;SAFE_DATA&quot;</span><span class="p">:</span> <span class="s2">&quot;This is safe&quot;</span>
+</span><span class='line'>  <span class="p">},</span>
+</span><span class='line'>  <span class="nt">&quot;instances&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;cpus&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;mem&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;upgradeStrategy&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;minimumHealthCapacity&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;maximumOverCapacity&quot;</span><span class="p">:</span> <span class="mf">0.4</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<p>Add as many <code>ENC[eyaml_key:cleartext_value]</code> as you need.</p>
+
+
+
+
+<ol>
+<li><code>mantle -encode marathon_data.json</code>: Encodes the cleartext values in each ENC[] statement with the user&rsquo;s public key.</li>
+</ol>
+
+
+
+
+<p>Adds those key/values to the eyaml file, and saves the eyaml file to <code>$eyaml_directory/$user.yaml</code> as:</p>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
+</span><span class='line'><span class="l-Scalar-Plain">my_license_key</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
+</span><span class='line'>  <span class="no">iFpLHn3wsr6/ZpoolepdT7uhp6hRq/2Tr+LyJXOpJAxkulMsb1pxE8GjKlR9iTTIV9IYnU</span>
+</span><span class='line'>  <span class="no">JeIibAaDqfq0SZF8i8xjN6Tx6Ytx3d8BBu2pCT3nDuqpGEDqnZUZDkjp6eRScAtbsPzB8m</span>
+</span><span class='line'>  <span class="no">taVfEO9j7zEpU/pWTr9x/awsK8gGp/E=</span>
+</span><span class='line'><span class="l-Scalar-Plain">prod_caleb_secret</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
+</span><span class='line'>  <span class="no">IGpl8fRKGol+XHnCIsha0fTVIsTiq1sdbZ/l0PplAzBdPN+vmjn5Cg7fBeHKoT+7+RCyId</span>
+</span><span class='line'>  <span class="no">Yu+7O/gUK1R5zGHJgXA9BV9I3Fh+/dCb3W+c3NFFQNfivHxoad8ggZIX1xk/EyJQAJHTRD</span>
+</span><span class='line'>  <span class="no">WypeeyIswps1o5cv1DXj2rJbjBJ33hA=</span>
+</span><span class='line'><span class="l-Scalar-Plain">production_secret</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
+</span><span class='line'>  <span class="no">Sc2D2DlrXf+rsZ6Yovr2/0AE5ZhwfRgKuHax3c3zxDIRvpCcfjqGvbXQUOpE/NwUAu/hNt</span>
+</span><span class='line'>  <span class="no">km1vHJ3CgQIwr1Y8SD3WVQ1O2KO87bhcQHmB4HTFsLCtW6m0KsqI5okCSUnsR+yAhKYfqt</span>
+</span><span class='line'>  <span class="no">2MBjh38IN3JQz3PbA2psfhrzAg8rt7M=</span>
+</span><span class='line'><span class="l-Scalar-Plain">qa_mongo_pw</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
+</span><span class='line'>  <span class="no">sOOZCr1RsNQT56UZJVxqi39oSC6r5qazGsRncnHP4rdRIAELwW1qME+bBMqhlUh4enqYkM</span>
+</span><span class='line'>  <span class="no">vIk6ebR5Oxt+luxAJR5yCfP4Ol7OZjCHIwOCnW5l50ekOuBnJWxhUEQMZe+4DMsK9G+ml0</span>
+</span><span class='line'>  <span class="no">/W1mX71ogSK7Kxcn32Ttb2vK9jDfY/k=</span>
+</span><span class='line'><span class="l-Scalar-Plain">user</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">some_user</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<p> new &ldquo;safe&rdquo; JSON is saved to <code>$safe_dir/marathon_data.json</code> as:</p>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="p-Indicator">{</span>
+</span><span class='line'>        <span class="s">&quot;container&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
+</span><span class='line'>                <span class="s">&quot;docker&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
+</span><span class='line'>                        <span class="s">&quot;image&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;some_repo/some_container_image&quot;</span><span class="p-Indicator">,</span>
+</span><span class='line'>                        <span class="s">&quot;network&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;BRIDGE&quot;</span><span class="p-Indicator">,</span>
+</span><span class='line'>                        <span class="s">&quot;portMappings&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span>
+</span><span class='line'>                                <span class="p-Indicator">{</span>
+</span><span class='line'>                                        <span class="s">&quot;containerPort&quot;</span><span class="p-Indicator">:</span> <span class="nv">5050</span><span class="p-Indicator">,</span>
+</span><span class='line'>                                        <span class="s">&quot;hostPort&quot;</span><span class="p-Indicator">:</span> <span class="nv">0</span><span class="p-Indicator">,</span>
+</span><span class='line'>                                        <span class="s">&quot;protocol&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;tcp&quot;</span>
+</span><span class='line'>                                <span class="p-Indicator">}</span>
+</span><span class='line'>                        <span class="p-Indicator">]</span>
+</span><span class='line'>                <span class="p-Indicator">},</span>
+</span><span class='line'>                <span class="s">&quot;type&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;DOCKER&quot;</span>
+</span><span class='line'>        <span class="p-Indicator">},</span>
+</span><span class='line'>        <span class="s">&quot;cpus&quot;</span><span class="p-Indicator">:</span> <span class="nv">0.5</span><span class="p-Indicator">,</span>
+</span><span class='line'>        <span class="s">&quot;env&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
+</span><span class='line'>                <span class="s">&quot;JEFFS_SECRET&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;DEC[production_secret]&quot;</span><span class="p-Indicator">,</span>
+</span><span class='line'>                <span class="s">&quot;MONGO_PASSWORD&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;DEC[qa_mongo_pw]&quot;</span><span class="p-Indicator">,</span>
+</span><span class='line'>                <span class="s">&quot;MY_LICENSE_KEY&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;DEC[my_license_key]&quot;</span><span class="p-Indicator">,</span>
+</span><span class='line'>                <span class="s">&quot;SAFE_DATA&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;This</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">safe&quot;</span>
+</span><span class='line'>        <span class="p-Indicator">},</span>
+</span><span class='line'>        <span class="s">&quot;id&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;my-service&quot;</span><span class="p-Indicator">,</span>
+</span><span class='line'>        <span class="s">&quot;instances&quot;</span><span class="p-Indicator">:</span> <span class="nv">1</span><span class="p-Indicator">,</span>
+</span><span class='line'>        <span class="s">&quot;mem&quot;</span><span class="p-Indicator">:</span> <span class="nv">1024</span><span class="p-Indicator">,</span>
+</span><span class='line'>        <span class="s">&quot;upgradeStrategy&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
+</span><span class='line'>                <span class="s">&quot;maximumOverCapacity&quot;</span><span class="p-Indicator">:</span> <span class="nv">0.4</span><span class="p-Indicator">,</span>
+</span><span class='line'>                <span class="s">&quot;minimumHealthCapacity&quot;</span><span class="p-Indicator">:</span> <span class="nv">0.8</span>
+</span><span class='line'>        <span class="p-Indicator">}</span>
+</span><span class='line'><span class="p-Indicator">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<ol>
+<li><code>mantle -deploy ~/.mantle/safe/marathon_data.json</code>: Deploys the &ldquo;safe&rdquo; JSON data, first decrypting the DEC[] statement  s, then POSTing that decrypted JSON to each specified Marathon in your config.yaml.</li>
+</ol>
+
+
+
+
+<p>The final POST from our example, with decrypted data:
+The final POST from our example, with decrypted data:</p>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>        <span class="nt">&quot;container&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>                <span class="nt">&quot;docker&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>                        <span class="nt">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;some_repo/some_container_image&quot;</span><span class="p">,</span>
+</span><span class='line'>                        <span class="nt">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;BRIDGE&quot;</span><span class="p">,</span>
+</span><span class='line'>                        <span class="nt">&quot;portMappings&quot;</span><span class="p">:</span> <span class="p">[</span>
+</span><span class='line'>                                <span class="p">{</span>
+</span><span class='line'>                                        <span class="nt">&quot;containerPort&quot;</span><span class="p">:</span> <span class="mi">5050</span><span class="p">,</span>
+</span><span class='line'>                                        <span class="nt">&quot;hostPort&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span><span class='line'>                                        <span class="nt">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;tcp&quot;</span>
+</span><span class='line'>                                <span class="p">}</span>
+</span><span class='line'>                        <span class="p">]</span>
+</span><span class='line'>                <span class="p">},</span>
+</span><span class='line'>                <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;DOCKER&quot;</span>
+</span><span class='line'>        <span class="p">},</span>
+</span><span class='line'>        <span class="nt">&quot;cpus&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>                <span class="nt">&quot;JEFFS_SECRET&quot;</span><span class="p">:</span> <span class="s2">&quot;13adfafd%^$^$\u0026DFS&quot;</span><span class="p">,</span>
+</span><span class='line'>                <span class="nt">&quot;MONGO_PASSWORD&quot;</span><span class="p">:</span> <span class="s2">&quot;$ecretp@$$word&quot;</span><span class="p">,</span>
+</span><span class='line'>                <span class="nt">&quot;MY_LICENSE_KEY&quot;</span><span class="p">:</span> <span class="s2">&quot;12345&quot;</span><span class="p">,</span>
+</span><span class='line'>                <span class="nt">&quot;SAFE_DATA&quot;</span><span class="p">:</span> <span class="s2">&quot;This is safe&quot;</span>
+</span><span class='line'>        <span class="p">},</span>
+</span><span class='line'>        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;my-service&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;instances&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;mem&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;upgradeStrategy&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>                <span class="nt">&quot;maximumOverCapacity&quot;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>
+</span><span class='line'>                <span class="nt">&quot;minimumHealthCapacity&quot;</span><span class="p">:</span> <span class="mf">0.8</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<h3>Generate key-pairs for Developers</h3>
+
+
+
+
+<p>Mantle was developed with the DevOps process in mind. However, it&rsquo;s unlikely that you&rsquo;ll want to give everyone the deployment keys. Mantle allows you to create a key-pair for any user, and give that user only the public key so they can encrypt the JSON. This leaves the ability to deploy in the hands of the deployment or operations team since they have the users&#8217; associated private key and can decrypt the JSON.</p>
+
+
+
+
+<ol>
+<li><code>mantle -generate -u sally</code>: Mantle will generate pub/private keypair and deposit them in <code>key_dir</code> specified in config.yaml.</li>
+</ol>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Generating PKCS keys...
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Private Key: /Users/malnick/.mantle/keys/privatekey_sally.pem
+</span><span class='line'>-----BEGIN RSA PRIVATE KEY-----
+</span><span class='line'>MIICXAIBAAKBgQDZ8lDifZdR+xcBZG99t541Vt3WFMOiER/qclIWtjQjtkCt8/ij
+</span><span class='line'>dsp/Yn7DHJ3oYB58CbXvXWb9ONMB8Tr1vhCQZVXtJTN2sloUlD7SYne/GrxAJZjT
+</span><span class='line'>8vTYoa3ZvvTpWXXYwGiPY8TmnCNqqC0ApqI4o67ZcWIx5FPWgqWu+SHBcQIDAQAB
+</span><span class='line'>AoGAB6Rhha+VsMA3LEtTRXs8xu4G1UzhFzu2fMgJbNZyuZXYasEVRNYTf6f6fejw
+</span><span class='line'>+Ib2Sq8kfAIwbEyjyXul75v8hKMYBFB8GBxvXuhJuLM1/EWwXtEvHW6p0Km0MZME
+</span><span class='line'>eob3kzg4DLe9RxpnCZOYEMhRz9VBbYCcs5G3RcSoXY/2woECQQDvHIhoaln5o7HG
+</span><span class='line'>8TZFgZRJ6z/n4H6jfgx08+xKl8llMIwQMGEyftiHmB1ULBxlAM3yYOOxtzHmwj6I
+</span><span class='line'>LDkVskSZAkEA6VcXl4g11tk3ZL0fr30+PFvAH6Y3s88aNYr/JNFBb7Edeijs71Mb
+</span><span class='line'>Qt8T/2DgpgxYTctQM7mvSh52V9BUNWQSmQJAQBBd/9PWzYrtO8cu6kqAh5mPIrpE
+</span><span class='line'>U9uWzNL50TZ/0CvEqyW7NQNFUncQDJhQ90LS6wjImLnjldcfV+65ULXVqQJAFKaI
+</span><span class='line'>h/ieCy2eIWQ7caR75YuZLTPgqiEiCKsMeY2rZN8f5LfKgEOynfBwLKG+P/PHvNrJ
+</span><span class='line'>dkpwoPahMpRVX4RDwQJBANh7Pp60KVpWrpcCGOPxCCaPAfgY7Hht4BYexBO2HBr1
+</span><span class='line'>bjsDYTotBmMx8HExMNf9vQXJkM135kuZ+fevLOcwiV8<span class="o">=</span>
+</span><span class='line'>-----END RSA PRIVATE KEY-----
+</span><span class='line'>
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Public Key: /Users/malnick/.mantle/keys/publickey_sally.pem
+</span><span class='line'>-----BEGIN RSA PUBLIC KEY-----
+</span><span class='line'>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDZ8lDifZdR+xcBZG99t541Vt3W
+</span><span class='line'>FMOiER/qclIWtjQjtkCt8/ijdsp/Yn7DHJ3oYB58CbXvXWb9ONMB8Tr1vhCQZVXt
+</span><span class='line'>JTN2sloUlD7SYne/GrxAJZjT8vTYoa3ZvvTpWXXYwGiPY8TmnCNqqC0ApqI4o67Z
+</span><span class='line'>cWIx5FPWgqWu+SHBcQIDAQAB
+</span><span class='line'>-----END RSA PUBLIC KEY-----
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<ol>
+<li><p>Hand out the public key (<code>~/.mantle/keys/publickey_sally.pem</code>) to Sally, and keep the private key locally. Ensure Sally places the key in her <code>key_directory</code> specified in config.yaml.</p></li>
+<li><p>Have Sally write her JSON with <code>ENC[$eyaml_key:$cleartext_value]</code> statements.</p></li>
+</ol>
+
+
+
+
+<p><code>vi sallys/local/machine/sallys_container.json</code>:</p>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;container&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;DOCKER&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;docker&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>      <span class="nt">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;sallys_org/sallys_container&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="nt">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;BRIDGE&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="nt">&quot;portMappings&quot;</span><span class="p">:</span> <span class="p">[</span>
+</span><span class='line'>        <span class="p">{</span> <span class="nt">&quot;containerPort&quot;</span><span class="p">:</span> <span class="mi">5050</span><span class="p">,</span> <span class="nt">&quot;hostPort&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nt">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;tcp&quot;</span> <span class="p">}</span>
+</span><span class='line'>      <span class="p">]</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>  <span class="p">},</span>
+</span><span class='line'>  <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;my-service&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;SALLYS_SECRET&quot;</span><span class="p">:</span> <span class="s2">&quot;ENC[sallys_qa_secret:superawesomesauce]&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;MONGO_PASSWORD&quot;</span><span class="p">:</span><span class="s2">&quot;ENC[qa_mongo_password:mongoiswebscale]&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;NEWRELIC_API_KEY&quot;</span><span class="p">:</span><span class="s2">&quot;ENC[newrelic_api_key:7638263546473822299283737]&quot;</span>
+</span><span class='line'>  <span class="p">},</span>
+</span><span class='line'>  <span class="nt">&quot;instances&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;cpus&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;mem&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;upgradeStrategy&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;minimumHealthCapacity&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;maximumOverCapacity&quot;</span><span class="p">:</span> <span class="mf">0.4</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<ol>
+<li><p><code>git clone git@github.com:sallys_org/eyaml sallys/local/machine/sallys_local_eyaml_checkout</code>: Have Sally pull down the company eyaml directory, and then have her update the <code>eyaml_dir</code> in Mantle&rsquo;s config.yaml.</p></li>
+<li><p><code>git clone git@github.com:sallys_org/safe_json sallys/local/machine/sallys_local_safe_checkout</code>: Have Sally pull down the company safe json directory, and then have her update the <code>safe_dir</code> in Mantle&rsquo;s config.yaml.</p></li>
+<li><p><code>mantle -encode sallys/local/machine/sallys_container.json</code>: Sally can then encode the JSON. Mantle will save the JSON and user-level eyaml in the git repo&rsquo;s she just checked out:</p></li>
+</ol>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Encoding sallys_container.json
+</span><span class='line'>WARN<span class="o">[</span>0000<span class="o">]</span> /Users/malnick/.mantle/eyaml/sally.yaml does not exist, creating.
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> eyaml saved: /Users/malnick/.mantle/eyaml/sally.yaml
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Safe JSON:
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>        <span class="s2">&quot;container&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                <span class="s2">&quot;docker&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                        <span class="s2">&quot;image&quot;</span>: <span class="s2">&quot;sallys_org/sallys_container&quot;</span>,
+</span><span class='line'>                        <span class="s2">&quot;network&quot;</span>: <span class="s2">&quot;BRIDGE&quot;</span>,
+</span><span class='line'>                        <span class="s2">&quot;portMappings&quot;</span>: <span class="o">[</span>
+</span><span class='line'>                                <span class="o">{</span>
+</span><span class='line'>                                        <span class="s2">&quot;containerPort&quot;</span>: 5050,
+</span><span class='line'>                                        <span class="s2">&quot;hostPort&quot;</span>: 0,
+</span><span class='line'>                                        <span class="s2">&quot;protocol&quot;</span>: <span class="s2">&quot;tcp&quot;</span>
+</span><span class='line'>                                <span class="o">}</span>
+</span><span class='line'>                        <span class="o">]</span>
+</span><span class='line'>                <span class="o">}</span>,
+</span><span class='line'>                <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;DOCKER&quot;</span>
+</span><span class='line'>        <span class="o">}</span>,
+</span><span class='line'>        <span class="s2">&quot;cpus&quot;</span>: 0.5,
+</span><span class='line'>        <span class="s2">&quot;env&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                <span class="s2">&quot;MONGO_PASSWORD&quot;</span>: <span class="s2">&quot;DEC[qa_mongo_password]&quot;</span>,
+</span><span class='line'>                <span class="s2">&quot;NEWRELIC_API_KEY&quot;</span>: <span class="s2">&quot;DEC[newrelic_api_key]&quot;</span>,
+</span><span class='line'>                <span class="s2">&quot;SALLYS_SECRET&quot;</span>: <span class="s2">&quot;DEC[sallys_qa_secret]&quot;</span>
+</span><span class='line'>        <span class="o">}</span>,
+</span><span class='line'>        <span class="s2">&quot;id&quot;</span>: <span class="s2">&quot;my-service&quot;</span>,
+</span><span class='line'>        <span class="s2">&quot;instances&quot;</span>: 1,
+</span><span class='line'>        <span class="s2">&quot;mem&quot;</span>: 1024,
+</span><span class='line'>        <span class="s2">&quot;upgradeStrategy&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                <span class="s2">&quot;maximumOverCapacity&quot;</span>: 0.4,
+</span><span class='line'>                <span class="s2">&quot;minimumHealthCapacity&quot;</span>: 0.8
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Saving safe JSON <span class="k">for</span> decode: /Users/malnick/.mantle/safe/sallys_container.json
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<p>Notice the WARN statement. Since Mantle did not find a <code>eyaml_dir/$user.yaml</code> it created a new one for her.</p>
+
+
+
+
+<p>The eyaml looks like this:</p>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
+</span><span class='line'><span class="l-Scalar-Plain">newrelic_api_key</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
+</span><span class='line'>  <span class="no">N4JpKRvQoRBusI7Yp7BN1L/wTdexGH3NFidxvTM0P3IeGM8OnU9TfGI19j+qDQt/XVOQln</span>
+</span><span class='line'>  <span class="no">q2h6U/2BlHanQksytxjmuIAX5pVh1IqPFHxp0vkuU8lNffL7Z8VzPEurX4aPEyckQe5Y+E</span>
+</span><span class='line'>  <span class="no">OnglwxdWreQnmMuo2Vyu9bhAF+HVWwc=</span>
+</span><span class='line'><span class="l-Scalar-Plain">qa_mongo_password</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
+</span><span class='line'>  <span class="no">UZ1M9L2c/N0AeDlILcP44ACd+niZeaw/BDt1oh78aNf818iTDXAl1c3deUohR12fwEMyCZ</span>
+</span><span class='line'>  <span class="no">FHFhErN8u4do97iGeN8QCRdECULj/KOalPG+N70jTxzW9WIpReuPFlCqCrrT+nu/9v2CjO</span>
+</span><span class='line'>  <span class="no">1IX5zbxN8UThL9ba2LW25QS1jPEPkMc=</span>
+</span><span class='line'><span class="l-Scalar-Plain">sallys_qa_secret</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
+</span><span class='line'>  <span class="no">UkbR2x+FftMr0O4K13iG/msEDpI8bi7+Mz2NIFxiRmXdwziQtUMYVrvJkpq3hgavGC2DBl</span>
+</span><span class='line'>  <span class="no">C0gfmdAa6LfX4zS1lXFHIZD0tpY4dDdqWPFuwRPqVKLLNwiDX46olAEu104iOp6wsRPiJV</span>
+</span><span class='line'>  <span class="no">pa92d0uUC4X67BmPF/6LueIVXUTEBYY=</span>
+</span><span class='line'><span class="l-Scalar-Plain">user</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">sally</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<ol>
+<li><p>Sally then pushes both eyaml and safe repo&rsquo;s back to git.</p></li>
+<li><p>Now the safe JSON and eyaml repo&rsquo;s can be pulled by the operations team. At this point, a review of the Safe JSON can be made to ensure everything looks right. Finally, we can deploy the safe JSON via Mantle to Marathon with the key for Sally:</p></li>
+</ol>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>user@localhost: mantle -deploy ~/.mantle/safe/sallys_container.json -u sally
+</span><span class='line'>
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Deploying ~/.mantle/safe/sallys_container.json
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Decrypted qa_mongo_password to mongoiswebscale
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Decrypted newrelic_api_key to 7638263546473822299283737
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Decrypted sallys_qa_secret to superawesomesauce
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Decoded JSON:
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>        <span class="s2">&quot;container&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                <span class="s2">&quot;docker&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                        <span class="s2">&quot;image&quot;</span>: <span class="s2">&quot;sallys_org/sallys_container&quot;</span>,
+</span><span class='line'>                        <span class="s2">&quot;network&quot;</span>: <span class="s2">&quot;BRIDGE&quot;</span>,
+</span><span class='line'>                        <span class="s2">&quot;portMappings&quot;</span>: <span class="o">[</span>
+</span><span class='line'>                                <span class="o">{</span>
+</span><span class='line'>                                        <span class="s2">&quot;containerPort&quot;</span>: 5050,
+</span><span class='line'>                                        <span class="s2">&quot;hostPort&quot;</span>: 0,
+</span><span class='line'>                                        <span class="s2">&quot;protocol&quot;</span>: <span class="s2">&quot;tcp&quot;</span>
+</span><span class='line'>                                <span class="o">}</span>
+</span><span class='line'>                        <span class="o">]</span>
+</span><span class='line'>                <span class="o">}</span>,
+</span><span class='line'>                <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;DOCKER&quot;</span>
+</span><span class='line'>        <span class="o">}</span>,
+</span><span class='line'>        <span class="s2">&quot;cpus&quot;</span>: 0.5,
+</span><span class='line'>        <span class="s2">&quot;env&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                <span class="s2">&quot;MONGO_PASSWORD&quot;</span>: <span class="s2">&quot;mongoiswebscale&quot;</span>,
+</span><span class='line'>                <span class="s2">&quot;NEWRELIC_API_KEY&quot;</span>: <span class="s2">&quot;7638263546473822299283737&quot;</span>,
+</span><span class='line'>                <span class="s2">&quot;SALLYS_SECRET&quot;</span>: <span class="s2">&quot;superawesomesauce&quot;</span>
+</span><span class='line'>        <span class="o">}</span>,
+</span><span class='line'>        <span class="s2">&quot;id&quot;</span>: <span class="s2">&quot;my-service&quot;</span>,
+</span><span class='line'>        <span class="s2">&quot;instances&quot;</span>: 1,
+</span><span class='line'>        <span class="s2">&quot;mem&quot;</span>: 1024,
+</span><span class='line'>        <span class="s2">&quot;upgradeStrategy&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                <span class="s2">&quot;maximumOverCapacity&quot;</span>: 0.4,
+</span><span class='line'>                <span class="s2">&quot;minimumHealthCapacity&quot;</span>: 0.8
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> POSTing to http://my.marathon1.com
+</span><span class='line'>...
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<h4>[Check out the git repo here)[<a href="https://github.com/malnick/mantle.git">https://github.com/malnick/mantle.git</a>]</h4>
+
+
+  </p>
+  <span class="meta">
+    written 
+
+
+
+
+<time class='entry-date' datetime='2015-09-05T13:00:32-07:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>1:00 pm</span></time>
+    
+
+
+  </span>
+
+  
+</article>
+
+        </div>
+      </div>
       
       
       <div class="row">
