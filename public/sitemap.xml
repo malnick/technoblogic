@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>httpL://www.jeffmalnick.com/blog/2015/09/05/mantle-encrypted-json-for-the-marathon-api/</loc>
+    <lastmod>2015-09-05T13:00:32-07:00</lastmod>
+  </url>
+  <url>
     <loc>httpL://www.jeffmalnick.com/blog/2015/08/28/cli-utility-for-elasticsearch-slash-logstash/</loc>
     <lastmod>2015-08-28T12:19:11-07:00</lastmod>
   </url>
@@ -189,5 +193,17 @@
   </url>
   <url>
     <loc>httpL://www.jeffmalnick.com/categories/providers/</loc>
+  </url>
+  <url>
+    <loc>httpL://www.jeffmalnick.com/posts/2/</loc>
+  </url>
+  <url>
+    <loc>httpL://www.jeffmalnick.com/posts/3/</loc>
+  </url>
+  <url>
+    <loc>httpL://www.jeffmalnick.com/posts/4/</loc>
+  </url>
+  <url>
+    <loc>httpL://www.jeffmalnick.com/posts/5/</loc>
   </url>
 </urlset>
