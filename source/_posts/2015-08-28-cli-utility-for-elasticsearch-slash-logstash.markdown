@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "logasurous: A CLI Utility for Elasticsearch / Logstash"
+title: "Logasurus: A CLI Utility for Elasticsearch / Logstash"
 date: 2015-08-28 12:19:11 -0700
 comments: true
 categories: 
@@ -9,7 +9,7 @@ categories:
 
 Like most operations teams, at SRC:CLR we're offloading our logs to a aggregated log solution. We use the popular ELK (Elasticsearch, logstash, kibana). I love this solution, but when it comes to simply copying and pasting log data from Kibana, things get messy. When our developers need to get data quickly, it would be easier to have a CLI utility that can do the same queries than having to open a browser and screen grab from Kibana. 
 
-## So we wrote [logasurus](https://github.com/sourceclear/logasaurus)
+## So we wrote [logasurus](https://github.com/malnick/logasaurus)
 logasurous runs in realtime, just like Kibana, on similar searches. This is great if your workflow is primarily in the console, and you're using Kibana mainly for query operations. You can use your tmux copy/paste shortcuts to grab data quickly. Queries are just as fast. 
 
 logasurous was written in Go, so you know it's performant and lightweight. 
