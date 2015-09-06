@@ -5,6 +5,8 @@ date: 2015-09-05 13:00:32 -0700
 comments: true
 categories: 
 ---
+<img style="float: center;" src="https://dl.dropboxusercontent.com/u/77193293/mantle.png">
+
 [Mantle](https://github.com/malnick/mantle.git) is a go utility that wraps the POST process to Mesosphere's Marathon API. Before, users had to store JSON with cleartext environment variables for their Docker container configuration. With Mantle, users can encrypt the values for the "env" parameters passed to Marathon using asynchronous public/private key pairs. Mantle is designed to allow operations or deployment teams to build user-level key pairs, and give those public keys to the users' with the most knowledge of the application's configuration. Those users, can then encode the JSON with Mantle via their public keys and let the deployment team review the JSON and have the final private key to decrypt and deploy to Marathon(s) via Mantle. 
 
 ### Example Use Case
