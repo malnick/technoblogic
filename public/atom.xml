@@ -4,7 +4,7 @@
   <title><![CDATA[]]></title>
   <link href="httpL://www.jeffmalnick.com/atom.xml" rel="self"/>
   <link href="httpL://www.jeffmalnick.com/"/>
-  <updated>2015-09-06T09:50:49-07:00</updated>
+  <updated>2015-09-06T09:57:20-07:00</updated>
   <id>httpL://www.jeffmalnick.com/</id>
   <author>
     <name><![CDATA[Jeff Malnick]]></name>
@@ -26,14 +26,6 @@
     <link href="httpL://www.jeffmalnick.com/blog/2015/08/28/elasticsearch-logstash-cli-utility/"/>
     <updated>2015-08-28T12:19:11-07:00</updated>
     <id>httpL://www.jeffmalnick.com/blog/2015/08/28/elasticsearch-logstash-cli-utility</id>
-    <content type="html"><![CDATA[]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[]]></title>
-    <link href="httpL://www.jeffmalnick.com/blog/2015/08/28/cli-utility-for-elasticsearch-slash-logstash/"/>
-    <updated>2015-08-28T12:19:11-07:00</updated>
-    <id>httpL://www.jeffmalnick.com/blog/2015/08/28/cli-utility-for-elasticsearch-slash-logstash</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   
@@ -170,6 +162,14 @@
     <link href="httpL://www.jeffmalnick.com/blog/2014/10/07/streamlining-puppet-dev-part-duce-branch-the-enviro/"/>
     <updated>2014-10-07T14:31:39-07:00</updated>
     <id>httpL://www.jeffmalnick.com/blog/2014/10/07/streamlining-puppet-dev-part-duce-branch-the-enviro</id>
+    <content type="html"><![CDATA[]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[]]></title>
+    <link href="httpL://www.jeffmalnick.com/blog/2014/08/31/arbitrary-commandline-functions-for-mco/"/>
+    <updated>2014-08-31T08:16:59-07:00</updated>
+    <id>httpL://www.jeffmalnick.com/blog/2014/08/31/arbitrary-commandline-functions-for-mco</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   

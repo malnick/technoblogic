@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Logasuarous: A CLI Utility for Elasticsearch / Logstash"
+title: "Logasuarus: A CLI Utility for Elasticsearch / Logstash"
 date: 2015-08-28 12:19:11 -0700
 comments: true
 categories: DevOps
