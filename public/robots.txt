@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
 
-Sitemap: httpL://www.jeffmalnick.com/sitemap.xml 
+Sitemap: http://technoblogic.io/sitemap.xml 
