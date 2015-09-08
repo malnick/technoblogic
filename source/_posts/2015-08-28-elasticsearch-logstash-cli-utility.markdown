@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Logasuarus: A CLI Utility for Elasticsearch / Logstash"
+title: "Logasaurus: A CLI Utility for Elasticsearch / Logstash"
 date: 2015-08-28 12:19:11 -0700
 comments: true
 categories: DevOps
@@ -12,7 +12,7 @@ Like most operations teams, at SRC:CLR we're offloading our logs to an aggregate
 
 <!-- more -->
 
-[Logasuarus](https://github.com/malnick/logasaurus) runs in realtime just like Kibana on similar searches. This is great if your workflow is primarily in the console and you're using Kibana mainly for query operations. You can use your tmux copy/paste shortcuts to grab data quickly. Queries are just as fast.
+[Logasaurus](https://github.com/malnick/logasaurus) runs in realtime just like Kibana on similar searches. This is great if your workflow is primarily in the console and you're using Kibana mainly for query operations. You can use your tmux copy/paste shortcuts to grab data quickly. Queries are just as fast.
 
 Logasuarous was written in Go, so it's performant and lightweight.
 
@@ -20,8 +20,8 @@ Logasuarous was written in Go, so it's performant and lightweight.
 First, download and build the go binary:
 
 ```bash
-git clone https://github.com/malnick/logasuarus
-cd logasuarous
+git clone https://github.com/malnick/logasaurus
+cd logasaurus
 go build loga.go
 ```
 
@@ -118,4 +118,4 @@ Sync depth = time in minutes to go back in the ES datastore. Default: 10 minutes
 ### Closing Thoughts
 We love Kibana but sometimes it's just faster to have a CLI utility to do the mundane things. We really like this tool and we hope you will to. If you have any suggestions please reach out jeff at srcclr dot com.
 
-Visit [Logasuarus](https://github.com/malnick/logasaurus) on github.com for complete details.
+Visit [Logasaurus](https://github.com/malnick/logasaurus) on github.com for complete details.
