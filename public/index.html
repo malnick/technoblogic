@@ -9,7 +9,7 @@
   <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content="Blog Archives Recent Posts Mantle: Encrypted JSON for the Marathon API Logasaurus: A CLI Utility for Elasticsearch / Logstash Version Management in &hellip;">
+  <meta name="description" content="Mantle is a go utility that wraps the POST process to Mesosphere&rsquo;s Marathon API. Before, users had to store JSON with cleartext environment &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -49,9 +49,10 @@
 </ul>
 
 <ul class="main-navigation">
-  <li><a href="/blog/archives">Blog</a></li>
+  <li><a href="/blog/archives">All Posts</a></li>
   <li><a href="/blog/resume">Resume</a></li>
-
+  <li><a href="https://github.com/malnick">Github</a></li>
+  <li><a href="https://www.flickr.com/photos/129457394@N03/">Flickr</a></li>
 </ul>
 
 </nav>
@@ -60,9 +61,2060 @@
       <div class="blog-index">
   
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/09/05/mantle-encrypted-json-for-the-marathon-api/">Mantle: Encrypted JSON for the Marathon API</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-09-05T13:00:32-07:00" pubdate data-updated="true">Sep 5th, 2015</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img style="float: center;" src="https://dl.dropboxusercontent.com/u/77193293/mantle.png"></p>
+
+<p><a href="https://github.com/malnick/mantle.git">Mantle</a> is a go utility that wraps the POST process to Mesosphere&rsquo;s Marathon API. Before, users had to store JSON with cleartext environment variables for their Docker container configuration. With Mantle, users can encrypt the values for the &ldquo;env&rdquo; parameters passed to Marathon using asynchronous public/private key pairs. Mantle is designed to allow operations or deployment teams to build user-level key pairs, and give those public keys to the users&#8217; with the most knowledge of the application&rsquo;s configuration. Those users, can then encode the JSON with Mantle via their public keys and let the deployment team review the JSON and have the final private key to decrypt and deploy to Marathon(s) via Mantle.</p>
+
+<h3>Example Use Case</h3>
+
+<p>Create private/public keys and eyaml data from cleartext in JSON for Marathon:</p>
+
+<ol>
+<li><p><code>mantle -generate</code>: Generates keys for $user defined in config.yaml. User can be overridden with -u. Keys are stored i  n $key_directory specified in config.yaml.</p></li>
+<li><p><code>vi marathon_data.json</code>:</p></li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;container&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;DOCKER&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;docker&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>      <span class="nt">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;some_repo/some_container_image&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="nt">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;BRIDGE&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="nt">&quot;portMappings&quot;</span><span class="p">:</span> <span class="p">[</span>
+</span><span class='line'>        <span class="p">{</span> <span class="nt">&quot;containerPort&quot;</span><span class="p">:</span> <span class="mi">5050</span><span class="p">,</span> <span class="nt">&quot;hostPort&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nt">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;tcp&quot;</span> <span class="p">}</span>
+</span><span class='line'>      <span class="p">]</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>  <span class="p">},</span>
+</span><span class='line'>  <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;my-service&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;MY_LICENSE_KEY&quot;</span><span class="p">:</span> <span class="s2">&quot;ENC[my_license_key:12345]&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;MONGO_PASSWORD&quot;</span><span class="p">:</span> <span class="s2">&quot;ENC[qa_mongo_pw:$ecretp@$$word]&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;JEFFS_SECRET&quot;</span><span class="p">:</span> <span class="s2">&quot;ENC[production_secret:13adfafd%^$^$&amp;DFS]&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;SAFE_DATA&quot;</span><span class="p">:</span> <span class="s2">&quot;This is safe&quot;</span>
+</span><span class='line'>  <span class="p">},</span>
+</span><span class='line'>  <span class="nt">&quot;instances&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;cpus&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;mem&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;upgradeStrategy&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;minimumHealthCapacity&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;maximumOverCapacity&quot;</span><span class="p">:</span> <span class="mf">0.4</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Add as many <code>ENC[eyaml_key:cleartext_value]</code> as you need.</p>
+
+<ol>
+<li><code>mantle -encode marathon_data.json</code>: Encodes the cleartext values in each ENC[] statement with the user&rsquo;s public key.</li>
+</ol>
+
+
+<p>Adds those key/values to the eyaml file, and saves the eyaml file to <code>$eyaml_directory/$user.yaml</code> as:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
+</span><span class='line'><span class="l-Scalar-Plain">my_license_key</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
+</span><span class='line'>  <span class="no">iFpLHn3wsr6/ZpoolepdT7uhp6hRq/2Tr+LyJXOpJAxkulMsb1pxE8GjKlR9iTTIV9IYnU</span>
+</span><span class='line'>  <span class="no">JeIibAaDqfq0SZF8i8xjN6Tx6Ytx3d8BBu2pCT3nDuqpGEDqnZUZDkjp6eRScAtbsPzB8m</span>
+</span><span class='line'>  <span class="no">taVfEO9j7zEpU/pWTr9x/awsK8gGp/E=</span>
+</span><span class='line'><span class="l-Scalar-Plain">prod_caleb_secret</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
+</span><span class='line'>  <span class="no">IGpl8fRKGol+XHnCIsha0fTVIsTiq1sdbZ/l0PplAzBdPN+vmjn5Cg7fBeHKoT+7+RCyId</span>
+</span><span class='line'>  <span class="no">Yu+7O/gUK1R5zGHJgXA9BV9I3Fh+/dCb3W+c3NFFQNfivHxoad8ggZIX1xk/EyJQAJHTRD</span>
+</span><span class='line'>  <span class="no">WypeeyIswps1o5cv1DXj2rJbjBJ33hA=</span>
+</span><span class='line'><span class="l-Scalar-Plain">production_secret</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
+</span><span class='line'>  <span class="no">Sc2D2DlrXf+rsZ6Yovr2/0AE5ZhwfRgKuHax3c3zxDIRvpCcfjqGvbXQUOpE/NwUAu/hNt</span>
+</span><span class='line'>  <span class="no">km1vHJ3CgQIwr1Y8SD3WVQ1O2KO87bhcQHmB4HTFsLCtW6m0KsqI5okCSUnsR+yAhKYfqt</span>
+</span><span class='line'>  <span class="no">2MBjh38IN3JQz3PbA2psfhrzAg8rt7M=</span>
+</span><span class='line'><span class="l-Scalar-Plain">qa_mongo_pw</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
+</span><span class='line'>  <span class="no">sOOZCr1RsNQT56UZJVxqi39oSC6r5qazGsRncnHP4rdRIAELwW1qME+bBMqhlUh4enqYkM</span>
+</span><span class='line'>  <span class="no">vIk6ebR5Oxt+luxAJR5yCfP4Ol7OZjCHIwOCnW5l50ekOuBnJWxhUEQMZe+4DMsK9G+ml0</span>
+</span><span class='line'>  <span class="no">/W1mX71ogSK7Kxcn32Ttb2vK9jDfY/k=</span>
+</span><span class='line'><span class="l-Scalar-Plain">user</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">some_user</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p> new &ldquo;safe&rdquo; JSON is saved to <code>$safe_dir/marathon_data.json</code> as:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="p-Indicator">{</span>
+</span><span class='line'>        <span class="s">&quot;container&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
+</span><span class='line'>                <span class="s">&quot;docker&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
+</span><span class='line'>                        <span class="s">&quot;image&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;some_repo/some_container_image&quot;</span><span class="p-Indicator">,</span>
+</span><span class='line'>                        <span class="s">&quot;network&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;BRIDGE&quot;</span><span class="p-Indicator">,</span>
+</span><span class='line'>                        <span class="s">&quot;portMappings&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span>
+</span><span class='line'>                                <span class="p-Indicator">{</span>
+</span><span class='line'>                                        <span class="s">&quot;containerPort&quot;</span><span class="p-Indicator">:</span> <span class="nv">5050</span><span class="p-Indicator">,</span>
+</span><span class='line'>                                        <span class="s">&quot;hostPort&quot;</span><span class="p-Indicator">:</span> <span class="nv">0</span><span class="p-Indicator">,</span>
+</span><span class='line'>                                        <span class="s">&quot;protocol&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;tcp&quot;</span>
+</span><span class='line'>                                <span class="p-Indicator">}</span>
+</span><span class='line'>                        <span class="p-Indicator">]</span>
+</span><span class='line'>                <span class="p-Indicator">},</span>
+</span><span class='line'>                <span class="s">&quot;type&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;DOCKER&quot;</span>
+</span><span class='line'>        <span class="p-Indicator">},</span>
+</span><span class='line'>        <span class="s">&quot;cpus&quot;</span><span class="p-Indicator">:</span> <span class="nv">0.5</span><span class="p-Indicator">,</span>
+</span><span class='line'>        <span class="s">&quot;env&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
+</span><span class='line'>                <span class="s">&quot;JEFFS_SECRET&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;DEC[production_secret]&quot;</span><span class="p-Indicator">,</span>
+</span><span class='line'>                <span class="s">&quot;MONGO_PASSWORD&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;DEC[qa_mongo_pw]&quot;</span><span class="p-Indicator">,</span>
+</span><span class='line'>                <span class="s">&quot;MY_LICENSE_KEY&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;DEC[my_license_key]&quot;</span><span class="p-Indicator">,</span>
+</span><span class='line'>                <span class="s">&quot;SAFE_DATA&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;This</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">safe&quot;</span>
+</span><span class='line'>        <span class="p-Indicator">},</span>
+</span><span class='line'>        <span class="s">&quot;id&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;my-service&quot;</span><span class="p-Indicator">,</span>
+</span><span class='line'>        <span class="s">&quot;instances&quot;</span><span class="p-Indicator">:</span> <span class="nv">1</span><span class="p-Indicator">,</span>
+</span><span class='line'>        <span class="s">&quot;mem&quot;</span><span class="p-Indicator">:</span> <span class="nv">1024</span><span class="p-Indicator">,</span>
+</span><span class='line'>        <span class="s">&quot;upgradeStrategy&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
+</span><span class='line'>                <span class="s">&quot;maximumOverCapacity&quot;</span><span class="p-Indicator">:</span> <span class="nv">0.4</span><span class="p-Indicator">,</span>
+</span><span class='line'>                <span class="s">&quot;minimumHealthCapacity&quot;</span><span class="p-Indicator">:</span> <span class="nv">0.8</span>
+</span><span class='line'>        <span class="p-Indicator">}</span>
+</span><span class='line'><span class="p-Indicator">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li><code>mantle -deploy ~/.mantle/safe/marathon_data.json</code>: Deploys the &ldquo;safe&rdquo; JSON data, first decrypting the DEC[] statement  s, then POSTing that decrypted JSON to each specified Marathon in your config.yaml.</li>
+</ol>
+
+
+<p>The final POST from our example, with decrypted data:
+The final POST from our example, with decrypted data:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>        <span class="nt">&quot;container&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>                <span class="nt">&quot;docker&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>                        <span class="nt">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;some_repo/some_container_image&quot;</span><span class="p">,</span>
+</span><span class='line'>                        <span class="nt">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;BRIDGE&quot;</span><span class="p">,</span>
+</span><span class='line'>                        <span class="nt">&quot;portMappings&quot;</span><span class="p">:</span> <span class="p">[</span>
+</span><span class='line'>                                <span class="p">{</span>
+</span><span class='line'>                                        <span class="nt">&quot;containerPort&quot;</span><span class="p">:</span> <span class="mi">5050</span><span class="p">,</span>
+</span><span class='line'>                                        <span class="nt">&quot;hostPort&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span><span class='line'>                                        <span class="nt">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;tcp&quot;</span>
+</span><span class='line'>                                <span class="p">}</span>
+</span><span class='line'>                        <span class="p">]</span>
+</span><span class='line'>                <span class="p">},</span>
+</span><span class='line'>                <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;DOCKER&quot;</span>
+</span><span class='line'>        <span class="p">},</span>
+</span><span class='line'>        <span class="nt">&quot;cpus&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>                <span class="nt">&quot;JEFFS_SECRET&quot;</span><span class="p">:</span> <span class="s2">&quot;13adfafd%^$^$\u0026DFS&quot;</span><span class="p">,</span>
+</span><span class='line'>                <span class="nt">&quot;MONGO_PASSWORD&quot;</span><span class="p">:</span> <span class="s2">&quot;$ecretp@$$word&quot;</span><span class="p">,</span>
+</span><span class='line'>                <span class="nt">&quot;MY_LICENSE_KEY&quot;</span><span class="p">:</span> <span class="s2">&quot;12345&quot;</span><span class="p">,</span>
+</span><span class='line'>                <span class="nt">&quot;SAFE_DATA&quot;</span><span class="p">:</span> <span class="s2">&quot;This is safe&quot;</span>
+</span><span class='line'>        <span class="p">},</span>
+</span><span class='line'>        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;my-service&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;instances&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;mem&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+</span><span class='line'>        <span class="nt">&quot;upgradeStrategy&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>                <span class="nt">&quot;maximumOverCapacity&quot;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>
+</span><span class='line'>                <span class="nt">&quot;minimumHealthCapacity&quot;</span><span class="p">:</span> <span class="mf">0.8</span>
+</span><span class='line'>        <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Generate key-pairs for Developers</h3>
+
+<p>Mantle was developed with the DevOps process in mind. However, it&rsquo;s unlikely that you&rsquo;ll want to give everyone the deployment keys. Mantle allows you to create a key-pair for any user, and give that user only the public key so they can encrypt the JSON. This leaves the ability to deploy in the hands of the deployment or operations team since they have the users&#8217; associated private key and can decrypt the JSON.</p>
+
+<ol>
+<li><code>mantle -generate -u sally</code>: Mantle will generate pub/private keypair and deposit them in <code>key_dir</code> specified in config.yaml.</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Generating PKCS keys...
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Private Key: /Users/malnick/.mantle/keys/privatekey_sally.pem
+</span><span class='line'>-----BEGIN RSA PRIVATE KEY-----
+</span><span class='line'>MIICXAIBAAKBgQDZ8lDifZdR+xcBZG99t541Vt3WFMOiER/qclIWtjQjtkCt8/ij
+</span><span class='line'>dsp/Yn7DHJ3oYB58CbXvXWb9ONMB8Tr1vhCQZVXtJTN2sloUlD7SYne/GrxAJZjT
+</span><span class='line'>8vTYoa3ZvvTpWXXYwGiPY8TmnCNqqC0ApqI4o67ZcWIx5FPWgqWu+SHBcQIDAQAB
+</span><span class='line'>AoGAB6Rhha+VsMA3LEtTRXs8xu4G1UzhFzu2fMgJbNZyuZXYasEVRNYTf6f6fejw
+</span><span class='line'>+Ib2Sq8kfAIwbEyjyXul75v8hKMYBFB8GBxvXuhJuLM1/EWwXtEvHW6p0Km0MZME
+</span><span class='line'>eob3kzg4DLe9RxpnCZOYEMhRz9VBbYCcs5G3RcSoXY/2woECQQDvHIhoaln5o7HG
+</span><span class='line'>8TZFgZRJ6z/n4H6jfgx08+xKl8llMIwQMGEyftiHmB1ULBxlAM3yYOOxtzHmwj6I
+</span><span class='line'>LDkVskSZAkEA6VcXl4g11tk3ZL0fr30+PFvAH6Y3s88aNYr/JNFBb7Edeijs71Mb
+</span><span class='line'>Qt8T/2DgpgxYTctQM7mvSh52V9BUNWQSmQJAQBBd/9PWzYrtO8cu6kqAh5mPIrpE
+</span><span class='line'>U9uWzNL50TZ/0CvEqyW7NQNFUncQDJhQ90LS6wjImLnjldcfV+65ULXVqQJAFKaI
+</span><span class='line'>h/ieCy2eIWQ7caR75YuZLTPgqiEiCKsMeY2rZN8f5LfKgEOynfBwLKG+P/PHvNrJ
+</span><span class='line'>dkpwoPahMpRVX4RDwQJBANh7Pp60KVpWrpcCGOPxCCaPAfgY7Hht4BYexBO2HBr1
+</span><span class='line'>bjsDYTotBmMx8HExMNf9vQXJkM135kuZ+fevLOcwiV8<span class="o">=</span>
+</span><span class='line'>-----END RSA PRIVATE KEY-----
+</span><span class='line'>
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Public Key: /Users/malnick/.mantle/keys/publickey_sally.pem
+</span><span class='line'>-----BEGIN RSA PUBLIC KEY-----
+</span><span class='line'>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDZ8lDifZdR+xcBZG99t541Vt3W
+</span><span class='line'>FMOiER/qclIWtjQjtkCt8/ijdsp/Yn7DHJ3oYB58CbXvXWb9ONMB8Tr1vhCQZVXt
+</span><span class='line'>JTN2sloUlD7SYne/GrxAJZjT8vTYoa3ZvvTpWXXYwGiPY8TmnCNqqC0ApqI4o67Z
+</span><span class='line'>cWIx5FPWgqWu+SHBcQIDAQAB
+</span><span class='line'>-----END RSA PUBLIC KEY-----
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li><p>Hand out the public key (<code>~/.mantle/keys/publickey_sally.pem</code>) to Sally, and keep the private key locally. Ensure Sally places the key in her <code>key_directory</code> specified in config.yaml.</p></li>
+<li><p>Have Sally write her JSON with <code>ENC[$eyaml_key:$cleartext_value]</code> statements.</p></li>
+</ol>
+
+
+<p><code>vi sallys/local/machine/sallys_container.json</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;container&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;DOCKER&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;docker&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>      <span class="nt">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;sallys_org/sallys_container&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="nt">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;BRIDGE&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="nt">&quot;portMappings&quot;</span><span class="p">:</span> <span class="p">[</span>
+</span><span class='line'>        <span class="p">{</span> <span class="nt">&quot;containerPort&quot;</span><span class="p">:</span> <span class="mi">5050</span><span class="p">,</span> <span class="nt">&quot;hostPort&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nt">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;tcp&quot;</span> <span class="p">}</span>
+</span><span class='line'>      <span class="p">]</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>  <span class="p">},</span>
+</span><span class='line'>  <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;my-service&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;SALLYS_SECRET&quot;</span><span class="p">:</span> <span class="s2">&quot;ENC[sallys_qa_secret:superawesomesauce]&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;MONGO_PASSWORD&quot;</span><span class="p">:</span><span class="s2">&quot;ENC[qa_mongo_password:mongoiswebscale]&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;NEWRELIC_API_KEY&quot;</span><span class="p">:</span><span class="s2">&quot;ENC[newrelic_api_key:7638263546473822299283737]&quot;</span>
+</span><span class='line'>  <span class="p">},</span>
+</span><span class='line'>  <span class="nt">&quot;instances&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;cpus&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;mem&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;upgradeStrategy&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;minimumHealthCapacity&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+</span><span class='line'>    <span class="nt">&quot;maximumOverCapacity&quot;</span><span class="p">:</span> <span class="mf">0.4</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li><p><code>git clone git@github.com:sallys_org/eyaml sallys/local/machine/sallys_local_eyaml_checkout</code>: Have Sally pull down the company eyaml directory, and then have her update the <code>eyaml_dir</code> in Mantle&rsquo;s config.yaml.</p></li>
+<li><p><code>git clone git@github.com:sallys_org/safe_json sallys/local/machine/sallys_local_safe_checkout</code>: Have Sally pull down the company safe json directory, and then have her update the <code>safe_dir</code> in Mantle&rsquo;s config.yaml.</p></li>
+<li><p><code>mantle -encode sallys/local/machine/sallys_container.json</code>: Sally can then encode the JSON. Mantle will save the JSON and user-level eyaml in the git repo&rsquo;s she just checked out:</p></li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Encoding sallys_container.json
+</span><span class='line'>WARN<span class="o">[</span>0000<span class="o">]</span> /Users/malnick/.mantle/eyaml/sally.yaml does not exist, creating.
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> eyaml saved: /Users/malnick/.mantle/eyaml/sally.yaml
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Safe JSON:
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>        <span class="s2">&quot;container&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                <span class="s2">&quot;docker&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                        <span class="s2">&quot;image&quot;</span>: <span class="s2">&quot;sallys_org/sallys_container&quot;</span>,
+</span><span class='line'>                        <span class="s2">&quot;network&quot;</span>: <span class="s2">&quot;BRIDGE&quot;</span>,
+</span><span class='line'>                        <span class="s2">&quot;portMappings&quot;</span>: <span class="o">[</span>
+</span><span class='line'>                                <span class="o">{</span>
+</span><span class='line'>                                        <span class="s2">&quot;containerPort&quot;</span>: 5050,
+</span><span class='line'>                                        <span class="s2">&quot;hostPort&quot;</span>: 0,
+</span><span class='line'>                                        <span class="s2">&quot;protocol&quot;</span>: <span class="s2">&quot;tcp&quot;</span>
+</span><span class='line'>                                <span class="o">}</span>
+</span><span class='line'>                        <span class="o">]</span>
+</span><span class='line'>                <span class="o">}</span>,
+</span><span class='line'>                <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;DOCKER&quot;</span>
+</span><span class='line'>        <span class="o">}</span>,
+</span><span class='line'>        <span class="s2">&quot;cpus&quot;</span>: 0.5,
+</span><span class='line'>        <span class="s2">&quot;env&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                <span class="s2">&quot;MONGO_PASSWORD&quot;</span>: <span class="s2">&quot;DEC[qa_mongo_password]&quot;</span>,
+</span><span class='line'>                <span class="s2">&quot;NEWRELIC_API_KEY&quot;</span>: <span class="s2">&quot;DEC[newrelic_api_key]&quot;</span>,
+</span><span class='line'>                <span class="s2">&quot;SALLYS_SECRET&quot;</span>: <span class="s2">&quot;DEC[sallys_qa_secret]&quot;</span>
+</span><span class='line'>        <span class="o">}</span>,
+</span><span class='line'>        <span class="s2">&quot;id&quot;</span>: <span class="s2">&quot;my-service&quot;</span>,
+</span><span class='line'>        <span class="s2">&quot;instances&quot;</span>: 1,
+</span><span class='line'>        <span class="s2">&quot;mem&quot;</span>: 1024,
+</span><span class='line'>        <span class="s2">&quot;upgradeStrategy&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                <span class="s2">&quot;maximumOverCapacity&quot;</span>: 0.4,
+</span><span class='line'>                <span class="s2">&quot;minimumHealthCapacity&quot;</span>: 0.8
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Saving safe JSON <span class="k">for</span> decode: /Users/malnick/.mantle/safe/sallys_container.json
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Notice the WARN statement. Since Mantle did not find a <code>eyaml_dir/$user.yaml</code> it created a new one for her.</p>
+
+<p>The eyaml looks like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
+</span><span class='line'><span class="l-Scalar-Plain">newrelic_api_key</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
+</span><span class='line'>  <span class="no">N4JpKRvQoRBusI7Yp7BN1L/wTdexGH3NFidxvTM0P3IeGM8OnU9TfGI19j+qDQt/XVOQln</span>
+</span><span class='line'>  <span class="no">q2h6U/2BlHanQksytxjmuIAX5pVh1IqPFHxp0vkuU8lNffL7Z8VzPEurX4aPEyckQe5Y+E</span>
+</span><span class='line'>  <span class="no">OnglwxdWreQnmMuo2Vyu9bhAF+HVWwc=</span>
+</span><span class='line'><span class="l-Scalar-Plain">qa_mongo_password</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
+</span><span class='line'>  <span class="no">UZ1M9L2c/N0AeDlILcP44ACd+niZeaw/BDt1oh78aNf818iTDXAl1c3deUohR12fwEMyCZ</span>
+</span><span class='line'>  <span class="no">FHFhErN8u4do97iGeN8QCRdECULj/KOalPG+N70jTxzW9WIpReuPFlCqCrrT+nu/9v2CjO</span>
+</span><span class='line'>  <span class="no">1IX5zbxN8UThL9ba2LW25QS1jPEPkMc=</span>
+</span><span class='line'><span class="l-Scalar-Plain">sallys_qa_secret</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
+</span><span class='line'>  <span class="no">UkbR2x+FftMr0O4K13iG/msEDpI8bi7+Mz2NIFxiRmXdwziQtUMYVrvJkpq3hgavGC2DBl</span>
+</span><span class='line'>  <span class="no">C0gfmdAa6LfX4zS1lXFHIZD0tpY4dDdqWPFuwRPqVKLLNwiDX46olAEu104iOp6wsRPiJV</span>
+</span><span class='line'>  <span class="no">pa92d0uUC4X67BmPF/6LueIVXUTEBYY=</span>
+</span><span class='line'><span class="l-Scalar-Plain">user</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">sally</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li><p>Sally then pushes both eyaml and safe repo&rsquo;s back to git.</p></li>
+<li><p>Now the safe JSON and eyaml repo&rsquo;s can be pulled by the operations team. At this point, a review of the Safe JSON can be made to ensure everything looks right. Finally, we can deploy the safe JSON via Mantle to Marathon with the key for Sally:</p></li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>user@localhost: mantle -deploy ~/.mantle/safe/sallys_container.json -u sally
+</span><span class='line'>
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Deploying ~/.mantle/safe/sallys_container.json
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Decrypted qa_mongo_password to mongoiswebscale
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Decrypted newrelic_api_key to 7638263546473822299283737
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Decrypted sallys_qa_secret to superawesomesauce
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Decoded JSON:
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>        <span class="s2">&quot;container&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                <span class="s2">&quot;docker&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                        <span class="s2">&quot;image&quot;</span>: <span class="s2">&quot;sallys_org/sallys_container&quot;</span>,
+</span><span class='line'>                        <span class="s2">&quot;network&quot;</span>: <span class="s2">&quot;BRIDGE&quot;</span>,
+</span><span class='line'>                        <span class="s2">&quot;portMappings&quot;</span>: <span class="o">[</span>
+</span><span class='line'>                                <span class="o">{</span>
+</span><span class='line'>                                        <span class="s2">&quot;containerPort&quot;</span>: 5050,
+</span><span class='line'>                                        <span class="s2">&quot;hostPort&quot;</span>: 0,
+</span><span class='line'>                                        <span class="s2">&quot;protocol&quot;</span>: <span class="s2">&quot;tcp&quot;</span>
+</span><span class='line'>                                <span class="o">}</span>
+</span><span class='line'>                        <span class="o">]</span>
+</span><span class='line'>                <span class="o">}</span>,
+</span><span class='line'>                <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;DOCKER&quot;</span>
+</span><span class='line'>        <span class="o">}</span>,
+</span><span class='line'>        <span class="s2">&quot;cpus&quot;</span>: 0.5,
+</span><span class='line'>        <span class="s2">&quot;env&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                <span class="s2">&quot;MONGO_PASSWORD&quot;</span>: <span class="s2">&quot;mongoiswebscale&quot;</span>,
+</span><span class='line'>                <span class="s2">&quot;NEWRELIC_API_KEY&quot;</span>: <span class="s2">&quot;7638263546473822299283737&quot;</span>,
+</span><span class='line'>                <span class="s2">&quot;SALLYS_SECRET&quot;</span>: <span class="s2">&quot;superawesomesauce&quot;</span>
+</span><span class='line'>        <span class="o">}</span>,
+</span><span class='line'>        <span class="s2">&quot;id&quot;</span>: <span class="s2">&quot;my-service&quot;</span>,
+</span><span class='line'>        <span class="s2">&quot;instances&quot;</span>: 1,
+</span><span class='line'>        <span class="s2">&quot;mem&quot;</span>: 1024,
+</span><span class='line'>        <span class="s2">&quot;upgradeStrategy&quot;</span>: <span class="o">{</span>
+</span><span class='line'>                <span class="s2">&quot;maximumOverCapacity&quot;</span>: 0.4,
+</span><span class='line'>                <span class="s2">&quot;minimumHealthCapacity&quot;</span>: 0.8
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> POSTing to http://my.marathon1.com
+</span><span class='line'>...
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>[Check out the git repo here)[<a href="https://github.com/malnick/mantle.git">https://github.com/malnick/mantle.git</a>]</h4>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/08/28/elasticsearch-logstash-cli-utility/">Logasaurus: A CLI Utility for Elasticsearch / Logstash</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-08-28T12:19:11-07:00" pubdate data-updated="true">Aug 28th, 2015</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img style="float: center;" src="https://dl.dropboxusercontent.com/u/77193293/logasaurus.png"></p>
+
+<p>Like most operations teams, at SRC:CLR we&rsquo;re offloading our logs to an aggregated log solution. We use the popular ELK (Elasticsearch, Logstash, Kibana). I love this solution but when it comes to simply copying and pasting log data from Kibana things get messy. When our developers need to get data quickly it would be easier to have a CLI utility that can do the same queries than having to open a browser and screen grab from Kibana.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/08/28/elasticsearch-logstash-cli-utility/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/08/13/version-management-in-soa/">Version Management in SOA</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-08-13T08:47:19-07:00" pubdate data-updated="true">Aug 13th, 2015</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Service oriented architectures offer significant increases in agile deployment pipelines. They allow what were traditionally, large, monolithic code bases to be broken down into smaller, more manageable pieces. Instead of diagnosing a single issue that affects the application as a whole, SOA allows developers to troubleshoot smaller, atomic pieces.</p>
+
+<p>SOA, by design, goes hand-in-hand with the concept of immutable infrastructure: you can now deploy small pieces of your application, codifying the infrastructure it runs on along the way, allowing for easy to maintain, automated application layers.</p>
+
+<p>Commonly, this design pattern manifests itself with lots of small services proxied by some kind of layer 7 load balancer (nginx or haproxy) on the backend of some type of platform. The layer 7 load balancer allows easy to navigate REST API access. It also means the nodes which run these services have less overall configuration since they only need to run a small piece of the larger application, a single service. The natual evolution of this tends to be some kind of remote or dynamic service execution system that is agnostic of individual server resources, such as Apache Mesos.</p>
+
+<p>Of course, service discovery mechanisms in this type of immutable environment are key.</p>
+
+<h2>The Problem</h2>
+
+<p>Now we have many, scatter services. Each deployed onto ephemeral servers with ephemeral IP addresses. Assuming the continuous integration pipeline is &ldquo;merge-to-environment&rdquo;, it&rsquo;s easy for developers to increment and deploy builds to QA or Production.</p>
+
+<p>But how do you track the service versions running on each node across several, ephemeral boxes? How do you know CI was successful and the version you wanted to deploy is in fact running across all instances of the servers which execute your specific service?</p>
+
+<p>The classic way was to query your service&rsquo;s managment endpoint. The IP of the server running the service and the privately held management port.</p>
+
+<p>For the deployment at SRC:CLR, we managed a table of ports associated with services. Each service gets allotted 10 ports in a range, for each service and management port. This meant no more than 10 of each process could exist on a box together. It also means managing a port table. See <a href="http://www.jeffmalnick.com/blog/2015/07/14/static-service-provisioning-sucks/">my rant about why this sucks</a>.</p>
+
+<h2>The Solution</h2>
+
+<p>Our solution to tracking versions agross all running boxes is <a href="https://github.com/malnick/go_vctl">VersionCtl</a>.</p>
+
+<p>VersionCtl is a go app that runs inside a docker container. It queries our Haproxies via <a href="https://github.com/malnick/rest_haproxy">REST HaProxy</a>, a service which reads out the haproxy config, and abstracts the backend blocks to &ldquo;services&rdquo; with endpoints (the server lines in the backend block). It exposes this as a rest endpoint which VersionCtl ingests.</p>
+
+<p>What this looks like in a deployed environment is this:</p>
+
+<p><img src="" alt="img" /></p>
+
+<p>If versions between nodes in a given backend service abstraction do not match, the service line in VersionCtl goes red. VersionCtl also queries our Puppet Master for the versions.yaml hiera configuration file. This file is managed by jenkins in that it&rsquo;s rewritten everytime a build occurs with the version from Maven which was just built. It does this via a REST endpoint on the Puppet Master.</p>
+
+<p>If the version running on a box does not match that of hte version in versions.yaml, the line will go red as well. This gives us fast visability into the state of a deployment, in real time. If the service failed to deploy onto a box, we know. If the CI pipeline broke between jenkins and the box, we know.</p>
+
+<p>VersionCtl also kicks back the response from the actual GET request, allowing us to quickly see how the service is responding to the first thing we&rsquo;d do in the event of a CI or deployment malfunction: curl the management endpoint.</p>
+
+<h2>Homogenous Functionality</h2>
+
+<p>Eventually we&rsquo;ll want to roll out our Apache Mesos deployment. This will leverage Mesosphere&rsquo;s Marathon utility for deployments to the cluster. We could rewrite VersionCtl at that point, but since it&rsquo;s leveraging REST Haproxy we can actually continue to use it, adjusting the haproxy endpoints that it quaries. In combination with <a href="https://github.com/malnick/marathon_template.git">Marathon Template</a>, we can easily dynamically update VersionCtl as the infrastructure expands and contracts. With these three services we can scale out our infrastructure while maintaining visability into the running versions, keeping track of our dynamically updated environments and the deployments in real time.</p>
+
+<h2>Can I use this?</h2>
+
+<p>Yes. VersionCtl is <a href="https://github.com/malnick/go_vctl">open sourced</a> along with <a href="https://github.com/malnick/rest_haproxy">REST HaProxy</a> and <a href="https://github.com/malnick/marathon_template.git">Marathon Template</a>. You&rsquo;ll have to modify the production version that we run since you probably don&rsquo;t have the same versions.yaml CI pipeline. You can do this by removing puppetversions() method and it&rsquo;s implementation in the compare() method. You&rsquo;ll also have to update the index.html GO template to remove the pv index.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/07/31/a-restful-haproxy-service-abstraction/">A Restful Haproxy Service Abstraction</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-07-31T06:05:55-07:00" pubdate data-updated="true">Jul 31st, 2015</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>A major hurdle of microservices is visibility into the versions of your deployed infrastructure. At SRC:CLR we have 7 different micro services plus our platform that drive our product. These services are deployed as immutable infrastructure, their IP&rsquo;s and configuration is fluid and changing all the time. During a deployment, we might to a canary update of our services, but having to manually query the <code>/info</code> endpoint across &lsquo;n&rsquo; number of nodes, IP addresses, and dynamic management port assignments is error prone and difficult. In order to gain visibility into the currently running services, we wrote a tool that finds available services by querying our frontend and internal loadbalancers for running services, and then queries those running services to get their running versions and display them in a lightweight frontend.</p>
+
+<p>In order to get the server lines and service names from Haproxy we <a href="https://github.com/malnick/rest_haproxy">wrote a tool called REST Haproxy</a> which allows us to query our haproxy for &ldquo;service&rdquo; abstractions.</p>
+
+<p>Given a haproxy configuration at path <code>/etc/haproxy/haproxy.cfg</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+</pre></td><td class='code'><pre><code class='ini'><span class='line'><span class="err">global</span>
+</span><span class='line'>  <span class="err">daemon</span>
+</span><span class='line'>  <span class="err">group</span>  <span class="err">haproxy</span>
+</span><span class='line'>  <span class="err">log</span>  <span class="err">127.0.0.1</span> <span class="err">local0</span>
+</span><span class='line'>  <span class="err">log</span>  <span class="err">127.0.0.1</span> <span class="err">local1</span> <span class="err">notice</span>
+</span><span class='line'>  <span class="err">maxconn</span>  <span class="err">4096</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">defaults</span>
+</span><span class='line'>  <span class="err">log</span> <span class="err">global</span>
+</span><span class='line'>  <span class="err">mode</span>  <span class="err">http</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">frontend</span> <span class="err">http-in</span>
+</span><span class='line'>  <span class="err">bind</span> <span class="err">*:80</span>
+</span><span class='line'>  <span class="err">acl</span> <span class="err">service</span> <span class="err">path_beg</span> <span class="err">-t</span> <span class="err">/service</span>
+</span><span class='line'>  <span class="err">acl</span> <span class="err">other_service</span> <span class="err">path_beg</span> <span class="err">-t</span> <span class="err">/other_service</span>
+</span><span class='line'>  <span class="err">default</span> <span class="err">backend</span> <span class="err">my_service</span>
+</span><span class='line'>  <span class="err">use_backend</span> <span class="err">service</span> <span class="err">if</span> <span class="err">my_service</span>
+</span><span class='line'>  <span class="err">use_backend</span> <span class="err">other_service</span> <span class="err">if</span> <span class="err">other_service</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">backend</span> <span class="err">service</span>
+</span><span class='line'>  <span class="err">balance</span> <span class="err">leastconn</span>
+</span><span class='line'>  <span class="err">server</span> <span class="err">service-01</span> <span class="err">10.0.1.10:31501</span> <span class="err">check</span> <span class="err">port</span> <span class="err">32501</span>
+</span><span class='line'>  <span class="err">server</span> <span class="err">service-02</span> <span class="err">10.0.1.10:21502</span> <span class="err">check</span> <span class="err">port</span> <span class="err">32502</span>
+</span><span class='line'>  <span class="err">server</span> <span class="err">service-03</span> <span class="err">10.0.2.10:31500</span> <span class="err">check</span> <span class="err">port</span> <span class="err">32501</span>
+</span><span class='line'>  <span class="err">server</span> <span class="err">service-04</span> <span class="err">10.0.2.11:31500</span> <span class="err">check</span> <span class="err">port</span> <span class="err">32502</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">backend</span> <span class="err">other_service</span>
+</span><span class='line'>  <span class="err">balance</span> <span class="err">leastconn</span>
+</span><span class='line'>  <span class="err">server</span> <span class="err">service-01</span> <span class="err">10.0.5.10:31501</span> <span class="err">check</span>
+</span><span class='line'>  <span class="err">server</span> <span class="err">service-02</span> <span class="err">10.0.5.10:21502</span> <span class="err">check</span>
+</span><span class='line'>  <span class="err">server</span> <span class="err">service-03</span> <span class="err">10.0.5.10:31503</span> <span class="err">check</span>
+</span><span class='line'>  <span class="err">server</span> <span class="err">service-04</span> <span class="err">10.0.5.11:31500</span> <span class="err">check</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Will result in the following JSON endpoint available at: <code>localhost:3000/services</code></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;Service&quot;</span><span class="p">:</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nt">&quot;other_service&quot;</span><span class="p">:</span> <span class="p">[</span>
+</span><span class='line'>      <span class="s2">&quot;10.0.5.10:31501&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="s2">&quot;10.0.5.10:21502&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="s2">&quot;10.0.5.10:31503&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="s2">&quot;10.0.5.11:31500&quot;</span>
+</span><span class='line'>    <span class="p">],</span>
+</span><span class='line'>    <span class="nt">&quot;service&quot;</span><span class="p">:</span> <span class="p">[</span>
+</span><span class='line'>      <span class="s2">&quot;10.0.1.10:31501 10.0.1.10:32501&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="s2">&quot;10.0.1.10:21502 10.0.1.10:32502&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="s2">&quot;10.0.2.10:31500 10.0.2.10:32501&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="s2">&quot;10.0.2.11:31500 10.0.2.11:32502&quot;</span>
+</span><span class='line'>    <span class="p">]</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p></p>
+
+<p>Initially, I thought about writing this in Ruby. It is my best language after all. But recently I&rsquo;ve been bothered by Ruby. Mainly, I get bitten by not having the correct Ruby version installed on a machine, or having to install a whole suite of Ruby / gems versions.</p>
+
+<p>Shipping code in Ruby is inexpensive in that all you need to do is <code>gem build &amp;&amp; gem push</code> but the heavyweight nature of an interpreted language wasn&rsquo;t something I wanted running on my lightweigtht Haproxy boxes. These boxes should be <em>only</em> Haproxy, and nothing else.</p>
+
+<p>I felt dirty enough having to install Java on them in order to ship logs with logstash, adding yet more libraries just didn&rsquo;t feel right&hellip;</p>
+
+<h2>So I wrote it in GoLang&hellip;</h2>
+
+<p>GoLang is rad. Enough said. Why? Because it compiles directly to assembly. The Go tool has enough functionality that it makes it easy enough to test and run code locally, and if you don&rsquo;t want to ship a binary executable you can always dockerize it (but don&rsquo;t use a heavyweight base image!).</p>
+
+<p>For the REST Haproxy service I decided to host the executable on our downloads server, the source code was open source&#8217;ed after all. I then wrote a <a href="https://github.com/malnick/puppet-rest_haproxy">some configuration management code</a> to wget the binary, and install a basic init script so it was available as a service.</p>
+
+<h2>Results</h2>
+
+<p>The result is a 7.5MB binary that runs on any AMD64 architecture. I don&rsquo;t need to configure any extra interpreters on the machine running the application and I don&rsquo;t need to manage issues that arise from that type of deployment.</p>
+
+<p>The service comes up instantly when started:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>root@qa-haproxy-internal-recanted:/opt/rest_haproxy# <span class="nb">time</span> /etc/init.d/rest_haproxy start
+</span><span class='line'>     <span class="o">(</span>       <span class="o">(</span>                <span class="o">)</span>      <span class="o">(</span>
+</span><span class='line'>     <span class="o">)</span><span class="se">\ </span><span class="o">)</span>    <span class="o">)</span><span class="se">\ </span><span class="o">)</span>  *   <span class="o">)</span>   <span class="o">(</span> /<span class="o">(</span>      <span class="o">)</span><span class="se">\ </span><span class="o">)</span>
+</span><span class='line'>    <span class="o">(()</span>/<span class="o">((</span>  <span class="o">(()</span>/<span class="o">(</span><span class="sb">`</span> <span class="o">)</span>  /<span class="o">(</span>   <span class="o">)</span><span class="se">\(</span><span class="o">))</span>   <span class="o">)(()</span>/<span class="o">((</span>          <span class="o">)</span> <span class="o">(</span>
+</span><span class='line'>     /<span class="o">(</span>_<span class="o">))</span><span class="se">\ </span> /<span class="o">(</span>_<span class="o">))(</span> <span class="o">)(</span>_<span class="o">))</span> <span class="o">((</span>_<span class="o">)</span><span class="se">\ </span><span class="o">(</span> /<span class="o">(</span> /<span class="o">(</span>_<span class="o">))(</span>   <span class="o">(</span>  <span class="o">(</span> /<span class="o">(</span> <span class="o">)</span><span class="se">\ </span><span class="o">)</span>
+</span><span class='line'>    <span class="o">(</span>_<span class="o">))((</span>_<span class="o">)(</span>_<span class="o">))</span> <span class="o">(</span>_<span class="o">(</span>_<span class="o">())</span>   _<span class="o">((</span>_<span class="o">))(</span>_<span class="o">)</span><span class="p">|</span>_<span class="o">))(()</span><span class="se">\ </span> <span class="o">)</span><span class="se">\ </span><span class="o">)</span><span class="se">\(</span><span class="o">)</span><span class="p">|</span><span class="o">()</span>/<span class="o">(</span>
+</span><span class='line'>    <span class="p">|</span> _ <span class="se">\ </span>__/ __<span class="o">||</span>_   _<span class="p">|</span>  <span class="p">|</span> <span class="o">||</span> <span class="o">((</span>_<span class="o">)</span>_<span class="p">|</span> _ <span class="se">\(</span><span class="o">(</span>_<span class="o">)((</span>_<span class="p">|</span><span class="o">(</span>_<span class="o">)</span><span class="se">\ </span><span class="o">)(</span>_<span class="o">))</span>
+</span><span class='line'>    <span class="p">|</span>   / _<span class="p">|</span><span class="se">\_</span>_ <span class="se">\ </span> <span class="p">|</span> <span class="p">|</span>    <span class="p">|</span> __ / _<span class="sb">`</span> <span class="p">|</span>  _/ <span class="err">&#39;</span>_/ _ <span class="se">\ \ </span>/<span class="p">|</span> <span class="o">||</span> <span class="p">|</span>
+</span><span class='line'>    <span class="p">|</span>_<span class="p">|</span>_<span class="se">\_</span>__<span class="p">|</span>___/  <span class="p">|</span>_<span class="p">|</span>    <span class="p">|</span>_<span class="o">||</span>_<span class="se">\_</span>_,_<span class="p">|</span>_<span class="p">|</span> <span class="p">|</span>_<span class="p">|</span> <span class="se">\_</span>__/_<span class="se">\_\ \_</span>, <span class="p">|</span>
+</span><span class='line'>                                                      <span class="p">|</span>__/
+</span><span class='line'>REST HaProxy Started
+</span><span class='line'>PID: 15803
+</span><span class='line'>
+</span><span class='line'>real    0m0.003s
+</span><span class='line'>user    0m0.002s
+</span><span class='line'>sys     0m0.001s
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>&hellip; and is exceptionally stable. The entire thing installs in less than 30 lines of configuration managment code:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="k">for</span> i in <span class="sb">`</span>find . -name <span class="se">\*</span>.pp<span class="sb">`</span><span class="p">;</span><span class="k">do</span> cat <span class="nv">$i</span> <span class="p">|</span> sed <span class="s1">&#39;/^\s*#/d;/^\s*$/d&#39;</span> <span class="p">|</span> wc -l<span class="p">;</span><span class="k">done</span>
+</span><span class='line'>      29
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>For these reasons I am sold on Golang, and decided to re-write the entire <a href="https://github.com/malnick/go_vctl">VersionCtl</a> app using it - that&rsquo;s fodder for my next post.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/07/21/weak-dh-ciphers/">Weak Diffe-Helman SSL Ciphers</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-07-21T11:32:12-07:00" pubdate data-updated="true">Jul 21st, 2015</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>We recently scanned our <code>srcclr.com</code> domain via <a href="https://www.ssllabs.com/">Qualsys</a> SSL Labs scanning suite. When we deployed this site in March (a migration from sourceclear.com to srcclr.com) we had an A+ rating.</p>
+
+<p>However, our CEO recently re-scanned the site, and to our dismay, we got a B rating.</p>
+
+<p>What was the cuase? According to SSL Labs, we were supporting &ldquo;weak Diffie-Hellman (DH) key exchange parameters. Grade capped to B.&rdquo;</p>
+
+<p>Usually this would be due to supporting export grade crypto suites, which can be used in a man in the middle attack to fake you into using a weak cipher during your session.</p>
+
+<p>In order to double check the SSL labs output, I ran my own scan using nmap:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>nmap --script ssl-enum-ciphers -p <span class="m">443</span> srcclr.com
+</span><span class='line'>Starting Nmap 6.47 <span class="o">(</span> http://nmap.org <span class="o">)</span> at 2015-07-21 11:31 PDT
+</span><span class='line'>Nmap scan report <span class="k">for</span> srcclr.com <span class="o">(</span>107.23.63.147<span class="o">)</span>
+</span><span class='line'>Host is up <span class="o">(</span>0.094s latency<span class="o">)</span>.
+</span><span class='line'>Other addresses <span class="k">for</span> srcclr.com <span class="o">(</span>not scanned<span class="o">)</span>: 52.7.116.135
+</span><span class='line'>rDNS record <span class="k">for</span> 107.23.63.147: ec2-107-23-63-147.compute-1.amazonaws.com
+</span><span class='line'>PORT    STATE SERVICE
+</span><span class='line'>443/tcp open  https
+</span><span class='line'><span class="p">|</span> ssl-enum-ciphers:
+</span><span class='line'><span class="p">|</span>   SSLv3: No supported ciphers found
+</span><span class='line'><span class="p">|</span>   TLSv1.0:
+</span><span class='line'><span class="p">|</span>     ciphers:
+</span><span class='line'><span class="p">|</span>       TLS_DHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>     compressors:
+</span><span class='line'><span class="p">|</span>       NULL
+</span><span class='line'><span class="p">|</span>   TLSv1.1:
+</span><span class='line'><span class="p">|</span>     ciphers:
+</span><span class='line'><span class="p">|</span>       TLS_DHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>     compressors:
+</span><span class='line'><span class="p">|</span>       NULL
+</span><span class='line'><span class="p">|</span>   TLSv1.2:
+</span><span class='line'><span class="p">|</span>     ciphers:
+</span><span class='line'><span class="p">|</span>       TLS_DHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA256 - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_GCM_SHA256 - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA256 - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_GCM_SHA384 - strong
+</span><span class='line'><span class="p">|</span>     compressors:
+</span><span class='line'><span class="p">|</span>       NULL
+</span><span class='line'><span class="p">|</span>_  least strength: strong
+</span><span class='line'>
+</span><span class='line'>Nmap <span class="k">done</span>: <span class="m">1</span> IP address <span class="o">(</span><span class="m">1</span> host up<span class="o">)</span> scanned in 4.64 seconds
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Low and behold, there were the weak DHE non EC type ciphers.</p>
+
+<p>Our front ends for our corporate site are hosted on Elastic Load Balancers. I double checked their configuration, and it appears AWS updated the default cipher suite in May, about a month after we deployed the site. The new cipher policy removes the non EC Diffe-Helman ciphers from the list. I turned on the new policy (which should automatically default to newest, IMO) and re-ran a scan:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>nmap --script ssl-enum-ciphers -p <span class="m">443</span> srcclr.com
+</span><span class='line'>
+</span><span class='line'>Starting Nmap 6.47 <span class="o">(</span> http://nmap.org <span class="o">)</span> at 2015-07-21 12:21 PDT
+</span><span class='line'>Nmap scan report <span class="k">for</span> srcclr.com <span class="o">(</span>107.23.63.147<span class="o">)</span>
+</span><span class='line'>Host is up <span class="o">(</span>0.091s latency<span class="o">)</span>.
+</span><span class='line'>Other addresses <span class="k">for</span> srcclr.com <span class="o">(</span>not scanned<span class="o">)</span>: 52.7.116.135
+</span><span class='line'>rDNS record <span class="k">for</span> 107.23.63.147: ec2-107-23-63-147.compute-1.amazonaws.com
+</span><span class='line'>PORT    STATE SERVICE
+</span><span class='line'>443/tcp open  https
+</span><span class='line'><span class="p">|</span> ssl-enum-ciphers:
+</span><span class='line'><span class="p">|</span>   SSLv3: No supported ciphers found
+</span><span class='line'><span class="p">|</span>   TLSv1.0:
+</span><span class='line'><span class="p">|</span>     ciphers:
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>     compressors:
+</span><span class='line'><span class="p">|</span>       NULL
+</span><span class='line'><span class="p">|</span>   TLSv1.1:
+</span><span class='line'><span class="p">|</span>     ciphers:
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>     compressors:
+</span><span class='line'><span class="p">|</span>       NULL
+</span><span class='line'><span class="p">|</span>   TLSv1.2:
+</span><span class='line'><span class="p">|</span>     ciphers:
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 - strong
+</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA256 - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_GCM_SHA256 - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA256 - strong
+</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_GCM_SHA384 - strong
+</span><span class='line'><span class="p">|</span>     compressors:
+</span><span class='line'><span class="p">|</span>       NULL
+</span><span class='line'><span class="p">|</span>_  least strength: strong
+</span><span class='line'>
+</span><span class='line'>Nmap <span class="k">done</span>: <span class="m">1</span> IP address <span class="o">(</span><span class="m">1</span> host up<span class="o">)</span> scanned in 4.38 seconds
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>That appeared to have done the trick. I double checked by <a href="https://www.ssllabs.com/ssltest/analyze.html?d=srcclr.com&amp;s=52.7.116.135&amp;latest">re-scanning our site on SSL labs</a>, and it came up as an A+.</p>
+
+<p>Moral of the story: scan your site regularly so you can stay on top of all the breaking SSL vulnerabilities. We should have been doing this every month, and will try to stick to that schedule from here on out.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/07/14/static-service-provisioning-sucks/">Static Service Provisioning Sucks</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-07-14T13:05:01-07:00" pubdate data-updated="true">Jul 14th, 2015</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Many tools exist to help automate and orchestrate provisioning servers. Each tool serves a purpose, or is tailored for a specific task. One realization I had not to long ago was that configuration management tools, as a framework, suck at provisioning micro services. I say that at the risk of bringing on the deluge of comments that often accompany such a blunt, over arching statement.</p>
+
+<h2>Configuration Management Primer</h2>
+
+<p>But let&rsquo;s think about it for a minute: how does configuration management work? The idea is to codify machine state into a static code base that can abstract a more complex system into simple resource statements. Then those resource statements are parsed and compiled into a <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">directed acyclic graph</a>.</p>
+
+<p>This graph is created every time an &lsquo;agent&rsquo; of some sort checks in or is manually kicked off by some other means. Each node in the graph represents the abstract state of some resource on the system, files, services, packages, and compares the state of the resource node in the graph to that of the resource which exists on the system. If it&rsquo;s different, it converges the state to match that of the graph.</p>
+
+<h2>Service Primer</h2>
+
+<p>In terms of services, we might have an abstract service definition that looks like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">service</span> <span class="p">{</span> <span class="s1">&#39;haproxy&#39;</span><span class="p">:</span>
+</span><span class='line'>  <span class="k">ensure</span> <span class="o">=&gt;</span> <span class="n">running</span><span class="p">,</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>or</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">service</span> <span class="s1">&#39;nginx&#39;</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">action</span> <span class="ss">:start</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Each statement tells Puppet or Chef, respectively, to make sure the service for Nginx is running. How this would go down in real life is that Chef or Puppet would run, and if they find the service Nginx not running, it would be started. If it is found running, nothing occurs in order to maintain performance via idempotent actions.</p>
+
+<p>The problem is services are running all the time, and are highly dynamic. They might crash for any number of reasons, and until configuration management kicks in, your service is unavailable.</p>
+
+<p>That is, unless, it&rsquo;s monitored by a parent process that can track service state.</p>
+
+<p>And in a lot of respects, framworks such as Docker aim to fill in this hole. The Docker daemon acts as that parent process that can monitor the child containers, ensuring they&rsquo;re always running or force restarts when they die. The Docker daemon is always running, unlike configuration management which only runs on regular intervals, and hopefully not to often for performance reasons.</p>
+
+<p>Well what happens when the Docker daemon dies, you might ask? Who cares, it&rsquo;s still better than configuration management acting as the sole service schedular.</p>
+
+<p>Many people have already realized this added benefit of Docker monitoring their service state. In that same vain, containerizing your services via Docker removes a lot of configuration management code. Where previously you had to maintain a package, a file, a service and all the other dependencies around your specific service via configuration management you can now simply tell configuration management to install docker and run this container.</p>
+
+<h2>Static vs. Dynamic</h2>
+
+<p>The hills rejoiced to the sound of sweet harmony of constantly running services!</p>
+
+<p>But this isn&rsquo;t the end of the story. Whether you&rsquo;re running your service via some executable you provision with configuration management or via a docker container executed via configuration management, those services are still statically provisioned.</p>
+
+<p>By static provisioning, I mean that you have some how hard coded a $role for a node classified as &lsquo;x&rsquo; and told your configuration management system to run service &lsquo;y&rsquo; for all machines with that classification. This is hard coded and static. The machine that runs this service does not change unless you hard code something else to tell it to do so.</p>
+
+<p>That might be acceptable for simple applications, but when scaled you run into another issue: resource utilization.</p>
+
+<p>At SRC:CLR we have a meager 70 node deployment. The resources of each node are unknown to other nodes, and we fall into the pitfall of underutilized infrastructure. We&rsquo;re not an enterprise, but recent studies show total DC utilization at <a href="https://gigaom.com/2013/11/30/the-sorry-state-of-server-utilization-and-the-impending-post-hypervisor-era/">around 6%</a>. We average around 1-2% total resource utilization. This tells me we&rsquo;re wasting at best 68% of our monthly DC costs (I would prefer 70% resource utilization, allowing for a comfortable 30% in over engineering for capacity).</p>
+
+<p>It&rsquo;s easy to fall into this pitfall if your entire stack is managed by a static code base - it&rsquo;s programmatically difficult to classify a node in configuration management with a lot of different roles. You would need to instrument each node heavily to ensure proper resource utilization, and go to great lengths to ensure you&rsquo;re not creating hot spots - machines that are running hot, consuming too many resources while others sit idle with low intensity applications.
+In the end, this is still a static configuration and is extraordinarily complex.</p>
+
+<p>Dynamic configuration, at its core, assumes some master process provisions a service on demand, anywhere. It&rsquo;s not bound by classification, its only requirement is that memory and CPU resources are available to execute a scheduled task. It monitors these processes all the time, ensuring they&rsquo;re running and restarts them when they die.</p>
+
+<p>This system sounds a lot like a Kernel in an operating system: it accepts IO to execute tasks and leverages a scheduler to execute those tasks across available memory and CPU resources.</p>
+
+<h2>Mesos</h2>
+
+<p>The <a href="http://mesos.apache.org/">Apache Mesos project</a> satisfies that requirement: it gathers resource information from all nodes in a cluster, then schedules and executes tasks against the available resources. An entire company, Mesosphere, has built the <a href="https://mesosphere.com/product/">Data Center Operating System</a> around Mesos, allowing seamless deployment of services across a cluster of machines, without configuration management to statically deploy them. Developers can write their own schedulers and executors or simply leverage the Docker executor to deploy services across an entire DC. No classification required.</p>
+
+<p>At SRC:CLR we see the value in such a system as it simplifies our already complex configuration management around our back end micro services. This isn&rsquo;t to say configuration management isn&rsquo;t needed: it&rsquo;s needed. However, we&rsquo;ve found that configuration management isn&rsquo;t a service scheduler - it&rsquo;s great at static provisioning. But in the end we still need a way to manage all the basics like log rotation, the installation of Mesos, docker and other necessary packages, and all the other stuff that sits outside the realm of our immediate stack but is required by it.</p>
+
+<p>Our goal for the future of our stack is to have Puppet manage the intermediate state of our infrastructure, bringing up a healthy cluster of nodes running Mesos which we can deploy our containerized stack on. Of course this brings about a whole new set of challenges around managing logs and security, topics I&rsquo;ll be covering more in later posts. In the end the move to leveraging a service that handles dynamic scheduling of our services allows us to scale faster while simultaneously using more available resources, which means a decrease in Ec2 instances and incurred costs. That&rsquo;s a huge win for a small company making ends meet on borrowed dollars.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/06/17/vertically-scaled-infrastructure/">Vertically Scaled Infrastructure</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-06-17T12:48:27-07:00" pubdate data-updated="true">Jun 17th, 2015</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>&ldquo;&hellip;but does is scale?&rdquo;</h2>
+
+<p>When it comes to micro-service architectures that&rsquo;s always the big question. You can maintain a solid agile development process, design a micro service architecture, and implement seamless CI to ensure developers can launch code from their local test environment into Prod but if you can&rsquo;t respond to the increase in demand for your product then who cares? Unusable products, no matter how cool, won&rsquo;t get traffic and your company will suffer.</p>
+
+<h2>Vertical Scaling</h2>
+
+<p>Scaling starts vertically - or locally - before moving to multiple machines.</p>
+
+<p>It&rsquo;s important to understand how scaling a micro-service works in order to buy into this logic. First, a micro-service architecture is comprised of lots of atomic, REST endpoints, which should be able to generate some meaningful data on their own, with out the help of other services in the ecosystem. As long as service &lsquo;x&rsquo; can talk to your queue and perhaps a datastore of some kind, it should be considered healthy.</p>
+
+<h3>The Essence of a &ldquo;Service&rdquo;</h3>
+
+<p>Starting and stopping service &lsquo;x&rsquo; can be viewed as a <a href="https://en.wikipedia.org/wiki/Unary_operation">unary</a> operation which is <a href="https://en.wikipedia.org/wiki/Idempotence">idempotent</a> across restarts and environment. If I tell service &lsquo;x&rsquo; to start on port :4321 with <code>datasource.host=my.postgres.com</code> then no matter where I start the service, as long as those two external services are available, service &lsquo;x&rsquo; should be healthy.</p>
+
+<p>Simple right?</p>
+
+<h3>&hellip;do it again&hellip;</h3>
+
+<p>Now we want to start multiple processes of service &lsquo;x&rsquo; on the same machine. We want to do this in order to fully realize the computing potential of our EC2 instance, Digital Ocean droplet, Heroku dyno (insert name of virtual computing resource here) in order to increase availability, performance and return on investment of our infrastructure.</p>
+
+<p>Several key factors need to change in order to realize multiples of the same service on a single machine:</p>
+
+<ol>
+<li>Environment or External Configuration of the Application</li>
+<li>Port assignments at the application layer</li>
+<li>Port assignments at the load balancer to proxy requests</li>
+</ol>
+
+
+<p>We use HaProxy as an internal load balancer to proxy requests to our backend micro services. However, you could accomplish the same task with any kind of proxy. Whether it&rsquo;s <a href="https://github.com/GoogleCloudPlatform/kubernetes/blob/master/pkg/proxy/loadbalancer.go">written in Go</a> or built on iptables, proxying requests from a single endpoint to multiple instances of service &lsquo;x&rsquo; enables the most basic type of HA via redundancy and increases performance generally.</p>
+
+<p>In the previous example we told service &lsquo;x&rsquo; to start on :4321 but we can&rsquo;t do that twice on the same box, we&rsquo;d have a port collision. So we need to run service &lsquo;x&rsquo;(2) on another port, let&rsquo;s say :4322.</p>
+
+<p>Luckily for us, service &lsquo;x&rsquo; can be externally configured via environment variables or using a plain text file called <code>app.service_x_1-properties</code> and <code>app.service_x_2-properties</code>. In fact, we were already using the app.properties type of external config to set passwords and API tokens service &lsquo;x&rsquo; requires since we didn&rsquo;t want to place those sensitive items, hard coded, in our github repository. So we simply modify the app.properties file for each service with <code>service.port</code> definitions to ensure they startup on :4321 and :4322 respectively.</p>
+
+<h3>Automate it</h3>
+
+<p>Now we have to automate this process, ensuring that service &lsquo;x&rsquo; gets provisioned to a node two times with the correct external config. That&rsquo;s easy enough since our tool (puppet, chef, whatever) can take a simple hash of external config for each instance of service &lsquo;x&rsquo; and write that app.properties file on the box. We can use the same hash, or at least the <code>service.port</code> part, to configure haproxy.cfg on another node, ensuring our service proxy is properly configured.</p>
+
+<p>Success! We have vertically scaled our service!</p>
+
+<h3>Orchestrate it</h3>
+
+<p>We could call this success, but does it scale? Let&rsquo;s recap.</p>
+
+<p>Every time we deploy service &lsquo;x&rsquo; or service &lsquo;a&rsquo;, service &lsquo;y&rsquo; or service &lsquo;b&rsquo;, we have to manually assign ports in configuration management to be written to a text file on a node running that service. We now have not 1 but 4 services (&lsquo;x&rsquo;,&lsquo;y&rsquo;,&lsquo;a&rsquo;, and &lsquo;b&rsquo;) each requiring a known range of port assignments so we can simultaneously configure the application port in external config and the port assignment for the server in haproxy.cfg.</p>
+
+<p>Those assignments might be a table such as:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>service <span class="s1">&#39;a&#39;</span>: 1000-1010
+</span><span class='line'>service <span class="s1">&#39;b&#39;</span>: 1011-1020
+</span><span class='line'>service <span class="s1">&#39;x&#39;</span>: 1021-1030
+</span><span class='line'>service <span class="s1">&#39;z&#39;</span>: 1031-1040
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This is usable, and it &ldquo;scales&rdquo; to a maximum of 10 nodes since our known port assignment hash goes 10 deep for each service.</p>
+
+<p>Now we have 100 million users, and we need to scale our application&rsquo;s backend services &lsquo;a&rsquo;, &lsquo;b&rsquo;, &lsquo;x&rsquo; and &lsquo;y&rsquo; to <strong><em>FAR</em></strong> more than 10 instances a piece. In fact, we not only need to scale those to more instances, upper management asked us to add features. These features came by adding services &lsquo;c&rsquo;, &rsquo;d&#8217;, &lsquo;e&rsquo;, &lsquo;f&rsquo; and &lsquo;z&rsquo;. We have to build a port assignment hash for those as well, and it would be great if this distributed micro-service was also highly available beyond just a single node running multiple instances, so we&rsquo;re going to ensure that services &lsquo;a&rsquo; - &lsquo;f&rsquo; and &lsquo;x&rsquo; - &lsquo;z&rsquo; are running a minimum of 50 processes a piece across a minimum of 3 virtual machines.</p>
+
+<p>Now we&rsquo;ve got:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>service <span class="s1">&#39;a&#39;</span>: 1000-1050
+</span><span class='line'>service <span class="s1">&#39;b&#39;</span>: 1051-1100
+</span><span class='line'>service <span class="s1">&#39;c&#39;</span>: 1101-1150
+</span><span class='line'>service <span class="s1">&#39;d&#39;</span>: 1151-1200
+</span><span class='line'>service <span class="s1">&#39;e&#39;</span>: 1201-1250
+</span><span class='line'>service <span class="s1">&#39;f&#39;</span>: 1251-1300
+</span><span class='line'>service <span class="s1">&#39;x&#39;</span>: 1301-1350
+</span><span class='line'>service <span class="s1">&#39;y&#39;</span>: 1351-1400
+</span><span class='line'>service <span class="s1">&#39;z&#39;</span>: 1401-1450
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Great, we can scale out to 50 instances of each service. Now all I need to do is write all the configuration management code to deploy each one&hellip; each one of <strong><em>450</em></strong> instances across all services.</p>
+
+<p>I call this &ldquo;scaling&rdquo; not scaling.</p>
+
+<h3>$PORT</h3>
+
+<p>This process would be so much easier if we could just run these services on $PORT and have our load balancer &ldquo;just know&rdquo; what that $PORT assignment was, reconfigure itself dynamically, and automagically proxy requests to all our services, no matter how many instances are running. That&rsquo;s the dream I call scaling and is made possible by containers.</p>
+
+<h3>Containers</h3>
+
+<p>The cool thing about containers is they&rsquo;re not only self-contained instances of your application, they&rsquo;re self-contained networks. And the most commonly used LXC wrapper, Docker, ships with its own <a href="https://docs.docker.com/articles/networking/">network proxy</a> to handle port forwarding and routing into and out of a container to the host machine. Docker also allows us to pass in environment variables to the container, environment variables that are as segregated in a similar way to being in separate sub shells. We can leverage both these facets of containers along with new frameworks to orchestrate them (such as Kubernete and Mesosphere).</p>
+
+<p>Those frameworks can assign ephemeral $PORT mappings for our services, as long as each service <a href="https://docs.docker.com/reference/builder/#expose">EXPOSE</a>&rsquo;s and is configured within the container to run on their given port (each service now only needs a single port mapping since it&rsquo;s executed in it&rsquo;s own network, proxied via $PORT to the host), then those frameworks have their own independent way of load balancing requests to the service.</p>
+
+<p>For example, if you run <code>docker ps</code> and service &lsquo;x&rsquo; is running you might see:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>CONTAINER ID        IMAGE             COMMAND  CREATED             STATUS              PORTS                   NAMES
+</span><span class='line'>d7588285b831        service_x:0.5.1   <span class="s2">&quot;java&quot;</span>   <span class="m">57</span> minutes ago      Up <span class="m">57</span> minutes       0.0.0.0:1322-&gt;1301/tcp  stoic_elion
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>and in <code>netstat</code> you would see something akin to:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>tcp6       <span class="m">0</span>      <span class="m">0</span> :::1132      :::*      LISTEN      4743/docker-proxy
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We don&rsquo;t need a range of port mappings; we need a single mapping. <code>docker-proxy</code> is proxy&#8217;ing the requests from the host on port 1322 to the container where the service is listening on a base port of 1301.</p>
+
+<p>Instead of writing hundreds of lines of configuration management code, we need to build an atomic container and execute it with <code>-p 1322:1301</code>. Orchestration frameworks reduce the configuration further by taking care of the port mapping: basically running <code>-p $PORT:1301</code>.</p>
+
+<p>Those same orchestration frameworks then update a named load balancer to proxy the request to the correct ephemeral $PORT mapping for your service. Magic.</p>
+
+<p>You don&rsquo;t need to manage CM code for each individual service, you need to have a CI job that builds new containers with each release of your service and track only the version tag you want running in your environment.</p>
+
+<p>Might I add that scaling is as easy as POST&#8217;ing to the Mesos master the number of containers you want running for a given service or POST&#8217;ing an updated Replication Controller (RC) in Kubernetes. Although scaling an application is simplified once these frameworks are in place, putting them to use in production is anything but.</p>
+
+<h2>CAP Theorem for Scaling</h2>
+
+<p>“This should be simple” is a common platitude outside the hallways of backend engineering. Because vendors and white papers spoon feed the message &ldquo;we make it simple&rdquo;, everyone wants to think their highly available, distributed, micro-service architectures should be &ldquo;simple&rdquo; and cheap and performant all at the same time. Optimistic and forward thinking executives envision simplicity and effort lying along the same continuum.</p>
+
+<p>In reality, simplicity and engineering effort are inversely related. Simplifying an inherently complex system is essential to scale services within it, but actually requires more effort the simpler the system <em>seems</em> to become. This is because system <em>simplification</em> is most commonly implemented with abstraction layers. Tools that abstract these systems by codifying or containerizing small pieces of the system are advertised by venders as &ldquo;easy to implement&rdquo; when in practice integrating features, availability, and performance is rarely the easy task the literature or marketing materials would have you believe.</p>
+
+<p>Don&rsquo;t get me wrong, I&rsquo;m all for simple, and cost savings. In fact, I work hard every day to make the most of all system resources by leveraging platforms like docker and container orchestration frameworks. We have some amazing frameworks such as Mesosphere and Kubernete and new frameworks are being created every day, further enabling us to simplify incredibly complex systems. They allow us to minimize codified configuration by atomizing each service; taking the complex orchestration piece and turning it into a scalable solution.</p>
+
+<p>But, like distributed data stores, a back end system generally also obey CAP theorem in terms of cost and complexity; there is always a trade off. Any increase in consistency, availability or partition tolerance increases the cost and complexity of the system, and simplifying it again is tough - somewhere entropy will intrude and suddenly your &ldquo;simple&rdquo; dream is suddenly far more complex. However, these dreams can still be a reality as long as you&rsquo;re using tools to orchestrate the chaos. As we move forward in a containerized world, that&rsquo;s going to be my rule of thumb.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/05/01/automating-spring-boot-micro-service-deployments/">Automating Spring Boot Micro Service Deployments</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-05-01T10:05:30-07:00" pubdate data-updated="true">May 1st, 2015</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content">Spring is a java framework that has been around for the better part of a decade. Though some argue it&#8217;s growing long in the tooth, it&#8217;s still a standard among large enterprise to smaller startup style web applications. Spring boot is Springs answer to next generation, easy-to-implement, spring setup. Spring boot has a host of advantages over it&#8217;s legacy counterpart, chef among them packaging up your application in jar file format vs. war file format, embedded tomcat, and the primary topic of this post: resource configuration based on config files found in the classpath.  
+
+This seeminly simple way to configure an application provides a much needed interface for operations to successfully automate a spring application across heterogenious environments. y Since spring is Java-based we have the typical players we can roll in our init script to tune things JVM-related: XMX/XMS are key. We can also pass in active profiles, or groupings of configuration that override any application property files which in turn set &#8220;defaults&#8221; for a given deployment. 
+
+Typical Sping-based deployments suffer from configuration being hard coded into the application properties files of the code repository. This is great for modularizing your code base so it can be transported to multiple environmnets. However it ensures your code also has clear text passwords, api keys and other data that shouldn&#8217;t be in a VCS repo or distributed in any way.
+
+In order to lock down the security of the code base itself we decided to externalize all the passwords, api keys and other confidential data from our code base. Spring makes it remarkably easy to do this, providing the options to specify configuration as environment variables at boot or specify external application property files to an init script or CLI call.
+
+## Method 1: External App Properties
+First, lets talk about how we provision a node that runs our backend Spring services. Everything is managed with Puppet, which allows us to take advantage of encrypted YAML as a datasource via [Hiera](https://docs.puppetlabs.com/hiera/1/). We wrote a module around the deployment of our Spring services which takes care of the absolute neccessities for the proper configuration of our service. Via this module we&#8217;re able to implement:
+
+- Securely pulling the jar file from S3 with an ephemeral IAM user using the [S3 module](https://github.com/malnick/puppet-s3) given a specific $version
+- Deploying the service to /opt/sourceclear/$service/$service.jar and symlinking the versioned jar to the executed inode
+- Logstash & logrotate configuration for the service
+- Exported balancermember resources for Haproxy for each process of each service that is running on a $node
+- Externalized application-$app.properties file specifying the passwords, api keys and other encrypted data from eYaml
+- An init script for init.d which runs &#8216;n&#8217; number of processes specified by the $proc_opts hash sc_services::services defined type. 
+- Configure application metric monitoring for New Relic 
+- Define JVM Heap size for each process
+
+A typical service might have the following deployment in Puppetland:
+
+&#8220;`ruby
+class profiles::sc_services::some_service ( $version ){
+
+  $properties_file = {
+    &#8216;rabbitmq.password&#8217; => hiera(&#8216;qa::rabbitmq_password&#8217;),
+    &#8216;mandrill.api.key&#8217;  => hiera(&#8216;qa::mandrill_api_key&#8217;),
+  }
+
+  # The main service definition
+  sc_services::service { $some_service:
+    deploy_stage        => &#8216;qa&#8217;,
+    version             => $version,
+    enable_newrelic_apm => true,
+    loadbalancer_role   => &#8216;qa_internal&#8217;,
+    xmx_setting         => &#8216;512&#8217;,
+    xms_setting         => &#8216;512&#8217;,
+    proc_opts           => {
+      &#8216;1&#8217;  => {
+        &#8216;env_profile&#8217; => &#8216;qa&#8217;,
+        &#8216;port&#8217;        => &#8216;55000&#8217;,
+        &#8216;mgmt_port&#8217;   => &#8216;55010&#8217;,
+        &#8216;override&#8217;    => $properties_file,
+      },
+      &#8216;2&#8217;  => {
+        &#8216;env_profile&#8217; => &#8216;qa&#8217;,
+        &#8216;port&#8217;        => &#8216;55001&#8217;,
+        &#8216;mgmt_port&#8217;   => &#8216;55011&#8217;,
+        &#8216;override&#8217;    => $properties_file,
+      }
+    }
+  }
+}
+&#8220;`
+
+This configuration will boot a node with an init script managing 2 Java processes for $service. Each prcess gets it&#8217;s own exported balancermember resource for our internal haproxy in the environment &#8216;qa&#8217; as well as New Relic APM monitoring, and most importantly an externalized configuration built from data in git that is encrypted. 
+
+## Method 2: Environment Variables
+Since Sping allows you to also override any configuration as ENV variables it makes it incredibly easy to roll this service into a docker container:
+
+&#8220;`ruby
+  $rabbitmq_password  = hiera(&#8216;rabbitmq_password&#8217;)
+  $mandrill_api_key   = hiera(&#8216;mandrill_api_key&#8217;)
+
+  $env_variables = [
+    &#8220;rabbitmq.password=${rabbitmq_password}&#8221;,
+    &#8220;mandrill.api.key=${mandrill_api_key}&#8221;,
+  ]
+
+  docker::run { &#8216;some_service&#8217;:
+    image           => &#8220;our_priv_registry:5000/some_service-${version}&#8221;,
+    ports           => [&#8216;55010&#8217;],
+    expose          => [&#8216;55010&#8217;],
+    env             => $env_variables,
+    restart_service => true,
+    privileged      => false,
+    pull_on_start   => true,
+  }
+&#8220;`
+
+Now we can toss out an on-system properties file and keep the secure passwords purely in the context of the shell which they are executed. This furthers security as the passwords are never actually written to the system, they can not be copied or read from disk as it were. 
+
+Of course, this simple docker example doesn&#8217;t run multiples of the service but we could easily write a small module around docker which does. However, our Docker deployment is more about moving towards mesosphere as our service execution framework. This way, configuration management will not be used at all for booting and running our Docker containers. Instead, we&#8217;ll be POSTing the container, the number of instances, and ENV variables to a a Mesos master which will manage the service discovery, runtime persistance and aggregation of the services in our AWS deployment. 
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/04/15/factory-patterns-rule-number-1/">Factory Patterns: Rule #1</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-04-15T10:32:31-07:00" pubdate data-updated="true">Apr 15th, 2015</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h1>Factory Patterns</h1>
+
+<p>I learned early on in my career that the trick to successfully maintaining large, complicated deployments was to make things so that they are like a factory, then solve your problems using factory patterns. The metaphor is extended from the continuous integration pipelines I develop for seamless code deploys to the ways in which I go about maintaining the infrastructure on which that code runs.</p>
+
+<h3>Rule #1</h3>
+
+<p>Rule #1, the litmus test for your infrastructure: can you deploy your nodes into any cloud platform with out a SSH key and have your entire application up and running, zero intervention required?</p>
+
+<p>Rule #1 requires skillfully built configuration management code. It doesn’t matter what configuration management system you use as long as it satisfies the prerequisite that you can deploy your entire stack and never have to SSH into the box.</p>
+
+<p>Now I’d also add that the code you write which abstracts the configuration of any machine should be clear enough that any person who comes into your organization, either with you or after you leave, be able to understand the complete configuration of a machine by simply looking at your CM code, most notably the $role manifest or recipe.</p>
+
+<p>This syntax-ual sugar isn’t required for Rule #1 to be successful but plays a key role in ensuring the agile process of CM doesn’t become the burden of every other systems engineer in your organization. Good configuration management code should be abstract enough that any developer in your organization can understand the deployment of their code based on a given $role and every systems &amp; operations engineer can find clues as to where to look when things go astray by looking at that same CM code block.</p>
+
+<h3>The Pattern</h3>
+
+<p>A good factory is like a state machine, for a given input it produces a given output. Infrastructure is the same way, the inputs are straightforward: bare metal provisioning + configuration management + service discovery. These three inputs are generated in different ways but no matter what are always conceptually similar.</p>
+
+<h4>Bare Metal</h4>
+
+<p>Regardless of if you’re deploying in vCenter, AWS, Heroku or DigitalOcean you have a concept of a VM / Instance / Dyno / Droplet. Each platform has it’s own way of managing the deployment of those pieces, but the end result is similar: abstracted bare metal provisioning.</p>
+
+<h4>Configuration Management</h4>
+
+<p>Once the bare metal piece is in place the next stop in the factory is configuration management. Chef, Puppet, Ansible, and others all share a common thread: abstract away the notion of “resources” on a machine ($package, $file, $service) regardless of operating system or deployment environment and be able to declare those resources in an easy to understand way.</p>
+
+<p>Puppet uses it’s own DSL for CM based on Ruby, Chef uses it’s own Ruby libraries, Salt uses the YAML interchange format as well as Ansible. The idea at this point in the factory is to implement a system that abstracts away how to provision a resource on a machine and instead simply require that resource exist in a specific way.</p>
+
+<p>So a user can be defined as:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># Puppet</span>
+</span><span class='line'><span class="n">user</span> <span class="p">{</span> <span class="err">‘</span><span class="n">jeff</span><span class="err">’</span><span class="p">:</span> <span class="k">ensure</span> <span class="o">=&gt;</span> <span class="n">present</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># Chef</span>
+</span><span class='line'><span class="n">user</span> <span class="err">“</span><span class="n">jeff</span><span class="err">”</span> <span class="k">do</span> <span class="n">action</span> <span class="ss">:create</span> <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># Ansible</span>
+</span><span class='line'><span class="o">-</span> <span class="ss">user</span><span class="p">:</span> <span class="nb">name</span><span class="o">=</span><span class="n">jeff</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This abstraction enables the operations person to automate the deployment of resources to a given machine, in this example the user ‘jeff’, without having to worry about <strong>how to provision</strong> - the idea being, you don’t need to tell the computer how to make the user ‘jeff’, you simply declare it in your manifest/recipe/playbook and you’re done.</p>
+
+<p>Now this is an incredibly simple task, a single user. When you’re talking about tens of thousands of resources that may be compiled into a given catalogue to be processed on the node there are a lot of other considerations you have to take into account such as ensuring each step in the process is idempotent (you don’t execute a resource if the state of the machine already matches); ensuring the catalogue is a-cyclic (no resource dependencies create loops).</p>
+
+<p>At the end of the day this entire, highly complicated process, should be easily readable and understood at it’s highest layer of abstraction, i.e., some sort of role manifest/recipie that takes all those resources and wraps them into a value that conveys the business logic of what that code does.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># Puppet</span>
+</span><span class='line'><span class="c1"># $confdir/modules/role</span>
+</span><span class='line'><span class="k">class</span> <span class="ss">role</span><span class="p">:</span><span class="ss">:qa_haproxy_frontned</span> <span class="p">{</span> <span class="err">…</span> <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># Chef</span>
+</span><span class='line'><span class="c1"># ~/chef-repo/roles/qa_haproxy_frontend/role.rb</span>
+</span><span class='line'><span class="nb">name</span> <span class="err">“</span><span class="n">qa_haproxy_frontend</span><span class="err">”</span>
+</span><span class='line'><span class="n">description</span> <span class="err">“</span><span class="no">The</span> <span class="n">outer</span> <span class="n">most</span> <span class="n">layer</span> <span class="n">of</span> <span class="n">the</span> <span class="no">QA</span> <span class="no">Haproxy</span> <span class="n">frontend</span> <span class="no">CM</span> <span class="n">code</span><span class="err">”</span>
+</span><span class='line'><span class="n">run_list</span> <span class="p">(</span><span class="s2">&quot;recipe[qa_haproxy_frontend]”)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>All things being equal the end goal is abstraction. The CM factory should make simple the increasingly complicated step of provisioning a node in a specific way. The code should be elegant, readable and maintainable. The output should be a working machine with a repeatably deployable state.</p>
+
+<h4>Service Discovery</h4>
+
+<p>The last piece to the puzzle is service discovery. This piece, previously thought of as “optional” for most deployments is becoming more of  a main stay due to the design principles of service oriented architecture. SOA ensures we have many services to maintain, sometimes many instances of that service on a given node, each satisfying a specific feature of the application. In some ways SOA makes more simple the maintenance of the product, such as enabling developers to easily deploy code changes to a specific service which may not completely break the overall usability of the application if something goes wrong during a code change.</p>
+
+<p>From a systems engineering perspective it enables easier scaling in that you can scale a specific service rather than the entire monolithic code base to meet the demands of an increasing user base. However, how the scaling occurs is the complicated part of this final stop in the factory. Everything from assigning a port for the service process to listen on to ensuring the service actually exists and is healthy is complicated to say the least.</p>
+
+<p>ZooKeeper, ETCd and other service discovery tools allow a single point of contact for each service to reach out to in order to feed those metrics back to a master process and in some cases do some basic configuration management based on information from those systems. However, these tools also ensure a single point of failure which is why ZooKeeper takes high availability seriously. The uptime of those service discovery tools also relies on other tools such as DNS or other hostname resolution mechanisms, thereby increasing not only the complexity of your deployment by one tool but rather by a number of tools.</p>
+
+<p>Implementing successful service discovery for your SOA is not for the faint of heart. More tools are coming out that bundle up ZooKeeper in a larger framework that abstracts these finer details. For example Mesosphere bundles the Mesos and Zookeeper projects with a distributed init and process management framework called Chronos and Marathon. Marathon can receive a POST with a specific docker image in a cloud or locally hosted registry along with information such as how many containers it needs to boot across your infrastructure. Mesosphere aims to abstract away the complicated task of port assignment and “is this service running” to ensure you alway have ’n’ number of services up, and if you need ’n’ more it makes it as easy as a POST or input via the web UI.</p>
+
+<p>Synapse and Nerve also serve a similar end goal: deploy service ‘x’ ’n’ number of times; ensure service ‘x’ is healthy, and if not, remove service ‘x’ from rotation and deploy another to replace it. Simple right?</p>
+
+<h3>In the end</h3>
+
+<p>In the end, Rule #1 still stands: can you deploy your entire application stack from bare metal to fully operational in one command and with out having to use SSH to get into a node?</p>
+
+<p>The final output of the factory should be your working web application. You should never have to SSH into any node: metrics and log data should be shipped off each node routinely using tools like Logstash and StatsD - SSH’ing because you needed to run ‘free -h’ or ‘tail ‘f /var/log/whatever.log’ isn’t scalable. Imagine running 10 services, each one dumping ‘docker logs’ to a /var/log/service_instance, across 100 nodes. Are you going to SSH into each one and tail? Fuck no. You’re going to need a consolidated place where each log gets turned into usable metrics for inspection via graphs or search.</p>
+
+<p>Same goes for metrics.</p>
+
+<p>Your configuration management should provision these log and metric aggregation services at boot so they’re “just there” the next time you log into whatever system you use to aggregate this data. Sound logrotate policies should be in place to ensure you don’t blow up /var/log. Alerting mechanisms based on derived metrics should be in place to ensure when things do break and you <strong>absolutely</strong> have to SSH into that box with your dusty SSH key that you know exactly where to look and the alarm didn’t sound because the APM metric for the app was based on a hard limit. Limits are never hard, they’re derived from rolling averages, but that’s fodder for a future post.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/03/17/jenkins-puppet-ci/">jenkins-puppet-CI</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-03-17T17:05:41-07:00" pubdate data-updated="true">Mar 17th, 2015</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h1>SRC:CLR Deploy - Merge-to-Master -> Jenkins -> Puppet</h1>
+
+<p>At SRC:CLR we used to use Opsworks to deploy our code pipeline. Opsworks is great but is overloaded with a lot of extra things that we don&rsquo;t need or want. It also doesn&rsquo;t allow us to fully open our code pipeline to outside applications in the way we wanted.</p>
+
+<p>In order to give our devs the easist way to deployment, we setup a pipeline from merge-to-master to deploy that encompasses the peer review process, java unit tests, and of course Puppet.</p>
+
+<p>If you don&rsquo;t want to read the post, we&rsquo;ve open sourced the code for <a href="https://github.com/malnick/jenkins-puppet-webhook.git">this webhook</a>.</p>
+
+<h2>The 10,000 Mile View</h2>
+
+<ol>
+<li>A developer submits a PR to merge to master from a dev branch</li>
+<li>Her peers review this PR and accept the merge to master</li>
+<li>Jenkins watches this repo, and starts a build on that branch</li>
+<li>If all tests pass, the jar file is sent to s3: <code>service-$version.jar</code></li>
+<li>A post build shell script runs that sends a POST with data about the buid to our puppet master</li>
+<li>The webhook on the master accepts this POST and uses the data to:</li>
+<li>Update hte version of the service in Hiera</li>
+<li>Update the git repo where the data file that tracks versions exists (in this case the puppet control repo with hiera data)</li>
+<li>Run mCollective to update all nodes matching the role which the service runs on</li>
+<li>The node(s) check in with the master, and diff the versino in the title of the S3 resource for the service jar file</li>
+<li>See the version has changed (since we updated it in hiera) the agent pulls down hte new jar file with version $version</li>
+<li>The agent restarts the services</li>
+</ol>
+
+
+<h2>The More Intimate View</h2>
+
+<p>This sinatra hook sits on a Puppet Master and listens for POSTs on :1015, when hit with a payload it updates the version number of a service in Hiera data and executes a mCollective call to run puppet on the node with a matching $::role value.</p>
+
+<p>This is great when used in conjunction with <a href="https://github.com/malnick/puppet-s3">puppet-s3</a> provider or something similar where you can classify the resrouce like</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">s3</span> <span class="p">{</span> <span class="s2">&quot;/path/to/service-${version}&quot;</span><span class="p">:</span>
+</span><span class='line'>  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then, using our webhook or a modified version of it, you can have a one click deploy in Jenkins since this hook will update the version in Hiera data that the <code>s3</code> resource is diff&#8217;ing from and execute mCollective to run puppet on the node matching a specific role - i.e., the role that classifies the node running the service being built by jenkins and pulled down by the <code>s3</code> resrouce.</p>
+
+<h3>How it&rsquo;s done&hellip;</h3>
+
+<p>Lets say you wanted to use the <a href="https://github.com/malnick/jenkins-puppet-webhook.git">open sourced</a> webhook and integrate it with your environment, here&rsquo;s what you need to know:</p>
+
+<h4>A few assumptions:</h4>
+
+<ol>
+<li>The payload from Jenkins, or whatever tool you&rsquo;re using to hit this hook, will pass the following parameters:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;service&quot;</span><span class="p">:</span>      <span class="s2">&quot;your_name_in_hiera_data&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;environment&quot;</span><span class="p">:</span>  <span class="s2">&quot;your_environment&quot;</span><span class="p">,</span>               <span class="err">#</span> <span class="err">qa</span> <span class="err">or</span> <span class="err">production?</span>
+</span><span class='line'>  <span class="nt">&quot;version&quot;</span><span class="p">:</span>      <span class="s2">&quot;service_version_being_deployed&quot;</span><span class="p">,</span> <span class="err">#</span> <span class="err">you&#39;ll</span> <span class="err">want</span> <span class="err">to</span> <span class="err">dynamicaly</span> <span class="err">generate</span> <span class="err">this</span> <span class="err">in</span> <span class="err">jenkis</span>
+</span><span class='line'>  <span class="nt">&quot;role&quot;</span><span class="p">:</span>         <span class="s2">&quot;role_of_node_in_puppet&quot;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>The Hiera data key matches the following pattern:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="c1"># Overlay with vars from JSON</span>
+</span><span class='line'><span class="l-Scalar-Plain">${service_name}_version_${environment}</span><span class="p-Indicator">:</span> <span class="s">&#39;1.2.1&#39;</span>
+</span><span class='line'><span class="c1"># A real-world example</span>
+</span><span class='line'><span class="l-Scalar-Plain">myservice_version_qa</span><span class="p-Indicator">:</span> <span class="s">&#39;1.2.1&#39;</span>
+</span><span class='line'><span class="l-Scalar-Plain">myotherservice_version_qa</span><span class="p-Indicator">:</span> <span class="s">&#39;1.4.1&#39;</span>
+</span><span class='line'><span class="l-Scalar-Plain">someservice_version_production</span><span class="p-Indicator">:</span> <span class="s">&#39;0.5.1&#39;</span>
+</span><span class='line'><span class="l-Scalar-Plain">myservice_version_production</span><span class="p-Indicator">:</span> <span class="s">&#39;1.1.0&#39;</span>
+</span><span class='line'><span class="nn">...</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You can override this in the options you pass via the JSON POST with the key <code>key</code>.</p>
+
+<ol>
+<li>You&rsquo;ll fork this repo, and update the <code>data_file</code> and maybe the <code>key</code> values in <code>lib/options.rb</code>:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">Update</span>
+</span><span class='line'>  <span class="k">class</span> <span class="nc">Options</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kp">attr_accessor</span> <span class="ss">:config</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;##### Parsing Options #####&quot;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="vi">@config</span>         <span class="o">=</span> <span class="no">Hash</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># Required data from POST</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:environment</span><span class="o">]</span>    <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;environment&#39;</span><span class="o">]</span>   <span class="c1"># qa or production etc</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:version</span><span class="o">]</span>        <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;version&#39;</span><span class="o">]</span>       <span class="c1"># The version to write to the data file</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:service</span><span class="o">]</span>        <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;service&#39;</span><span class="o">]</span>       <span class="c1"># The service name</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:role</span><span class="o">]</span>           <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;role&#39;</span><span class="o">]</span>          <span class="c1"># The role for the nodes to update via mCollective</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># Optional data from POST</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:key</span><span class="o">]</span>            <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;key&#39;</span><span class="o">]</span>             <span class="o">||</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@config</span><span class="o">[</span><span class="ss">:service</span><span class="o">]</span><span class="si">}</span><span class="s2">_version_</span><span class="si">#{</span><span class="vi">@config</span><span class="o">[</span><span class="ss">:environment</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:git_repo</span><span class="o">]</span>       <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;git_repo&#39;</span><span class="o">]</span>        <span class="o">||</span> <span class="s1">&#39;git@github.com:malnick/puppet-control&#39;</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:git_repo_dir</span><span class="o">]</span>   <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;git_repo_dir&#39;</span><span class="o">]</span>    <span class="o">||</span> <span class="s1">&#39;/tmp/control&#39;</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:data_file</span><span class="o">]</span>      <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;data_file_path&#39;</span><span class="o">]</span>  <span class="o">||</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@config</span><span class="o">[</span><span class="ss">:git_repo_dir</span><span class="o">]</span><span class="si">}</span><span class="s2">/global.yaml&quot;</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;##### Setting configuration #####&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">|</span>
+</span><span class='line'>        <span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>You&rsquo;re using a <code>$::role</code> fact. I roll in AWS, so everything is classified based on <code>$::role</code>. This webhook won&rsquo;t be able to run puppet on the node running your service you just updated the version for until you modify this code or get yourself a role face.</li>
+</ol>
+
+
+<h3>Deployment Pattern</h3>
+
+<ol>
+<li>Clone the repo to your pupetmaster and make the above suggested changes to make it work with your deployment</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>git clone git@github.com:malnick/jenkins-puppet-webhook.git
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>Turn it on:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>bin/webhook start
+</span><span class='line'><span class="c"># Should come up on :1015</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>Have a post-run stage in your jenkins build for a given service that executes something akin to the following:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="c"># Assuming you&#39;re running this from $WORKSPACE in jenkins, your paths will vary as well as your method of obtaining the version off the build.</span>
+</span><span class='line'><span class="nv">VERSION</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo </span>service/target/service-*.jar | cut -d- -f2 | cut -d. -f1,2,3<span class="k">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Curl this webhook, which should be on the Puppet Master</span>
+</span><span class='line'>curl <span class="se">\</span>
+</span><span class='line'>  -X POST <span class="se">\</span>
+</span><span class='line'>  -d@- <span class="se">\</span>
+</span><span class='line'>  puppet.myorg.com:1015/deploy <span class="s">&lt;&lt;EOF</span>
+</span><span class='line'><span class="s">{</span>
+</span><span class='line'><span class="s">  &quot;service&quot;:     &quot;myservice&quot;,</span>
+</span><span class='line'><span class="s">  &quot;version&quot;:     &quot;$VERSION&quot;,</span>
+</span><span class='line'><span class="s">  &quot;environment&quot;: &quot;qa&quot;,</span>
+</span><span class='line'><span class="s">  &quot;role&quot;:        &quot;qa_services_migration&quot;</span>
+</span><span class='line'><span class="s">}</span>
+</span><span class='line'><span class="s">EOF</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Kick off a build&hellip;.</h3>
+
+<p>This should implement the following chain:</p>
+
+<ol>
+<li>Build is executed on jenkins</li>
+<li>If successful the build drops the new versioned jar or zip file or whatever in S3: <code>myservice-0.2.5.jar</code></li>
+<li>If successful the shell post-run is executed, running the above script that gets the new $version and POSTs to our webhook on the puppet master</li>
+<li>The webhook updates hiera data with the correct value for the updated version</li>
+<li>The webhook updates git to ensure that jenkins owns our versioning</li>
+<li>The Webhook executes an MCO call to run puppet on the node running this service based on the <code>$::role</code> fact</li>
+<li>The nodes matching the <code>$::role</code> get the updated version in hiera data and match that against the <code>s3</code> resource in that:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span><span class='line'><span class="n">s3</span> <span class="p">{</span> <span class="s2">&quot;${basedir}/${service}-${version}.jar&quot;</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">ensure</span>            <span class="o">=&gt;</span> <span class="n">present</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">source</span>            <span class="o">=&gt;</span> <span class="s2">&quot;/my_bucket/${service}-${deploy_stage}/${service}-${version}.jar&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">access_key_id</span>     <span class="o">=&gt;</span> <span class="vg">$access_key_id</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">secret_access_key</span> <span class="o">=&gt;</span> <span class="vg">$secret_access_key</span><span class="p">,</span>
+</span><span class='line'>    <span class="nb">require</span>           <span class="o">=&gt;</span> <span class="no">File</span><span class="o">[</span><span class="vg">$basedir</span><span class="o">]</span><span class="p">,</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Where <code>$version</code> is derived from</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="vg">$service</span> <span class="o">=</span> <span class="s1">&#39;my_service&#39;</span>
+</span><span class='line'><span class="vg">$version</span> <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="n">my_service_version_qa</span><span class="p">)</span>
+</span><span class='line'><span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Some Closing Remarks&hellip; or why this is rad</h2>
+
+<p>Your devs should never have to worry about depoying code, they have enough to worry about in writing it. The pipeline that is built around deployment should be mind numbingly simple for them to implement. Merge-to-master is scary for a lot of reasons. Automating the updating of values in Hiera is scary for a lot of reasons. At the end of the day however, those are my problems and not the developers. My job is to make efficient pipelines for our product, and the release pipeline is the purest incarnation of that. We think this is pretty rad, and if you want to play along and fork our public repo and submit some PR&rsquo;s we&rsquo;d love to hear from you.</p>
+</div>
+  
+  
+
+
+    </article>
+  
   <div class="pagination">
     
-    <a href="/blog/archives">Blog Archives</a>
+      <a class="prev" href="2">&larr; Older</a>
+    
+    <a href="/blog/archives">All Posts</a>
     
   </div>
 </div>
