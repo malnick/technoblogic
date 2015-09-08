@@ -89,6 +89,9 @@
 
 <div class="entry-content"><p>A major hurdle of microservices is visibility into the versions of your deployed infrastructure. At SRC:CLR we have 7 different micro services plus our platform that drive our product. These services are deployed as immutable infrastructure, their IP&rsquo;s and configuration is fluid and changing all the time. During a deployment, we might to a canary update of our services, but having to manually query the <code>/info</code> endpoint across &lsquo;n&rsquo; number of nodes, IP addresses, and dynamic management port assignments is error prone and difficult. In order to gain visibility into the currently running services, we wrote a tool that finds available services by querying our frontend and internal loadbalancers for running services, and then queries those running services to get their running versions and display them in a lightweight frontend.</p>
 
+<!-- more -->
+
+
 <p>In order to get the server lines and service names from Haproxy we <a href="https://github.com/malnick/rest_haproxy">wrote a tool called REST Haproxy</a> which allows us to query our haproxy for &ldquo;service&rdquo; abstractions.</p>
 
 <p>Given a haproxy configuration at path <code>/etc/haproxy/haproxy.cfg</code>:</p>
