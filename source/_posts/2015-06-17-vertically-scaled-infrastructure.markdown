@@ -9,6 +9,8 @@ categories:
 
 When it comes to micro-service architectures that's always the big question. You can maintain a solid agile development process, design a micro service architecture, and implement seamless CI to ensure developers can launch code from their local test environment into Prod but if you can't respond to the increase in demand for your product then who cares? Unusable products, no matter how cool, won't get traffic and your company will suffer. 
 
+<!-- more -->
+
 ## Vertical Scaling
 Scaling starts vertically - or locally - before moving to multiple machines. 
 

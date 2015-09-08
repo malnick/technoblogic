@@ -7,6 +7,8 @@ categories:
 ---
 We recently scanned our ```srcclr.com``` domain via [Qualsys](https://www.ssllabs.com/) SSL Labs scanning suite. When we deployed this site in March (a migration from sourceclear.com to srcclr.com) we had an A+ rating. 
 
+<!-- more -->
+
 However, our CEO recently re-scanned the site, and to our dismay, we got a B rating.
 
 What was the cuase? According to SSL Labs, we were supporting "weak Diffie-Hellman (DH) key exchange parameters. Grade capped to B."

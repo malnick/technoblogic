@@ -9,7 +9,7 @@
   <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content="Spring is a java framework that has been around for the better part of a decade. Though some argue it's growing long in the tooth, it's still a &hellip;">
+  <meta name="description" content="Spring is a java framework that has been around for the better part of a decade. Though some argue it&rsquo;s growing long in the tooth, it&rsquo;s &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -87,90 +87,146 @@
   </header>
 
 
-<div class="entry-content">Spring is a java framework that has been around for the better part of a decade. Though some argue it&#8217;s growing long in the tooth, it&#8217;s still a standard among large enterprise to smaller startup style web applications. Spring boot is Springs answer to next generation, easy-to-implement, spring setup. Spring boot has a host of advantages over it&#8217;s legacy counterpart, chef among them packaging up your application in jar file format vs. war file format, embedded tomcat, and the primary topic of this post: resource configuration based on config files found in the classpath.  
+<div class="entry-content"><p>Spring is a java framework that has been around for the better part of a decade. Though some argue it&rsquo;s growing long in the tooth, it&rsquo;s still a standard among large enterprise to smaller startup style web applications. Spring boot is Springs answer to next generation, easy-to-implement, spring setup. Spring boot has a host of advantages over it&rsquo;s legacy counterpart, chef among them packaging up your application in jar file format vs. war file format, embedded tomcat, and the primary topic of this post: resource configuration based on config files found in the classpath.</p>
 
-This seeminly simple way to configure an application provides a much needed interface for operations to successfully automate a spring application across heterogenious environments. y Since spring is Java-based we have the typical players we can roll in our init script to tune things JVM-related: XMX/XMS are key. We can also pass in active profiles, or groupings of configuration that override any application property files which in turn set &#8220;defaults&#8221; for a given deployment. 
+<!-- more -->
 
-Typical Sping-based deployments suffer from configuration being hard coded into the application properties files of the code repository. This is great for modularizing your code base so it can be transported to multiple environmnets. However it ensures your code also has clear text passwords, api keys and other data that shouldn&#8217;t be in a VCS repo or distributed in any way.
 
-In order to lock down the security of the code base itself we decided to externalize all the passwords, api keys and other confidential data from our code base. Spring makes it remarkably easy to do this, providing the options to specify configuration as environment variables at boot or specify external application property files to an init script or CLI call.
+<p>This seeminly simple way to configure an application provides a much needed interface for operations to successfully automate a spring application across heterogenious environments. y Since spring is Java-based we have the typical players we can roll in our init script to tune things JVM-related: XMX/XMS are key. We can also pass in active profiles, or groupings of configuration that override any application property files which in turn set &ldquo;defaults&rdquo; for a given deployment.</p>
 
-## Method 1: External App Properties
-First, lets talk about how we provision a node that runs our backend Spring services. Everything is managed with Puppet, which allows us to take advantage of encrypted YAML as a datasource via [Hiera](https://docs.puppetlabs.com/hiera/1/). We wrote a module around the deployment of our Spring services which takes care of the absolute neccessities for the proper configuration of our service. Via this module we&#8217;re able to implement:
+<p>Typical Sping-based deployments suffer from configuration being hard coded into the application properties files of the code repository. This is great for modularizing your code base so it can be transported to multiple environmnets. However it ensures your code also has clear text passwords, api keys and other data that shouldn&rsquo;t be in a VCS repo or distributed in any way.</p>
 
-- Securely pulling the jar file from S3 with an ephemeral IAM user using the [S3 module](https://github.com/malnick/puppet-s3) given a specific $version
-- Deploying the service to /opt/sourceclear/$service/$service.jar and symlinking the versioned jar to the executed inode
-- Logstash & logrotate configuration for the service
-- Exported balancermember resources for Haproxy for each process of each service that is running on a $node
-- Externalized application-$app.properties file specifying the passwords, api keys and other encrypted data from eYaml
-- An init script for init.d which runs &#8216;n&#8217; number of processes specified by the $proc_opts hash sc_services::services defined type. 
-- Configure application metric monitoring for New Relic 
-- Define JVM Heap size for each process
+<p>In order to lock down the security of the code base itself we decided to externalize all the passwords, api keys and other confidential data from our code base. Spring makes it remarkably easy to do this, providing the options to specify configuration as environment variables at boot or specify external application property files to an init script or CLI call.</p>
 
-A typical service might have the following deployment in Puppetland:
+<h2>Method 1: External App Properties</h2>
 
-&#8220;`ruby
-class profiles::sc_services::some_service ( $version ){
+<p>First, lets talk about how we provision a node that runs our backend Spring services. Everything is managed with Puppet, which allows us to take advantage of encrypted YAML as a datasource via <a href="https://docs.puppetlabs.com/hiera/1/">Hiera</a>. We wrote a module around the deployment of our Spring services which takes care of the absolute neccessities for the proper configuration of our service. Via this module we&rsquo;re able to implement:</p>
 
-  $properties_file = {
-    &#8216;rabbitmq.password&#8217; => hiera(&#8216;qa::rabbitmq_password&#8217;),
-    &#8216;mandrill.api.key&#8217;  => hiera(&#8216;qa::mandrill_api_key&#8217;),
-  }
+<ul>
+<li>Securely pulling the jar file from S3 with an ephemeral IAM user using the <a href="https://github.com/malnick/puppet-s3">S3 module</a> given a specific $version</li>
+<li>Deploying the service to /opt/sourceclear/$service/$service.jar and symlinking the versioned jar to the executed inode</li>
+<li>Logstash &amp; logrotate configuration for the service</li>
+<li>Exported balancermember resources for Haproxy for each process of each service that is running on a $node</li>
+<li>Externalized application-$app.properties file specifying the passwords, api keys and other encrypted data from eYaml</li>
+<li>An init script for init.d which runs &lsquo;n&rsquo; number of processes specified by the $proc_opts hash sc_services::services defined type.</li>
+<li>Configure application metric monitoring for New Relic</li>
+<li>Define JVM Heap size for each process</li>
+</ul>
 
-  # The main service definition
-  sc_services::service { $some_service:
-    deploy_stage        => &#8216;qa&#8217;,
-    version             => $version,
-    enable_newrelic_apm => true,
-    loadbalancer_role   => &#8216;qa_internal&#8217;,
-    xmx_setting         => &#8216;512&#8217;,
-    xms_setting         => &#8216;512&#8217;,
-    proc_opts           => {
-      &#8216;1&#8217;  => {
-        &#8216;env_profile&#8217; => &#8216;qa&#8217;,
-        &#8216;port&#8217;        => &#8216;55000&#8217;,
-        &#8216;mgmt_port&#8217;   => &#8216;55010&#8217;,
-        &#8216;override&#8217;    => $properties_file,
-      },
-      &#8216;2&#8217;  => {
-        &#8216;env_profile&#8217; => &#8216;qa&#8217;,
-        &#8216;port&#8217;        => &#8216;55001&#8217;,
-        &#8216;mgmt_port&#8217;   => &#8216;55011&#8217;,
-        &#8216;override&#8217;    => $properties_file,
-      }
-    }
-  }
-}
-&#8220;`
 
-This configuration will boot a node with an init script managing 2 Java processes for $service. Each prcess gets it&#8217;s own exported balancermember resource for our internal haproxy in the environment &#8216;qa&#8217; as well as New Relic APM monitoring, and most importantly an externalized configuration built from data in git that is encrypted. 
+<p>A typical service might have the following deployment in Puppetland:</p>
 
-## Method 2: Environment Variables
-Since Sping allows you to also override any configuration as ENV variables it makes it incredibly easy to roll this service into a docker container:
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="n">profiles</span><span class="o">::</span><span class="n">sc_services</span><span class="o">::</span><span class="n">some_service</span> <span class="p">(</span> <span class="vg">$version</span> <span class="p">){</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="vg">$properties_file</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>    <span class="s1">&#39;rabbitmq.password&#39;</span> <span class="o">=&gt;</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;qa::rabbitmq_password&#39;</span><span class="p">),</span>
+</span><span class='line'>    <span class="s1">&#39;mandrill.api.key&#39;</span>  <span class="o">=&gt;</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;qa::mandrill_api_key&#39;</span><span class="p">),</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># The main service definition</span>
+</span><span class='line'>  <span class="n">sc_services</span><span class="o">::</span><span class="n">service</span> <span class="p">{</span> <span class="vg">$some_service</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">deploy_stage</span>        <span class="o">=&gt;</span> <span class="s1">&#39;qa&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">version</span>             <span class="o">=&gt;</span> <span class="vg">$version</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">enable_newrelic_apm</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">loadbalancer_role</span>   <span class="o">=&gt;</span> <span class="s1">&#39;qa_internal&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">xmx_setting</span>         <span class="o">=&gt;</span> <span class="s1">&#39;512&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">xms_setting</span>         <span class="o">=&gt;</span> <span class="s1">&#39;512&#39;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">proc_opts</span>           <span class="o">=&gt;</span> <span class="p">{</span>
+</span><span class='line'>      <span class="s1">&#39;1&#39;</span>  <span class="o">=&gt;</span> <span class="p">{</span>
+</span><span class='line'>        <span class="s1">&#39;env_profile&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;qa&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s1">&#39;port&#39;</span>        <span class="o">=&gt;</span> <span class="s1">&#39;55000&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s1">&#39;mgmt_port&#39;</span>   <span class="o">=&gt;</span> <span class="s1">&#39;55010&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s1">&#39;override&#39;</span>    <span class="o">=&gt;</span> <span class="vg">$properties_file</span><span class="p">,</span>
+</span><span class='line'>      <span class="p">},</span>
+</span><span class='line'>      <span class="s1">&#39;2&#39;</span>  <span class="o">=&gt;</span> <span class="p">{</span>
+</span><span class='line'>        <span class="s1">&#39;env_profile&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;qa&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s1">&#39;port&#39;</span>        <span class="o">=&gt;</span> <span class="s1">&#39;55001&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s1">&#39;mgmt_port&#39;</span>   <span class="o">=&gt;</span> <span class="s1">&#39;55011&#39;</span><span class="p">,</span>
+</span><span class='line'>        <span class="s1">&#39;override&#39;</span>    <span class="o">=&gt;</span> <span class="vg">$properties_file</span><span class="p">,</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
 
-&#8220;`ruby
-  $rabbitmq_password  = hiera(&#8216;rabbitmq_password&#8217;)
-  $mandrill_api_key   = hiera(&#8216;mandrill_api_key&#8217;)
 
-  $env_variables = [
-    &#8220;rabbitmq.password=${rabbitmq_password}&#8221;,
-    &#8220;mandrill.api.key=${mandrill_api_key}&#8221;,
-  ]
+<p>This configuration will boot a node with an init script managing 2 Java processes for $service. Each prcess gets it&rsquo;s own exported balancermember resource for our internal haproxy in the environment &lsquo;qa&rsquo; as well as New Relic APM monitoring, and most importantly an externalized configuration built from data in git that is encrypted.</p>
 
-  docker::run { &#8216;some_service&#8217;:
-    image           => &#8220;our_priv_registry:5000/some_service-${version}&#8221;,
-    ports           => [&#8216;55010&#8217;],
-    expose          => [&#8216;55010&#8217;],
-    env             => $env_variables,
-    restart_service => true,
-    privileged      => false,
-    pull_on_start   => true,
-  }
-&#8220;`
+<h2>Method 2: Environment Variables</h2>
 
-Now we can toss out an on-system properties file and keep the secure passwords purely in the context of the shell which they are executed. This furthers security as the passwords are never actually written to the system, they can not be copied or read from disk as it were. 
+<p>Since Sping allows you to also override any configuration as ENV variables it makes it incredibly easy to roll this service into a docker container:</p>
 
-Of course, this simple docker example doesn&#8217;t run multiples of the service but we could easily write a small module around docker which does. However, our Docker deployment is more about moving towards mesosphere as our service execution framework. This way, configuration management will not be used at all for booting and running our Docker containers. Instead, we&#8217;ll be POSTing the container, the number of instances, and ENV variables to a a Mesos master which will manage the service discovery, runtime persistance and aggregation of the services in our AWS deployment. 
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'>  <span class="vg">$rabbitmq_password</span>  <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;rabbitmq_password&#39;</span><span class="p">)</span>
+</span><span class='line'>  <span class="vg">$mandrill_api_key</span>   <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;mandrill_api_key&#39;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="vg">$env_variables</span> <span class="o">=</span> <span class="o">[</span>
+</span><span class='line'>    <span class="s2">&quot;rabbitmq.password=${rabbitmq_password}&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="s2">&quot;mandrill.api.key=${mandrill_api_key}&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">docker</span><span class="o">::</span><span class="n">run</span> <span class="p">{</span> <span class="s1">&#39;some_service&#39;</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">image</span>           <span class="o">=&gt;</span> <span class="s2">&quot;our_priv_registry:5000/some_service-${version}&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">ports</span>           <span class="o">=&gt;</span> <span class="o">[</span><span class="s1">&#39;55010&#39;</span><span class="o">]</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">expose</span>          <span class="o">=&gt;</span> <span class="o">[</span><span class="s1">&#39;55010&#39;</span><span class="o">]</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">env</span>             <span class="o">=&gt;</span> <span class="vg">$env_variables</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">restart_service</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">privileged</span>      <span class="o">=&gt;</span> <span class="kp">false</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">pull_on_start</span>   <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span>
+</span><span class='line'>  <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now we can toss out an on-system properties file and keep the secure passwords purely in the context of the shell which they are executed. This furthers security as the passwords are never actually written to the system, they can not be copied or read from disk as it were.</p>
+
+<p>Of course, this simple docker example doesn&rsquo;t run multiples of the service but we could easily write a small module around docker which does. However, our Docker deployment is more about moving towards mesosphere as our service execution framework. This way, configuration management will not be used at all for booting and running our Docker containers. Instead, we&rsquo;ll be POSTing the container, the number of instances, and ENV variables to a a Mesos master which will manage the service discovery, runtime persistance and aggregation of the services in our AWS deployment.</p>
 </div>
 
 

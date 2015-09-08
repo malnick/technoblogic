@@ -7,6 +7,8 @@ categories:
 ---
 Spring is a java framework that has been around for the better part of a decade. Though some argue it's growing long in the tooth, it's still a standard among large enterprise to smaller startup style web applications. Spring boot is Springs answer to next generation, easy-to-implement, spring setup. Spring boot has a host of advantages over it's legacy counterpart, chef among them packaging up your application in jar file format vs. war file format, embedded tomcat, and the primary topic of this post: resource configuration based on config files found in the classpath.  
 
+<!-- more -->
+
 This seeminly simple way to configure an application provides a much needed interface for operations to successfully automate a spring application across heterogenious environments. y Since spring is Java-based we have the typical players we can roll in our init script to tune things JVM-related: XMX/XMS are key. We can also pass in active profiles, or groupings of configuration that override any application property files which in turn set "defaults" for a given deployment. 
 
 Typical Sping-based deployments suffer from configuration being hard coded into the application properties files of the code repository. This is great for modularizing your code base so it can be transported to multiple environmnets. However it ensures your code also has clear text passwords, api keys and other data that shouldn't be in a VCS repo or distributed in any way.

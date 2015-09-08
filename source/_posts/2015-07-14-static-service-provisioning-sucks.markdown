@@ -7,6 +7,8 @@ categories:
 ---
 Many tools exist to help automate and orchestrate provisioning servers. Each tool serves a purpose, or is tailored for a specific task. One realization I had not to long ago was that configuration management tools, as a framework, suck at provisioning micro services. I say that at the risk of bringing on the deluge of comments that often accompany such a blunt, over arching statement. 
 
+<!-- more -->
+
 ## Configuration Management Primer
 But let's think about it for a minute: how does configuration management work? The idea is to codify machine state into a static code base that can abstract a more complex system into simple resource statements. Then those resource statements are parsed and compiled into a [directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph).  
 
