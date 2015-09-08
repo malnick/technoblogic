@@ -10,3 +10,6 @@
 [submodule ".themes/constant-cockles"]
 	path = .themes/constant-cockles
 	url = git://github.com/octothemes/constant-cockles.git
+[submodule ".themes/boldandblue"]
+	path = .themes/boldandblue
+	url = https://github.com/johnkeith/boldandblue.git
