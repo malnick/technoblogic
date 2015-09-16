@@ -165,10 +165,13 @@
     <lastmod>2014-01-02T10:52:00-08:00</lastmod>
   </url>
   <url>
-    <loc>http://technoblogic.io/</loc>
+    <loc>http://technoblogic.io/blog/archives/</loc>
   </url>
   <url>
     <loc>http://technoblogic.io/blog/contact/</loc>
+  </url>
+  <url>
+    <loc>http://technoblogic.io/</loc>
   </url>
   <url>
     <loc>http://technoblogic.io/blog/about/</loc>
@@ -177,10 +180,10 @@
     <loc>http://technoblogic.io/posts/</loc>
   </url>
   <url>
-    <loc>http://technoblogic.io/blog/archives/</loc>
+    <loc>http://technoblogic.io/blog/resume/</loc>
   </url>
   <url>
-    <loc>http://technoblogic.io/blog/resume/</loc>
+    <loc>http://technoblogic.io/blog/talks/</loc>
   </url>
   <url>
     <loc>http://technoblogic.io/categories/misc/</loc>
@@ -196,17 +199,5 @@
   </url>
   <url>
     <loc>http://technoblogic.io/categories/devops/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/posts/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/posts/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/posts/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/posts/</loc>
   </url>
 </urlset>
