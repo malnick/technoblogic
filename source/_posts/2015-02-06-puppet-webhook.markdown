@@ -5,7 +5,7 @@ date: 2015-02-06 06:52:36 -0800
 comments: true
 categories: 
 ---
-# puppet-webhook
+# Puppet Webhook 
 Have you ever needed to implement a simple REST API call to another service after a puppet run or during? 
 
 Well now you can!
