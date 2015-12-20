@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://technoblogic.io/blog/2015/12/20/foo/</loc>
+    <lastmod>2015-12-20T15:01:43-08:00</lastmod>
+  </url>
+  <url>
+    <loc>http://technoblogic.io/blog/2015/12/06/architecting-an-installer-for-the-data-center-operating-system/</loc>
+    <lastmod>2015-12-06T08:48:28-08:00</lastmod>
+  </url>
+  <url>
     <loc>http://technoblogic.io/blog/2015/09/05/mantle-encrypted-json-for-the-marathon-api/</loc>
     <lastmod>2015-09-05T13:00:32-07:00</lastmod>
   </url>
@@ -196,5 +204,17 @@
   </url>
   <url>
     <loc>http://technoblogic.io/categories/devops/</loc>
+  </url>
+  <url>
+    <loc>http://technoblogic.io/posts/</loc>
+  </url>
+  <url>
+    <loc>http://technoblogic.io/posts/</loc>
+  </url>
+  <url>
+    <loc>http://technoblogic.io/posts/</loc>
+  </url>
+  <url>
+    <loc>http://technoblogic.io/posts/</loc>
   </url>
 </urlset>
