@@ -8,9 +8,16 @@ footer: true
 ---
 ##Experience
 
+###Mesosphere - mesosphere.io, Site Reliability Engineer, Foundations Team
+
+October 2015 - Present
+
+Foundations Team at Mesosphere. We build the foundation to the Data Center Operating System. From system architecture to the installation process, we touch almost every piece that goes into the DCOS ecosystem. Collaborate with foundations team, front end, design and core developers to design and build an asynchronous, highly concurrent and stabled SSH deployment method of the DCOS open source and enterprise product and associated HTTP API. Work with support, sales and core engineers to troubleshoot customer P0's and implement fixes. Listen to customer feedback and implement design with a customer first attitute.  
+
+
 ###SRC:CLR - srcclr.com, Lead DevOps Engineer
 
-January 2015 - Present
+January 2015 - October 2015
 
 Scalable chaos; Puppet; All things IT Operations.
 
