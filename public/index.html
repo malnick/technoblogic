@@ -9,7 +9,7 @@
   <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content="Synopsis Release 1.5 of the Data Center Operating System offers a host of new changes and improvements. Most notably, DCOS 1.5 can install itself to &hellip;">
+  <meta name="description" content="Mantle is a go utility that wraps the POST process to Mesosphere&rsquo;s Marathon API. Before, users had to store JSON with cleartext environment &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -68,237 +68,6 @@
     <div id="content">
       <div class="blog-index">
   
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/08/mesospheres-data-center-operating-system-1-dot-5-release-notes/">Mesosphere's Data Center Operating System 1.5 Release Notes</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-01-08T13:25:31-08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:25 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>Synopsis</h2>
-
-<p>Release 1.5 of the Data Center Operating System offers a host of new changes and improvements. Most notably, DCOS 1.5 can install itself to a cluster of nodes over SSH. This feature allows end-users to setup a single host from which they can deploy their entire cluster in 3 easy commands. The release of DCOS 1.5 serves as the basis from which we&rsquo;re going to build our 1.6 installer, which will ship with a user interface for an even better experience. In the hopes of making DCOS the easiest distributed process scheduler to both install and use, we&rsquo;re also changing our configuration file format to YAML. YAML is less strict about typing, easier to read, and allows us to inline comment so we can be even more clear about what we need from you, our customer, in order to have a successful and seemless installation process.</p>
-
-<p>Along with this big changes to our installation process, we&rsquo;re also shipping a host of new features to DCOS which we think you&rsquo;ll find compelling and noteworthy.</p>
-
-<h3>Automated SSH Deployment</h3>
-
-<p>DCOS 1.5 installs itself to your cluster via SSH. The process can be completed in 3 easy command line steps. This removes the burden of distributing DCOS to your entire cluster manaully or putting the onus to automate this process on you, our customer. You provide the installer a SSH key, a SSH user, and a list of hosts to install DCOS and we take care of the rest.</p>
-
-<p>We wrote our own, highly stable and concurrent SSH library for this process. We execute 10 concurrent SSH sessions at a time, however complete installation time is heavily dependant on network capabilities. In any case, we hope this new deployment method will enable our customers with a more seemless installation process.</p>
-
-<p>In the event that this deployment option does not fit into your architecture, you can still manually install the cluster using our installation script as has been done in the past.</p>
-
-<h3>New Configuration File Format</h3>
-
-<p>We have upgraded the configuration file format from JSON to YAML. We believe that YAML provides a more readable and end-user-worthy construct in which to store configuration. YAML is less strict about type and has far fewer nuances around quotes in comparison to JSON. Don&rsquo;t get us wrong, we love JSON! It&rsquo;s just that as a human being, we don&rsquo;t like to read it (we leave that up to machines).</p>
-
-<p>The new configuration file is constructed to allow for our SSH deployment method. We have broken the configuration file into two hashes: cluster_config and ssh_config.</p>
-
-<p>If you&rsquo;re familiar with our old JSON configuration file, the cluster_config should look familiar. It provides all the neccessary information to generate the DCOS configuration files.</p>
-
-<p>The ssh_config hash is new, and it provides all the neccessary information to install DCOS to your cluster over SSH.</p>
-
-<h3>CLI Options</h3>
-
-<p>The way in whhich you run the DCOS installer (for current users, the dcos_generate_config.sh) has also changed.</p>
-
-<p>In previous installations, you&rsquo;d create a <code>genconf/</code> directory, and populate it with <code>config.json</code> and your <code>ip-detect</code> script, then execute <code>./dcos_generate_config.sh</code>.</p>
-
-<p>In order to allow you to install DCOS to your cluster over SSH, we&rsquo;ve provided a few steps to this process:</p>
-
-<ol>
-<li><code>mkdir genconf/</code></li>
-<li><code>vi genconf/config.yaml</code></li>
-</ol>
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-<span class='line-number'>70</span>
-<span class='line-number'>71</span>
-<span class='line-number'>72</span>
-<span class='line-number'>73</span>
-<span class='line-number'>74</span>
-<span class='line-number'>75</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
-</span><span class='line'><span class="c1"># Cluster configuration for DCOS</span>
-</span><span class='line'><span class="l-Scalar-Plain">cluster_config</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="c1"># This is the local path on the target machine where the installer dumps the</span>
-</span><span class='line'>  <span class="c1"># packages and bootstrap tar ball.</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">bootstrap_url</span><span class="p-Indicator">:</span> <span class="s">&#39;file:///opt/dcos_install_tmp&#39;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># The name of the cluster, we default to the following:</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">cluster_name</span><span class="p-Indicator">:</span> <span class="s">&#39;Mesosphere:</span><span class="nv"> </span><span class="s">The</span><span class="nv"> </span><span class="s">Data</span><span class="nv"> </span><span class="s">Center</span><span class="nv"> </span><span class="s">Operating</span><span class="nv"> </span><span class="s">System&#39;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># Docker GC defaults, recommended to leave as default unless you&#39;re advanced.</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">docker_remove_delay</span><span class="p-Indicator">:</span> <span class="s">&#39;1hrs&#39;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># The default backend for Exhibitor is Zookeeper. Advanced options are</span>
-</span><span class='line'>  <span class="c1"># shared_fs and aws_s3</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">exhibitor_storage_backend</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">zookeeper</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># If you use the default Zk backend for Exhibitor, you need to pass in</span>
-</span><span class='line'>  <span class="c1"># the IPs of the Zk cluster for it to use. This is a COMMA SEPARATED LIST,</span>
-</span><span class='line'>  <span class="c1"># not to be confused with an actual array. You must also pass the :$PORT.</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">exhibitor_zk_hosts</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">10.33.2.20:2181</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># This is an arbitrary path for Exhibitor to dump its zk config to.</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">exhibitor_zk_path</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">/home/vagrant</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># More garbage collection, don&#39;t change unless you&#39;re advanced.</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">gc_delay</span><span class="p-Indicator">:</span> <span class="s">&#39;2days&#39;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># We default master discovery to a static list of masters. Advanced options</span>
-</span><span class='line'>  <span class="c1"># are &#39;keepalived&#39; and &#39;cloud_dynamic&#39;</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">master_discovery</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">static</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># Since we&#39;re defaulting to master list, we pass that static list of masters.</span>
-</span><span class='line'>  <span class="c1"># Recommended deployment as at least 3 masters and a maximum of 5. It&#39;s not</span>
-</span><span class='line'>  <span class="c1"># Recommended that you deploy even number of masters.</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">master_list</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">10.33.2.21</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># This is the list of upstream DNS resolvers that Mesos DNS will use.</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">resolvers</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">8.8.8.8</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">8.8.4.4</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># Default roles, do not change unless you&#39;re advanced.</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">roles</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">slave_public</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># Default weights, do not change unless you&#39;re advanced.</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">weights</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">slave_public=1</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1"># SSH Configuration for --preflight/--deploy/--postflight/--clean-dcos</span>
-</span><span class='line'><span class="l-Scalar-Plain">ssh_config</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="c1"># It&#39;s recommended to rotate keys in the cluster after deployment.</span>
-</span><span class='line'>  <span class="c1"># It is recommended to copy your private SSH key to the genconf/</span>
-</span><span class='line'>  <span class="c1"># directory which is mounted to /genconf inside the installer</span>
-</span><span class='line'>  <span class="c1"># docker container. Changing this to a path on the host machine will mean the installer</span>
-</span><span class='line'>  <span class="c1"># can not find the key, since /genconf is mounted by default in the installer script.</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">ssh_key_path</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">/genconf/ssh_key</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># The default SSH port for the SSH installation process.</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">ssh_port</span><span class="p-Indicator">:</span> <span class="s">&#39;22&#39;</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># The default SSH user to SSH into the target machines for installation. Users</span>
-</span><span class='line'>  <span class="c1"># must have root priviledges on the host machines.</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">ssh_user</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">vagrant</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># The complete list of IPv4 addresses to the target DCOS hosts including masters.</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">target_hosts</span><span class="p-Indicator">:</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">10.33.2.21</span>
-</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">10.33.2.24</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="c1"># The directory on the installer host to dump logs from the SSH processes to. This</span>
-</span><span class='line'>  <span class="c1"># should not be changed as /genconf is local to the container running the installer,</span>
-</span><span class='line'>  <span class="c1"># and is a mounted volume.</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">log_directory</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">/genconf/logs</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">process_timeout</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">120</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>We determine which nodes to install as masters and which are agents by deduction of what you give us as &lsquo;master_list&rsquo; in the <code>cluster_config</code> section.</p>
-
-<ol>
-<li>create genconf/ip-dtect</li>
-<li>copy in $YOUR_SSH_KEY to genconf/ssh_key</li>
-<li><code>./dcos_generate_config.sh --genconf</code> -> creates configuration files for DCOS, builds packages.</li>
-<li><code>./dcos_generate_config.sh --preflight</code> -> SSH&rsquo;s each host and executes the preflight script. Run this with <code>-l debug</code> to see verbose output, else only errors are shown.</li>
-<li><code>./dcos_generate_config.sh --deploy</code> -> SSH&rsquo;s each host and installs DCOS.</li>
-<li><code>./dcos_generate_config.sh --postflight</code> -> SSH&rsquo;s each host and determines if DCOS has been installed correctly. You may need to wait up to 15 minutes before this fully takes effect due to the nature of bootstrapping the DCOS zookeeper service.</li>
-<li>In the event that things went south or you need to start from scratch, <code>./dcos_generate_config.sh --uninstall</code> will completely remove DCOS from your cluster.</li>
-</ol>
-
-</div>
-  
-  
-
-
-    </article>
   
   
     <article>
@@ -614,6 +383,312 @@
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/03/17/jenkins-puppet-ci/">jenkins-puppet-CI</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-03-17T17:05:41-07:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>5:05 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h1>SRC:CLR Deploy - Merge-to-Master -> Jenkins -> Puppet</h1>
+
+<p>At SRC:CLR we used to use Opsworks to deploy our code pipeline. Opsworks is great but is overloaded with a lot of extra things that we don&rsquo;t need or want. It also doesn&rsquo;t allow us to fully open our code pipeline to outside applications in the way we wanted.</p>
+
+<p>In order to give our devs the easist way to deployment, we setup a pipeline from merge-to-master to deploy that encompasses the peer review process, java unit tests, and of course Puppet.</p>
+
+<p>If you don&rsquo;t want to read the post, we&rsquo;ve open sourced the code for <a href="https://github.com/malnick/jenkins-puppet-webhook.git">this webhook</a>.</p>
+
+<h2>The 10,000 Mile View</h2>
+
+<ol>
+<li>A developer submits a PR to merge to master from a dev branch</li>
+<li>Her peers review this PR and accept the merge to master</li>
+<li>Jenkins watches this repo, and starts a build on that branch</li>
+<li>If all tests pass, the jar file is sent to s3: <code>service-$version.jar</code></li>
+<li>A post build shell script runs that sends a POST with data about the buid to our puppet master</li>
+<li>The webhook on the master accepts this POST and uses the data to:</li>
+<li>Update hte version of the service in Hiera</li>
+<li>Update the git repo where the data file that tracks versions exists (in this case the puppet control repo with hiera data)</li>
+<li>Run mCollective to update all nodes matching the role which the service runs on</li>
+<li>The node(s) check in with the master, and diff the versino in the title of the S3 resource for the service jar file</li>
+<li>See the version has changed (since we updated it in hiera) the agent pulls down hte new jar file with version $version</li>
+<li>The agent restarts the services</li>
+</ol>
+
+
+<h2>The More Intimate View</h2>
+
+<p>This sinatra hook sits on a Puppet Master and listens for POSTs on :1015, when hit with a payload it updates the version number of a service in Hiera data and executes a mCollective call to run puppet on the node with a matching $::role value.</p>
+
+<p>This is great when used in conjunction with <a href="https://github.com/malnick/puppet-s3">puppet-s3</a> provider or something similar where you can classify the resrouce like</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">s3</span> <span class="p">{</span> <span class="s2">&quot;/path/to/service-${version}&quot;</span><span class="p">:</span>
+</span><span class='line'>  <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then, using our webhook or a modified version of it, you can have a one click deploy in Jenkins since this hook will update the version in Hiera data that the <code>s3</code> resource is diff'ing from and execute mCollective to run puppet on the node matching a specific role - i.e., the role that classifies the node running the service being built by jenkins and pulled down by the <code>s3</code> resrouce.</p>
+
+<h3>How it&rsquo;s done&hellip;</h3>
+
+<p>Lets say you wanted to use the <a href="https://github.com/malnick/jenkins-puppet-webhook.git">open sourced</a> webhook and integrate it with your environment, here&rsquo;s what you need to know:</p>
+
+<h4>A few assumptions:</h4>
+
+<ol>
+<li>The payload from Jenkins, or whatever tool you&rsquo;re using to hit this hook, will pass the following parameters:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;service&quot;</span><span class="p">:</span>      <span class="s2">&quot;your_name_in_hiera_data&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;environment&quot;</span><span class="p">:</span>  <span class="s2">&quot;your_environment&quot;</span><span class="p">,</span>               <span class="err">#</span> <span class="err">qa</span> <span class="err">or</span> <span class="err">production?</span>
+</span><span class='line'>  <span class="nt">&quot;version&quot;</span><span class="p">:</span>      <span class="s2">&quot;service_version_being_deployed&quot;</span><span class="p">,</span> <span class="err">#</span> <span class="err">you&#39;ll</span> <span class="err">want</span> <span class="err">to</span> <span class="err">dynamicaly</span> <span class="err">generate</span> <span class="err">this</span> <span class="err">in</span> <span class="err">jenkis</span>
+</span><span class='line'>  <span class="nt">&quot;role&quot;</span><span class="p">:</span>         <span class="s2">&quot;role_of_node_in_puppet&quot;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>The Hiera data key matches the following pattern:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="c1"># Overlay with vars from JSON</span>
+</span><span class='line'><span class="l-Scalar-Plain">${service_name}_version_${environment}</span><span class="p-Indicator">:</span> <span class="s">&#39;1.2.1&#39;</span>
+</span><span class='line'><span class="c1"># A real-world example</span>
+</span><span class='line'><span class="l-Scalar-Plain">myservice_version_qa</span><span class="p-Indicator">:</span> <span class="s">&#39;1.2.1&#39;</span>
+</span><span class='line'><span class="l-Scalar-Plain">myotherservice_version_qa</span><span class="p-Indicator">:</span> <span class="s">&#39;1.4.1&#39;</span>
+</span><span class='line'><span class="l-Scalar-Plain">someservice_version_production</span><span class="p-Indicator">:</span> <span class="s">&#39;0.5.1&#39;</span>
+</span><span class='line'><span class="l-Scalar-Plain">myservice_version_production</span><span class="p-Indicator">:</span> <span class="s">&#39;1.1.0&#39;</span>
+</span><span class='line'><span class="nn">...</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You can override this in the options you pass via the JSON POST with the key <code>key</code>.</p>
+
+<ol>
+<li>You&rsquo;ll fork this repo, and update the <code>data_file</code> and maybe the <code>key</code> values in <code>lib/options.rb</code>:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">Update</span>
+</span><span class='line'>  <span class="k">class</span> <span class="nc">Options</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kp">attr_accessor</span> <span class="ss">:config</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;##### Parsing Options #####&quot;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="vi">@config</span>         <span class="o">=</span> <span class="no">Hash</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># Required data from POST</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:environment</span><span class="o">]</span>    <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;environment&#39;</span><span class="o">]</span>   <span class="c1"># qa or production etc</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:version</span><span class="o">]</span>        <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;version&#39;</span><span class="o">]</span>       <span class="c1"># The version to write to the data file</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:service</span><span class="o">]</span>        <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;service&#39;</span><span class="o">]</span>       <span class="c1"># The service name</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:role</span><span class="o">]</span>           <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;role&#39;</span><span class="o">]</span>          <span class="c1"># The role for the nodes to update via mCollective</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="c1"># Optional data from POST</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:key</span><span class="o">]</span>            <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;key&#39;</span><span class="o">]</span>             <span class="o">||</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@config</span><span class="o">[</span><span class="ss">:service</span><span class="o">]</span><span class="si">}</span><span class="s2">_version_</span><span class="si">#{</span><span class="vi">@config</span><span class="o">[</span><span class="ss">:environment</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:git_repo</span><span class="o">]</span>       <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;git_repo&#39;</span><span class="o">]</span>        <span class="o">||</span> <span class="s1">&#39;git@github.com:malnick/puppet-control&#39;</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:git_repo_dir</span><span class="o">]</span>   <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;git_repo_dir&#39;</span><span class="o">]</span>    <span class="o">||</span> <span class="s1">&#39;/tmp/control&#39;</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">[</span><span class="ss">:data_file</span><span class="o">]</span>      <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="s1">&#39;data_file_path&#39;</span><span class="o">]</span>  <span class="o">||</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@config</span><span class="o">[</span><span class="ss">:git_repo_dir</span><span class="o">]</span><span class="si">}</span><span class="s2">/global.yaml&quot;</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;##### Setting configuration #####&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="vi">@config</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">|</span>
+</span><span class='line'>        <span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span class='line'>      <span class="k">end</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>You&rsquo;re using a <code>$::role</code> fact. I roll in AWS, so everything is classified based on <code>$::role</code>. This webhook won&rsquo;t be able to run puppet on the node running your service you just updated the version for until you modify this code or get yourself a role face.</li>
+</ol>
+
+
+<h3>Deployment Pattern</h3>
+
+<ol>
+<li>Clone the repo to your pupetmaster and make the above suggested changes to make it work with your deployment</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>git clone git@github.com:malnick/jenkins-puppet-webhook.git
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>Turn it on:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>bin/webhook start
+</span><span class='line'><span class="c"># Should come up on :1015</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>Have a post-run stage in your jenkins build for a given service that executes something akin to the following:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="c"># Assuming you&#39;re running this from $WORKSPACE in jenkins, your paths will vary as well as your method of obtaining the version off the build.</span>
+</span><span class='line'><span class="nv">VERSION</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo </span>service/target/service-*.jar <span class="p">|</span> cut -d- -f2 <span class="p">|</span> cut -d. -f1,2,3<span class="k">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Curl this webhook, which should be on the Puppet Master</span>
+</span><span class='line'>curl <span class="se">\</span>
+</span><span class='line'>  -X POST <span class="se">\</span>
+</span><span class='line'>  -d@- <span class="se">\</span>
+</span><span class='line'>  puppet.myorg.com:1015/deploy <span class="s">&lt;&lt;EOF</span>
+</span><span class='line'><span class="s">{</span>
+</span><span class='line'><span class="s">  &quot;service&quot;:     &quot;myservice&quot;,</span>
+</span><span class='line'><span class="s">  &quot;version&quot;:     &quot;$VERSION&quot;,</span>
+</span><span class='line'><span class="s">  &quot;environment&quot;: &quot;qa&quot;,</span>
+</span><span class='line'><span class="s">  &quot;role&quot;:        &quot;qa_services_migration&quot;</span>
+</span><span class='line'><span class="s">}</span>
+</span><span class='line'><span class="s">EOF</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Kick off a build&hellip;.</h3>
+
+<p>This should implement the following chain:</p>
+
+<ol>
+<li>Build is executed on jenkins</li>
+<li>If successful the build drops the new versioned jar or zip file or whatever in S3: <code>myservice-0.2.5.jar</code></li>
+<li>If successful the shell post-run is executed, running the above script that gets the new $version and POSTs to our webhook on the puppet master</li>
+<li>The webhook updates hiera data with the correct value for the updated version</li>
+<li>The webhook updates git to ensure that jenkins owns our versioning</li>
+<li>The Webhook executes an MCO call to run puppet on the node running this service based on the <code>$::role</code> fact</li>
+<li>The nodes matching the <code>$::role</code> get the updated version in hiera data and match that against the <code>s3</code> resource in that:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span><span class='line'><span class="n">s3</span> <span class="p">{</span> <span class="s2">&quot;${basedir}/${service}-${version}.jar&quot;</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">ensure</span>            <span class="o">=&gt;</span> <span class="n">present</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">source</span>            <span class="o">=&gt;</span> <span class="s2">&quot;/my_bucket/${service}-${deploy_stage}/${service}-${version}.jar&quot;</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">access_key_id</span>     <span class="o">=&gt;</span> <span class="vg">$access_key_id</span><span class="p">,</span>
+</span><span class='line'>    <span class="n">secret_access_key</span> <span class="o">=&gt;</span> <span class="vg">$secret_access_key</span><span class="p">,</span>
+</span><span class='line'>    <span class="nb">require</span>           <span class="o">=&gt;</span> <span class="no">File</span><span class="o">[</span><span class="vg">$basedir</span><span class="o">]</span><span class="p">,</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Where <code>$version</code> is derived from</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="vg">$service</span> <span class="o">=</span> <span class="s1">&#39;my_service&#39;</span>
+</span><span class='line'><span class="vg">$version</span> <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="n">my_service_version_qa</span><span class="p">)</span>
+</span><span class='line'><span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Some Closing Remarks&hellip; or why this is rad</h2>
+
+<p>Your devs should never have to worry about depoying code, they have enough to worry about in writing it. The pipeline that is built around deployment should be mind numbingly simple for them to implement. Merge-to-master is scary for a lot of reasons. Automating the updating of values in Hiera is scary for a lot of reasons. At the end of the day however, those are my problems and not the developers. My job is to make efficient pipelines for our product, and the release pipeline is the purest incarnation of that. We think this is pretty rad, and if you want to play along and fork our public repo and submit some PR&rsquo;s we&rsquo;d love to hear from you.</p>
+</div>
+  
+  
+
+
+    </article>
+  
   <div class="pagination">
     
       <a class="prev" href="/posts/">&larr; Older</a>
@@ -629,10 +704,6 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/01/08/mesospheres-data-center-operating-system-1-dot-5-release-notes/">Mesosphere's Data Center Operating System 1.5 Release Notes</a>
-      </li>
-    
-      <li class="post">
         <a href="/blog/2015/09/05/mantle-encrypted-json-for-the-marathon-api/">Mantle: Encrypted JSON for the Marathon API</a>
       </li>
     
@@ -646,6 +717,10 @@
     
       <li class="post">
         <a href="/blog/2015/07/31/a-restful-haproxy-service-abstraction/">A Restful Haproxy Service Abstraction</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/07/21/weak-dh-ciphers/">Weak Diffe-Helman SSL Ciphers</a>
       </li>
     
   </ul>
