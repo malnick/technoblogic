@@ -18,13 +18,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://technoblogic.io/blog/2015/06/17/vertically-scaled-infrastructure">
+  <link rel="canonical" href="http://technoblogic.io/blog/2015/06/17/vertically-scaled-infrastructure/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700' rel='stylesheet' type='text/css'>
@@ -44,10 +44,17 @@
 
 </header>
   <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
   
 </ul>
-
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="technoblogic.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
 <ul class="main-navigation">
   <li><a href="/blog/archives">All Posts</a></li>
   <li><a href="/blog/resume">Resume</a></li>
@@ -73,15 +80,7 @@
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2015-06-17T12:48:27-07:00" pubdate data-updated="true">Jun 17th, 2015</time>
+<time class='entry-date' datetime='2015-06-17T12:48:27-07:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:48 pm</span></time>
         
       </p>
     
@@ -153,7 +152,7 @@
 
 <p>This is usable, and it &ldquo;scales&rdquo; to a maximum of 10 nodes since our known port assignment hash goes 10 deep for each service.</p>
 
-<p>Now we have 100 million users, and we need to scale our application&rsquo;s backend services &lsquo;a&rsquo;, &lsquo;b&rsquo;, &lsquo;x&rsquo; and &lsquo;y&rsquo; to <strong><em>FAR</em></strong> more than 10 instances a piece. In fact, we not only need to scale those to more instances, upper management asked us to add features. These features came by adding services &lsquo;c&rsquo;, &rsquo;d&#8217;, &lsquo;e&rsquo;, &lsquo;f&rsquo; and &lsquo;z&rsquo;. We have to build a port assignment hash for those as well, and it would be great if this distributed micro-service was also highly available beyond just a single node running multiple instances, so we&rsquo;re going to ensure that services &lsquo;a&rsquo; - &lsquo;f&rsquo; and &lsquo;x&rsquo; - &lsquo;z&rsquo; are running a minimum of 50 processes a piece across a minimum of 3 virtual machines.</p>
+<p>Now we have 100 million users, and we need to scale our application&rsquo;s backend services &lsquo;a&rsquo;, &lsquo;b&rsquo;, &lsquo;x&rsquo; and &lsquo;y&rsquo; to <strong><em>FAR</em></strong> more than 10 instances a piece. In fact, we not only need to scale those to more instances, upper management asked us to add features. These features came by adding services &lsquo;c&rsquo;, &rsquo;d', &lsquo;e&rsquo;, &lsquo;f&rsquo; and &lsquo;z&rsquo;. We have to build a port assignment hash for those as well, and it would be great if this distributed micro-service was also highly available beyond just a single node running multiple instances, so we&rsquo;re going to ensure that services &lsquo;a&rsquo; - &lsquo;f&rsquo; and &lsquo;x&rsquo; - &lsquo;z&rsquo; are running a minimum of 50 processes a piece across a minimum of 3 virtual machines.</p>
 
 <p>Now we&rsquo;ve got:</p>
 
@@ -208,7 +207,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>We don&rsquo;t need a range of port mappings; we need a single mapping. <code>docker-proxy</code> is proxy&#8217;ing the requests from the host on port 1322 to the container where the service is listening on a base port of 1301.</p>
+<p>We don&rsquo;t need a range of port mappings; we need a single mapping. <code>docker-proxy</code> is proxy'ing the requests from the host on port 1322 to the container where the service is listening on a base port of 1301.</p>
 
 <p>Instead of writing hundreds of lines of configuration management code, we need to build an atomic container and execute it with <code>-p 1322:1301</code>. Orchestration frameworks reduce the configuration further by taking care of the port mapping: basically running <code>-p $PORT:1301</code>.</p>
 
@@ -216,7 +215,7 @@
 
 <p>You don&rsquo;t need to manage CM code for each individual service, you need to have a CI job that builds new containers with each release of your service and track only the version tag you want running in your environment.</p>
 
-<p>Might I add that scaling is as easy as POST&#8217;ing to the Mesos master the number of containers you want running for a given service or POST&#8217;ing an updated Replication Controller (RC) in Kubernetes. Although scaling an application is simplified once these frameworks are in place, putting them to use in production is anything but.</p>
+<p>Might I add that scaling is as easy as POST'ing to the Mesos master the number of containers you want running for a given service or POST'ing an updated Replication Controller (RC) in Kubernetes. Although scaling an application is simplified once these frameworks are in place, putting them to use in production is anything but.</p>
 
 <h2>CAP Theorem for Scaling</h2>
 
@@ -242,15 +241,7 @@
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2015-06-17T12:48:27-07:00" pubdate data-updated="true">Jun 17th, 2015</time>
+<time class='entry-date' datetime='2015-06-17T12:48:27-07:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:48 pm</span></time>
       
 
 
@@ -280,26 +271,14 @@
 
 </div>
 
-  <aside class="sidebar">
-   
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:technoblogic.io" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-  
+<aside class="sidebar">
   
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2015/12/20/foo/">Foo</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/06/architecting-an-installer-for-the-data-center-operating-system/">Architecting an Installer for the Data Center Operating System</a>
+        <a href="/blog/2016/01/08/mesospheres-data-center-operating-system-1-dot-5-release-notes/">Mesosphere's Data Center Operating System 1.5 Release Notes</a>
       </li>
     
       <li class="post">
@@ -314,13 +293,17 @@
         <a href="/blog/2015/08/13/version-management-in-soa/">Version Management in SOA</a>
       </li>
     
+      <li class="post">
+        <a href="/blog/2015/07/31/a-restful-haproxy-service-abstraction/">A Restful Haproxy Service Abstraction</a>
+      </li>
+    
   </ul>
 </section>
 
 <section>
   <h1>GitHub Repos</h1>
   <ul id="gh_repos">
-    <li class="loading">Status updating&#8230;</li>
+    <li class="loading">Status updating...</li>
   </ul>
   
   <a href="https://github.com/malnick">@malnick</a> on GitHub
@@ -346,16 +329,15 @@
   <script src="/javascripts/github.js" type="text/javascript"> </script>
 </section>
 
-Included file &#8216;asides/twitter.html&#8217; not found in _includes directory
+Included file 'asides/twitter.html' not found in _includes directory
   
 </aside>
-
 
 
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - Jeff Malnick -
+  Copyright &copy; 2016 - Jeff Malnick -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

@@ -4,6 +4,7 @@
   <title><![CDATA[]]></title>
   <link href="http://technoblogic.io/atom.xml" rel="self"/>
   <link href="http://technoblogic.io/"/>
+  <updated>2016-01-17T13:14:14-08:00</updated>
   <id>http://technoblogic.io/</id>
   <author>
     <name><![CDATA[Jeff Malnick]]></name>
@@ -14,17 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[]]></title>
-    <link href="http://technoblogic.io/blog/2015/12/20/foo/"/>
-    <updated>2015-12-20T15:01:43-08:00</updated>
-    <id>http://technoblogic.io/blog/2015/12/20/foo</id>
-    <content type="html"><![CDATA[]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[]]></title>
-    <link href="http://technoblogic.io/blog/2015/12/06/architecting-an-installer-for-the-data-center-operating-system/"/>
-    <updated>2015-12-06T08:48:28-08:00</updated>
-    <id>http://technoblogic.io/blog/2015/12/06/architecting-an-installer-for-the-data-center-operating-system</id>
+    <link href="http://technoblogic.io/blog/2016/01/08/mesospheres-data-center-operating-system-1-dot-5-release-notes/"/>
+    <updated>2016-01-08T13:25:31-08:00</updated>
+    <id>http://technoblogic.io/blog/2016/01/08/mesospheres-data-center-operating-system-1-dot-5-release-notes</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   
@@ -169,6 +162,14 @@
     <link href="http://technoblogic.io/blog/2014/10/29/the-proxy-module/"/>
     <updated>2014-10-29T20:50:15-07:00</updated>
     <id>http://technoblogic.io/blog/2014/10/29/the-proxy-module</id>
+    <content type="html"><![CDATA[]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[]]></title>
+    <link href="http://technoblogic.io/blog/2014/10/07/streamlining-puppet-dev-part-duce-branch-the-enviro/"/>
+    <updated>2014-10-07T14:31:39-07:00</updated>
+    <id>http://technoblogic.io/blog/2014/10/07/streamlining-puppet-dev-part-duce-branch-the-enviro</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   

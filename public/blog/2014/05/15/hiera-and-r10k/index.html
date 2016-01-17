@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Why I Don&#8217;t Place a hiera.yaml in My CR - Technoblogic</title>
+  <title>Why I Don't Place a hiera.yaml in My CR - Technoblogic</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -18,13 +18,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://technoblogic.io/blog/2014/05/15/hiera-and-r10k">
+  <link rel="canonical" href="http://technoblogic.io/blog/2014/05/15/hiera-and-r10k/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700' rel='stylesheet' type='text/css'>
@@ -44,10 +44,17 @@
 
 </header>
   <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
   
 </ul>
-
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="technoblogic.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
 <ul class="main-navigation">
   <li><a href="/blog/archives">All Posts</a></li>
   <li><a href="/blog/resume">Resume</a></li>
@@ -64,7 +71,7 @@
   
   <header>
     
-      <h1 class="entry-title">Why I Don&#8217;t Place a hiera.yaml in My CR</h1>
+      <h1 class="entry-title">Why I Don't Place a hiera.yaml in My CR</h1>
     
     
       <p class="meta">
@@ -73,15 +80,7 @@
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2014-05-15T16:12:36-07:00" pubdate data-updated="true">May 15th, 2014</time>
+<time class='entry-date' datetime='2014-05-15T16:12:36-07:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>4:12 pm</span></time>
         
       </p>
     
@@ -132,7 +131,7 @@
 </span><span class='line'>Debug: hiera(): Cannot find datafile /etc/puppetlabs/puppet/environmets/production/hieradata/global.yaml, skipping</span></code></pre></td></tr></table></div></figure>
 
 
-<p>So I copied the <code>datafile</code> path and redirected it to a diff along with a &#8220;`$(pwd) while in the /etc/puppetlabs/puppet/environments/production/hieradata directory:</p>
+<p>So I copied the <code>datafile</code> path and redirected it to a diff along with a ```$(pwd) while in the /etc/puppetlabs/puppet/environments/production/hieradata directory:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -180,15 +179,7 @@
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2014-05-15T16:12:36-07:00" pubdate data-updated="true">May 15th, 2014</time>
+<time class='entry-date' datetime='2014-05-15T16:12:36-07:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>4:12 pm</span></time>
       
 
 
@@ -218,26 +209,14 @@
 
 </div>
 
-  <aside class="sidebar">
-   
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:technoblogic.io" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-  
+<aside class="sidebar">
   
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2015/12/20/foo/">Foo</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/06/architecting-an-installer-for-the-data-center-operating-system/">Architecting an Installer for the Data Center Operating System</a>
+        <a href="/blog/2016/01/08/mesospheres-data-center-operating-system-1-dot-5-release-notes/">Mesosphere's Data Center Operating System 1.5 Release Notes</a>
       </li>
     
       <li class="post">
@@ -252,13 +231,17 @@
         <a href="/blog/2015/08/13/version-management-in-soa/">Version Management in SOA</a>
       </li>
     
+      <li class="post">
+        <a href="/blog/2015/07/31/a-restful-haproxy-service-abstraction/">A Restful Haproxy Service Abstraction</a>
+      </li>
+    
   </ul>
 </section>
 
 <section>
   <h1>GitHub Repos</h1>
   <ul id="gh_repos">
-    <li class="loading">Status updating&#8230;</li>
+    <li class="loading">Status updating...</li>
   </ul>
   
   <a href="https://github.com/malnick">@malnick</a> on GitHub
@@ -284,16 +267,15 @@
   <script src="/javascripts/github.js" type="text/javascript"> </script>
 </section>
 
-Included file &#8216;asides/twitter.html&#8217; not found in _includes directory
+Included file 'asides/twitter.html' not found in _includes directory
   
 </aside>
-
 
 
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - Jeff Malnick -
+  Copyright &copy; 2016 - Jeff Malnick -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

@@ -9,8 +9,7 @@
   <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content="This is a foo post
-">
+  <meta name="description" content="Synopsis Release 1.5 of the Data Center Operating System offers a host of new changes and improvements. Most notably, DCOS 1.5 can install itself to &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,13 +18,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://technoblogic.io">
+  <link rel="canonical" href="http://technoblogic.io/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700' rel='stylesheet' type='text/css'>
@@ -45,10 +44,17 @@
 
 </header>
   <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
   
 </ul>
-
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="technoblogic.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
 <ul class="main-navigation">
   <li><a href="/blog/archives">All Posts</a></li>
   <li><a href="/blog/resume">Resume</a></li>
@@ -68,7 +74,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/12/20/foo/">Foo</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/01/08/mesospheres-data-center-operating-system-1-dot-5-release-notes/">Mesosphere's Data Center Operating System 1.5 Release Notes</a></h1>
     
     
       <p class="meta">
@@ -77,137 +83,216 @@
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2015-12-20T15:01:43-08:00" pubdate data-updated="true">Dec 20th, 2015</time>
+<time class='entry-date' datetime='2016-01-08T13:25:31-08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:25 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>This is a foo post</p>
-</div>
-  
-  
+  <div class="entry-content"><h2>Synopsis</h2>
 
+<p>Release 1.5 of the Data Center Operating System offers a host of new changes and improvements. Most notably, DCOS 1.5 can install itself to a cluster of nodes over SSH. This feature allows end-users to setup a single host from which they can deploy their entire cluster in 3 easy commands. The release of DCOS 1.5 serves as the basis from which we&rsquo;re going to build our 1.6 installer, which will ship with a user interface for an even better experience. In the hopes of making DCOS the easiest distributed process scheduler to both install and use, we&rsquo;re also changing our configuration file format to YAML. YAML is less strict about typing, easier to read, and allows us to inline comment so we can be even more clear about what we need from you, our customer, in order to have a successful and seemless installation process.</p>
 
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/06/architecting-an-installer-for-the-data-center-operating-system/">Architecting an Installer for the Data Center Operating System</a></h1>
-    
-    
-      <p class="meta">
-        
+<p>Along with this big changes to our installation process, we&rsquo;re also shipping a host of new features to DCOS which we think you&rsquo;ll find compelling and noteworthy.</p>
 
+<h3>Automated SSH Deployment</h3>
 
+<p>DCOS 1.5 installs itself to your cluster via SSH. The process can be completed in 3 easy command line steps. This removes the burden of distributing DCOS to your entire cluster manaully or putting the onus to automate this process on you, our customer. You provide the installer a SSH key, a SSH user, and a list of hosts to install DCOS and we take care of the rest.</p>
 
+<p>We wrote our own, highly stable and concurrent SSH library for this process. We execute 10 concurrent SSH sessions at a time, however complete installation time is heavily dependant on network capabilities. In any case, we hope this new deployment method will enable our customers with a more seemless installation process.</p>
 
+<p>In the event that this deployment option does not fit into your architecture, you can still manually install the cluster using our installation script as has been done in the past.</p>
 
+<h3>New Configuration File Format</h3>
 
+<p>We have upgraded the configuration file format from JSON to YAML. We believe that YAML provides a more readable and end-user-worthy construct in which to store configuration. YAML is less strict about type and has far fewer nuances around quotes in comparison to JSON. Don&rsquo;t get us wrong, we love JSON! It&rsquo;s just that as a human being, we don&rsquo;t like to read it (we leave that up to machines).</p>
 
+<p>The new configuration file is constructed to allow for our SSH deployment method. We have broken the configuration file into two hashes: cluster_config and ssh_config.</p>
 
-  
+<p>If you&rsquo;re familiar with our old JSON configuration file, the cluster_config should look familiar. It provides all the neccessary information to generate the DCOS configuration files.</p>
 
+<p>The ssh_config hash is new, and it provides all the neccessary information to install DCOS to your cluster over SSH.</p>
 
+<h3>CLI Options</h3>
 
-<time datetime="2015-12-06T08:48:28-08:00" pubdate data-updated="true">Dec 6th, 2015</time>
-        
-      </p>
-    
-  </header>
+<p>The way in whhich you run the DCOS installer (for current users, the dcos_generate_config.sh) has also changed.</p>
 
+<p>In previous installations, you&rsquo;d create a <code>genconf/</code> directory, and populate it with <code>config.json</code> and your <code>ip-detect</code> script, then execute <code>./dcos_generate_config.sh</code>.</p>
 
-  <div class="entry-content"><ol>
-<li>What is the install challenge</li>
-<li>How we started</li>
-<li>Current iteration</li>
-<li>How we are going to improve it later</li>
-<li>Close</li>
-</ol>
-
-
-<p>Mesosphere&rsquo;s Data Center Operating System (DCOS) is a distributed cluster manager and resource scheduler that enables companies to execute their application with high parallelization and availability. The DCOS ecosystem consists of many open source and proprietary tools to manage executing client applications in the cluster. The core utilities are Apache Mesos, Mesos DNS, Mesosphere&rsquo;s Marathon, Nginx, Apache Zookeeper and Zookeeper Exhibitor (FOSS from Netflix). The production-read version of DCOS runs 3-5 Apache Mesos Masters with &lsquo;n&rsquo; number of Apache Mesos Agents.</p>
-
-<p>Properly configuring and installing this suite of tools to large on-premise deployments poses many challenges:</p>
+<p>In order to allow you to install DCOS to your cluster over SSH, we&rsquo;ve provided a few steps to this process:</p>
 
 <ol>
-<li>Bootstrapping the cluster for high availability</li>
-<li>Bootstrapping the cluster from a single target &ldquo;bootstrapping&rdquo; host</li>
-<li>Scoping the configuration available to Mesosphere clients</li>
-<li>Master discovery configuration</li>
-<li>Exhibitor configuration</li>
-<li>Continuous integration tests on the actual software that manages DCOS installation</li>
+<li><code>mkdir genconf/</code></li>
+<li><code>vi genconf/config.yaml</code></li>
 </ol>
 
 
-<p>Because of the complexity with bootstrapping a highly available cluster from scratch we have to present the end-user with a lot of implementation details and configuration which is often times confusing and sets a barrier to entry to using DCOS.</p>
-
-<p>Traditionally, you can ship software to a node using well-known package managers (Aptitude or Yum). However, DCOS is designed to run on <strong>any</strong> linux distribution, which means we&rsquo;d have to support all the package management repos our potential customers require: Yum, Aptitude, Pacman, Zypper, etc. Furthermore, since this is a distributed cluster, we have to seed each deployment package with site-specific configuration for each part of the DCOS system. This means the package manager would have to include some way for us to configure cluster wide settings for things like Zookeepers&#8217; zoo.cfg file (managed by Exhibitor), Mesos DNS configuration, and other distributed utilities.</p>
-
-<p>In the end, we would have to configure every node in the cluster with our package repo and this site-specific configuration before the DCOS package actually installs. We could use configuration management for this, but in that case we&rsquo;d also have to write Puppet modules, Chef cookbooks, Ansible playbooks and Salt code to name a few, to ensure we cover all the possible customer requirements for installing DCOS at a given site.</p>
-
-<p>This locks us in to managing a package repo per customer (not to mention tests on each built package system) and a given installation method using configuration management. Let&rsquo;s not even begin to talk about the complexity of maintaining those configuration management codebases across multiple versions of the configuration management suite (in other words, customer A is running Puppet 3x, customer B is running Puppet 2x and customer C is running Puppet 4x - good luck keeping that complicated module cross functional across all versions previous and future - and that&rsquo;s for just a single configuration management suite).</p>
-
-<p>In the end, we opted to design an installer that any customer could run, regardless of configuration management implementation or underlying operating system package managers. This installer can easily integrate with existing configuration management systems or install the cluster via SSH to the distributed nodes. It can also walk customers through the often complicated process of configuring the underlying system before it installs with a user-friendly web UI.</p>
-
-<h2>How We Started</h2>
-
-<p>Our first try at the on-premise installer was a CLI tool that automated configuring and building a bootstrap tarball. It used a JSON configuration file that had some drawbacks. Primarily, we use only string-based variables in our configuration file templates, so we required anything other than strings (such as arrays) in the JSON config, had to be strings:</p>
-
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="s2">&quot;variable&quot;</span><span class="err">:</span> <span class="s2">&quot;[\&quot;var1\&quot;,\&quot;var2\&quot;]&quot;</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
+</span><span class='line'><span class="c1"># Cluster configuration for DCOS</span>
+</span><span class='line'><span class="l-Scalar-Plain">cluster_config</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="c1"># This is the local path on the target machine where the installer dumps the</span>
+</span><span class='line'>  <span class="c1"># packages and bootstrap tar ball.</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">bootstrap_url</span><span class="p-Indicator">:</span> <span class="s">&#39;file:///opt/dcos_install_tmp&#39;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># The name of the cluster, we default to the following:</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">cluster_name</span><span class="p-Indicator">:</span> <span class="s">&#39;Mesosphere:</span><span class="nv"> </span><span class="s">The</span><span class="nv"> </span><span class="s">Data</span><span class="nv"> </span><span class="s">Center</span><span class="nv"> </span><span class="s">Operating</span><span class="nv"> </span><span class="s">System&#39;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># Docker GC defaults, recommended to leave as default unless you&#39;re advanced.</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">docker_remove_delay</span><span class="p-Indicator">:</span> <span class="s">&#39;1hrs&#39;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># The default backend for Exhibitor is Zookeeper. Advanced options are</span>
+</span><span class='line'>  <span class="c1"># shared_fs and aws_s3</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">exhibitor_storage_backend</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">zookeeper</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># If you use the default Zk backend for Exhibitor, you need to pass in</span>
+</span><span class='line'>  <span class="c1"># the IPs of the Zk cluster for it to use. This is a COMMA SEPARATED LIST,</span>
+</span><span class='line'>  <span class="c1"># not to be confused with an actual array. You must also pass the :$PORT.</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">exhibitor_zk_hosts</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">10.33.2.20:2181</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># This is an arbitrary path for Exhibitor to dump its zk config to.</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">exhibitor_zk_path</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">/home/vagrant</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># More garbage collection, don&#39;t change unless you&#39;re advanced.</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">gc_delay</span><span class="p-Indicator">:</span> <span class="s">&#39;2days&#39;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># We default master discovery to a static list of masters. Advanced options</span>
+</span><span class='line'>  <span class="c1"># are &#39;keepalived&#39; and &#39;cloud_dynamic&#39;</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">master_discovery</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">static</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># Since we&#39;re defaulting to master list, we pass that static list of masters.</span>
+</span><span class='line'>  <span class="c1"># Recommended deployment as at least 3 masters and a maximum of 5. It&#39;s not</span>
+</span><span class='line'>  <span class="c1"># Recommended that you deploy even number of masters.</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">master_list</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">10.33.2.21</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># This is the list of upstream DNS resolvers that Mesos DNS will use.</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">resolvers</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">8.8.8.8</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">8.8.4.4</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># Default roles, do not change unless you&#39;re advanced.</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">roles</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">slave_public</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># Default weights, do not change unless you&#39;re advanced.</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">weights</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">slave_public=1</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># SSH Configuration for --preflight/--deploy/--postflight/--clean-dcos</span>
+</span><span class='line'><span class="l-Scalar-Plain">ssh_config</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="c1"># It&#39;s recommended to rotate keys in the cluster after deployment.</span>
+</span><span class='line'>  <span class="c1"># It is recommended to copy your private SSH key to the genconf/</span>
+</span><span class='line'>  <span class="c1"># directory which is mounted to /genconf inside the installer</span>
+</span><span class='line'>  <span class="c1"># docker container. Changing this to a path on the host machine will mean the installer</span>
+</span><span class='line'>  <span class="c1"># can not find the key, since /genconf is mounted by default in the installer script.</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">ssh_key_path</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">/genconf/ssh_key</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># The default SSH port for the SSH installation process.</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">ssh_port</span><span class="p-Indicator">:</span> <span class="s">&#39;22&#39;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># The default SSH user to SSH into the target machines for installation. Users</span>
+</span><span class='line'>  <span class="c1"># must have root priviledges on the host machines.</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">ssh_user</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">vagrant</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># The complete list of IPv4 addresses to the target DCOS hosts including masters.</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">target_hosts</span><span class="p-Indicator">:</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">10.33.2.21</span>
+</span><span class='line'>  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">10.33.2.24</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="c1"># The directory on the installer host to dump logs from the SSH processes to. This</span>
+</span><span class='line'>  <span class="c1"># should not be changed as /genconf is local to the container running the installer,</span>
+</span><span class='line'>  <span class="c1"># and is a mounted volume.</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">log_directory</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">/genconf/logs</span>
+</span><span class='line'>  <span class="l-Scalar-Plain">process_timeout</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">120</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>This was obviously less than ideal.</p>
+<p>We determine which nodes to install as masters and which are agents by deduction of what you give us as &lsquo;master_list&rsquo; in the <code>cluster_config</code> section.</p>
 
-<p>Secondly, the CLI utility required the end-user to have some way to distribute the tarball it created. This left a lot up to the end-user, and was a point of contention.</p>
+<ol>
+<li>create genconf/ip-dtect</li>
+<li>copy in $YOUR_SSH_KEY to genconf/ssh_key</li>
+<li><code>./dcos_generate_config.sh --genconf</code> -> creates configuration files for DCOS, builds packages.</li>
+<li><code>./dcos_generate_config.sh --preflight</code> -> SSH&rsquo;s each host and executes the preflight script. Run this with <code>-l debug</code> to see verbose output, else only errors are shown.</li>
+<li><code>./dcos_generate_config.sh --deploy</code> -> SSH&rsquo;s each host and installs DCOS.</li>
+<li><code>./dcos_generate_config.sh --postflight</code> -> SSH&rsquo;s each host and determines if DCOS has been installed correctly. You may need to wait up to 15 minutes before this fully takes effect due to the nature of bootstrapping the DCOS zookeeper service.</li>
+<li>In the event that things went south or you need to start from scratch, <code>./dcos_generate_config.sh --uninstall</code> will completely remove DCOS from your cluster.</li>
+</ol>
 
-<p>Lastly, the end user had a lot of configurated exposed to her that was often confusing. The biggest hurdle was sometimes explaining what Exhibitor was, how to configure it, and in some cases why it needed its own Zookeeper quorum to bootstrap the DCOS quorom.</p>
-
-<p>All of these issues pointed towards a major overhaul of this installation process.</p>
-
-<h2>Our Current Iteration</h2>
-
-<h4>User Interface</h4>
-
-<p>On the outset, we wanted to create an installer that had a user interface. This UI would allow us to walk the user through configuring the DCOS cluster. It would also allow us to quickly copy and paste configuration into the UI, and abstract all the complexity of this process to a clean interface.</p>
-
-<h4>Internally Bootstrap Exhibitor</h4>
-
-<p>We also wanted to remove the Exhibitor configuration from the end-user, getting rid of this confusing configuration piece would lower the barrier to entry and solve many of our support calls. Under the hood, we achieve this by writing our own static ensamble for bootstrapping exhibitor. This new backend to exhibitor allowed us to pass it our static master list to the backend, and it writes this, regardless of cluster state, to the zoo.cfg.</p>
-
-<h4>SSH Deploy</h4>
-
-<p>This new installer would also have a deploy option. The deploy option would leverage SSH on the backend to execute preflight checks on the target hosts in the cluster; install the DCOS tarball to the machines; and execute post-flight checks on the target hosts to enure the cluster was in a working state.</p>
-
-<h4>YAML Configuration File</h4>
-
-<p>This new installer levareages a YAML configuration file. The UI walks the user through building this YAML file but the beauty is that we can ship pre-built YAML files with in-line comments. JSON doesn&rsquo;t allow us to put comments in the file, and with that option available we can make more clear what each configuration parameter does without having the end-user touch the UI.</p>
-
-<h4>Configuration Management Integration</h4>
-
-<p>Our previous installer shipped around the installer script, which would pull the tarball from the configuration machine. In this way, it was partially on its way to integrating with configuration management. However, the previous installer did not ship a server to serve that tarball. It was up to the end-user to configure an NGINX, Apache or other server that would allow the script to pull down the tarball from the host machine.</p>
-
-<p>For many systems administrators this was fine, however, for many it was just another barrier to entry. To simplify this process we&rsquo;re now shipping a built in server and an option to execute the CLI mode of the installer with <code>--bootstrap_url</code>.</p>
-
-<p><code>--bootstrap_url</code> exposes a URL on the installer host: <code>http://$INSTALLER_IP:9000/bootstrap</code></p>
-
-<p>With this feature, you can expose the bootstrap URL on the installer host and write a very simple Puppet module, Chef cookbook or Ansible playbook to pull the tarball, extract it to the filesystem and create the required symlinks. This is a far more simple option to management of your configuration management code than building all the current and possible future config files for DCOS. Now it&rsquo;s just three unix-level operations.</p>
-
-<h2>Future Improvements</h2>
 </div>
   
   
@@ -229,15 +314,7 @@
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2015-09-05T13:00:32-07:00" pubdate data-updated="true">Sep 5th, 2015</time>
+<time class='entry-date' datetime='2015-09-05T13:00:32-07:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>1:00 pm</span></time>
         
       </p>
     
@@ -246,7 +323,7 @@
 
   <div class="entry-content"><p><img style="float: center;" src="https://dl.dropboxusercontent.com/u/77193293/mantle.png"></p>
 
-<p><a href="https://github.com/malnick/mantle.git">Mantle</a> is a go utility that wraps the POST process to Mesosphere&rsquo;s Marathon API. Before, users had to store JSON with cleartext environment variables for their Docker container configuration. With Mantle, users can encrypt the values for the &ldquo;env&rdquo; parameters passed to Marathon using asynchronous public/private key pairs. Mantle is designed to allow operations or deployment teams to build user-level key pairs, and give those public keys to the users&#8217; with the most knowledge of the application&rsquo;s configuration. Those users, can then encode the JSON with Mantle via their public keys and let the deployment team review the JSON and have the final private key to decrypt and deploy to Marathon(s) via Mantle.</p>
+<p><a href="https://github.com/malnick/mantle.git">Mantle</a> is a go utility that wraps the POST process to Mesosphere&rsquo;s Marathon API. Before, users had to store JSON with cleartext environment variables for their Docker container configuration. With Mantle, users can encrypt the values for the &ldquo;env&rdquo; parameters passed to Marathon using asynchronous public/private key pairs. Mantle is designed to allow operations or deployment teams to build user-level key pairs, and give those public keys to the users' with the most knowledge of the application&rsquo;s configuration. Those users, can then encode the JSON with Mantle via their public keys and let the deployment team review the JSON and have the final private key to decrypt and deploy to Marathon(s) via Mantle.</p>
 
 </div>
   
@@ -273,15 +350,7 @@
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2015-08-28T12:19:11-07:00" pubdate data-updated="true">Aug 28th, 2015</time>
+<time class='entry-date' datetime='2015-08-28T12:19:11-07:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:19 pm</span></time>
         
       </p>
     
@@ -317,15 +386,7 @@
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2015-08-13T08:47:19-07:00" pubdate data-updated="true">Aug 13th, 2015</time>
+<time class='entry-date' datetime='2015-08-13T08:47:19-07:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>13</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>8:47 am</span></time>
         
       </p>
     
@@ -359,15 +420,7 @@
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2015-07-31T06:05:55-07:00" pubdate data-updated="true">Jul 31st, 2015</time>
+<time class='entry-date' datetime='2015-07-31T06:05:55-07:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>31</span><span class='date-suffix'>st</span>, <span class='date-year'>2015</span></span> <span class='time'>6:05 am</span></time>
         
       </p>
     
@@ -401,15 +454,7 @@
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2015-07-21T11:32:12-07:00" pubdate data-updated="true">Jul 21st, 2015</time>
+<time class='entry-date' datetime='2015-07-21T11:32:12-07:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2015</span></span> <span class='time'>11:32 am</span></time>
         
       </p>
     
@@ -443,15 +488,7 @@
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2015-07-14T13:05:01-07:00" pubdate data-updated="true">Jul 14th, 2015</time>
+<time class='entry-date' datetime='2015-07-14T13:05:01-07:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>1:05 pm</span></time>
         
       </p>
     
@@ -485,15 +522,7 @@
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2015-06-17T12:48:27-07:00" pubdate data-updated="true">Jun 17th, 2015</time>
+<time class='entry-date' datetime='2015-06-17T12:48:27-07:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:48 pm</span></time>
         
       </p>
     
@@ -529,15 +558,7 @@
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2015-05-01T10:05:30-07:00" pubdate data-updated="true">May 1st, 2015</time>
+<time class='entry-date' datetime='2015-05-01T10:05:30-07:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2015</span></span> <span class='time'>10:05 am</span></time>
         
       </p>
     
@@ -557,34 +578,58 @@
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/04/15/factory-patterns-rule-number-1/">Factory Patterns: Rule #1</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-04-15T10:32:31-07:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>10:32 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h1>Factory Patterns</h1>
+
+<p>I learned early on in my career that the trick to successfully maintaining large, complicated deployments was to make things so that they are like a factory, then solve your problems using factory patterns. The metaphor is extended from the continuous integration pipelines I develop for seamless code deploys to the ways in which I go about maintaining the infrastructure on which that code runs.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/04/15/factory-patterns-rule-number-1/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
   <div class="pagination">
     
-      <a class="prev" href="2">&larr; Older</a>
+      <a class="prev" href="/posts/">&larr; Older</a>
     
-    <a href="/blog/archives">All Posts</a>
+    <a href="/blog/archives">Blog Archives</a>
     
   </div>
 </div>
 <aside class="sidebar">
-   
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:technoblogic.io" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-  
   
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2015/12/20/foo/">Foo</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/06/architecting-an-installer-for-the-data-center-operating-system/">Architecting an Installer for the Data Center Operating System</a>
+        <a href="/blog/2016/01/08/mesospheres-data-center-operating-system-1-dot-5-release-notes/">Mesosphere's Data Center Operating System 1.5 Release Notes</a>
       </li>
     
       <li class="post">
@@ -599,13 +644,17 @@
         <a href="/blog/2015/08/13/version-management-in-soa/">Version Management in SOA</a>
       </li>
     
+      <li class="post">
+        <a href="/blog/2015/07/31/a-restful-haproxy-service-abstraction/">A Restful Haproxy Service Abstraction</a>
+      </li>
+    
   </ul>
 </section>
 
 <section>
   <h1>GitHub Repos</h1>
   <ul id="gh_repos">
-    <li class="loading">Status updating&#8230;</li>
+    <li class="loading">Status updating...</li>
   </ul>
   
   <a href="https://github.com/malnick">@malnick</a> on GitHub
@@ -631,15 +680,14 @@
   <script src="/javascripts/github.js" type="text/javascript"> </script>
 </section>
 
-Included file &#8216;asides/twitter.html&#8217; not found in _includes directory
+Included file 'asides/twitter.html' not found in _includes directory
   
 </aside>
-
 
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - Jeff Malnick -
+  Copyright &copy; 2016 - Jeff Malnick -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

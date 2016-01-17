@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://technoblogic.io/blog/2016/01/08/mesospheres-data-center-operating-system-1-dot-5-release-notes/</loc>
+    <lastmod>2016-01-08T13:25:31-08:00</lastmod>
+  </url>
+  <url>
     <loc>http://technoblogic.io/blog/2015/09/05/mantle-encrypted-json-for-the-marathon-api/</loc>
     <lastmod>2015-09-05T13:00:32-07:00</lastmod>
   </url>
@@ -202,17 +206,5 @@
   </url>
   <url>
     <loc>http://technoblogic.io/categories/devops/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/posts/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/posts/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/posts/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/posts/</loc>
   </url>
 </urlset>

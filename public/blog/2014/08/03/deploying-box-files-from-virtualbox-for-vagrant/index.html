@@ -18,13 +18,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://technoblogic.io/blog/2014/08/03/deploying-box-files-from-virtualbox-for-vagrant">
+  <link rel="canonical" href="http://technoblogic.io/blog/2014/08/03/deploying-box-files-from-virtualbox-for-vagrant/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700' rel='stylesheet' type='text/css'>
@@ -44,10 +44,17 @@
 
 </header>
   <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
   
 </ul>
-
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="technoblogic.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
 <ul class="main-navigation">
   <li><a href="/blog/archives">All Posts</a></li>
   <li><a href="/blog/resume">Resume</a></li>
@@ -73,15 +80,7 @@
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2014-08-03T17:22:54-07:00" pubdate data-updated="true">Aug 3rd, 2014</time>
+<time class='entry-date' datetime='2014-08-03T17:22:54-07:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2014</span></span> <span class='time'>5:22 pm</span></time>
         
       </p>
     
@@ -195,8 +194,8 @@ Easily converts an ISO to VM formats. Kinda like Packer but not, so Packer made 
 </span><span class='line'><span class="p">}</span>
 </span><span class='line'>
 </span><span class='line'><span class="n">namespace</span> <span class="ss">:vm</span> <span class="k">do</span>
-</span><span class='line'>  <span class="ss">Rake</span><span class="p">:</span><span class="ss">:Task</span><span class="o">[</span><span class="s1">&#39;create&#39;</span><span class="o">].</span><span class="n">execute</span>
-</span><span class='line'>  <span class="ss">Rake</span><span class="p">:</span><span class="ss">:Task</span><span class="o">[</span><span class="s1">&#39;build&#39;</span><span class="o">].</span><span class="n">execute</span>
+</span><span class='line'>  <span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="o">[</span><span class="s1">&#39;create&#39;</span><span class="o">].</span><span class="n">execute</span>
+</span><span class='line'>  <span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="o">[</span><span class="s1">&#39;build&#39;</span><span class="o">].</span><span class="n">execute</span>
 </span><span class='line'><span class="k">end</span>
 </span></code></pre></td></tr></table></div></figure>
 
@@ -205,7 +204,7 @@ Easily converts an ISO to VM formats. Kinda like Packer but not, so Packer made 
 
 <p>Since this is <em>my</em> tool I can do whatever I want. This is going to be a super streamlined process, I only need it to work with VirtualBox so I don&rsquo;t need to get too crazy. I can basically rely on the <code>vboxmanage</code> command line tool to interact with the VM.</p>
 
-<p><strong><em>DISCLAIMER:</em></strong> I originally was going to leverage the <a href="http://net-ssh.github.io">Net::SSH</a> ruby library to run all my post-processing on the VM. I needed some way to SCP scripts to the VM and execute them. Originally I used <code>vboxmanage</code> to get the IP address of the VM, then <code>Net::SSH</code> to SCP and execute commands. I had some methods all worked out for this, but then I ralized this needed to work on the VirtualBox NAT&#8217;ed network.</p>
+<p><strong><em>DISCLAIMER:</em></strong> I originally was going to leverage the <a href="http://net-ssh.github.io">Net::SSH</a> ruby library to run all my post-processing on the VM. I needed some way to SCP scripts to the VM and execute them. Originally I used <code>vboxmanage</code> to get the IP address of the VM, then <code>Net::SSH</code> to SCP and execute commands. I had some methods all worked out for this, but then I ralized this needed to work on the VirtualBox NAT'ed network.</p>
 
 <p>Ouch.</p>
 
@@ -397,12 +396,12 @@ Easily converts an ISO to VM formats. Kinda like Packer but not, so Packer made 
 </span><span class='line'>          <span class="k">end</span>
 </span><span class='line'>
 </span><span class='line'>          <span class="vi">@vmname</span> <span class="o">=</span> <span class="vi">@vmhash</span><span class="o">[</span><span class="n">vmcreate</span><span class="o">]</span>
-</span><span class='line'>          <span class="ss">Rake</span><span class="p">:</span><span class="ss">:Task</span><span class="o">[</span><span class="s1">&#39;build&#39;</span><span class="o">].</span><span class="n">execute</span>
+</span><span class='line'>          <span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="o">[</span><span class="s1">&#39;build&#39;</span><span class="o">].</span><span class="n">execute</span>
 </span><span class='line'>      <span class="k">else</span>
 </span><span class='line'>          <span class="k">if</span> <span class="n">findvm</span>
 </span><span class='line'>              <span class="vi">@vmname</span> <span class="o">=</span> <span class="n">findvm</span>
 </span><span class='line'>              <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2"> found with actual name: </span><span class="si">#{</span><span class="n">vmname</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>              <span class="ss">Rake</span><span class="p">:</span><span class="ss">:Task</span><span class="o">[</span><span class="s1">&#39;build&#39;</span><span class="o">].</span><span class="n">execute</span>
+</span><span class='line'>              <span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="o">[</span><span class="s1">&#39;build&#39;</span><span class="o">].</span><span class="n">execute</span>
 </span><span class='line'>          <span class="k">else</span>
 </span><span class='line'>              <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="vi">@vmname</span><span class="si">}</span><span class="s2"> not found, available vm&#39;s for building are:&quot;</span>
 </span><span class='line'>              <span class="vi">@vmhash</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">|</span> <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">v</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">}</span>
@@ -414,7 +413,7 @@ Easily converts an ISO to VM formats. Kinda like Packer but not, so Packer made 
 </span><span class='line'>                  <span class="n">vmcreate</span> <span class="o">=</span> <span class="no">STDIN</span><span class="o">.</span><span class="n">gets</span><span class="o">.</span><span class="n">chomp</span><span class="o">.</span><span class="n">to_i</span>
 </span><span class='line'>              <span class="k">end</span>
 </span><span class='line'>              <span class="vi">@vmname</span> <span class="o">=</span> <span class="vi">@vmhash</span><span class="o">[</span><span class="n">vmcreate</span><span class="o">]</span>
-</span><span class='line'>              <span class="ss">Rake</span><span class="p">:</span><span class="ss">:Task</span><span class="o">[</span><span class="s1">&#39;build&#39;</span><span class="o">].</span><span class="n">execute</span>
+</span><span class='line'>              <span class="no">Rake</span><span class="o">::</span><span class="no">Task</span><span class="o">[</span><span class="s1">&#39;build&#39;</span><span class="o">].</span><span class="n">execute</span>
 </span><span class='line'>
 </span><span class='line'>          <span class="k">end</span>
 </span><span class='line'>      <span class="k">end</span>
@@ -816,15 +815,7 @@ Easily converts an ISO to VM formats. Kinda like Packer but not, so Packer made 
 
 
 
-
-
-
-
-  
-
-
-
-<time datetime="2014-08-03T17:22:54-07:00" pubdate data-updated="true">Aug 3rd, 2014</time>
+<time class='entry-date' datetime='2014-08-03T17:22:54-07:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2014</span></span> <span class='time'>5:22 pm</span></time>
       
 
 
@@ -854,26 +845,14 @@ Easily converts an ISO to VM formats. Kinda like Packer but not, so Packer made 
 
 </div>
 
-  <aside class="sidebar">
-   
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:technoblogic.io" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-  
+<aside class="sidebar">
   
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2015/12/20/foo/">Foo</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/06/architecting-an-installer-for-the-data-center-operating-system/">Architecting an Installer for the Data Center Operating System</a>
+        <a href="/blog/2016/01/08/mesospheres-data-center-operating-system-1-dot-5-release-notes/">Mesosphere's Data Center Operating System 1.5 Release Notes</a>
       </li>
     
       <li class="post">
@@ -888,13 +867,17 @@ Easily converts an ISO to VM formats. Kinda like Packer but not, so Packer made 
         <a href="/blog/2015/08/13/version-management-in-soa/">Version Management in SOA</a>
       </li>
     
+      <li class="post">
+        <a href="/blog/2015/07/31/a-restful-haproxy-service-abstraction/">A Restful Haproxy Service Abstraction</a>
+      </li>
+    
   </ul>
 </section>
 
 <section>
   <h1>GitHub Repos</h1>
   <ul id="gh_repos">
-    <li class="loading">Status updating&#8230;</li>
+    <li class="loading">Status updating...</li>
   </ul>
   
   <a href="https://github.com/malnick">@malnick</a> on GitHub
@@ -920,16 +903,15 @@ Easily converts an ISO to VM formats. Kinda like Packer but not, so Packer made 
   <script src="/javascripts/github.js" type="text/javascript"> </script>
 </section>
 
-Included file &#8216;asides/twitter.html&#8217; not found in _includes directory
+Included file 'asides/twitter.html' not found in _includes directory
   
 </aside>
-
 
 
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - Jeff Malnick -
+  Copyright &copy; 2016 - Jeff Malnick -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
