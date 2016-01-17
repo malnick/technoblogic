@@ -1,13 +1,13 @@
-#---
-#layout: post
-#title: "How to deploy highly scalable systems over SSH"
-#date: 2016-01-17 13:28:26 -0800
-#comments: true
-#categories: 
-#---
+---
+layout: post
+title: "How to deploy highly scalable systems over SSH"
+date: 2016-01-17 13:28:26 -0800
+comments: true
+categories: 
+---
 ## Background
 The Secure Shell (SSH) is a well known utility for securely logging into remote hosts. It's also been widely used as a secure remote execution framework. Today, well known tools in the area of configuration management leverage SSH to safely manage state across thousands of hosts. Many systems administrators reach for SSH when they have to automate execution of scripts across distributed hosts, and others use it every day to log into remote systems on cloud platforms. 
-
+<!-- more -->
 At [Mesosphere](https://mesosphere.com/), we're building the next generation of highly available, distributed task schedulers. Our core product is the Data Center Operating System (DCOS). DCOS is a mixture of many open and closed source products, primarily among them Apache [Mesos](http://mesos.apache.org/) and [Zookeeper](https://zookeeper.apache.org/). 
 
 The DCOS runs at scale (we have customers running production deployments of 50,000 nodes), across thousands of machines. It's primary goal is to abstract away the mundane and technically challenging process of deploying highly available applications. The DCOS consists of masters and agents. In a typical production deployment you have 3 to 5 masters and 'n' number of agents that comprise the core resources of your cluster.
