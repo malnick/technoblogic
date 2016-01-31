@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://technoblogic.io/blog/2016/01/31/building-an-installer-for-the-data-center-operating-system/</loc>
+    <lastmod>2016-01-31T08:51:38-08:00</lastmod>
+  </url>
+  <url>
     <loc>http://technoblogic.io/blog/2016/01/17/automated-installs-over-ssh-lessons-learned/</loc>
     <lastmod>2016-01-17T13:28:26-08:00</lastmod>
   </url>
@@ -206,17 +210,5 @@
   </url>
   <url>
     <loc>http://technoblogic.io/categories/devops/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/posts/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/posts/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/posts/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/posts/</loc>
   </url>
 </urlset>

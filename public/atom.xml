@@ -4,7 +4,7 @@
   <title><![CDATA[]]></title>
   <link href="http://technoblogic.io/atom.xml" rel="self"/>
   <link href="http://technoblogic.io/"/>
-  <updated>2016-01-17T14:26:12-08:00</updated>
+  <updated>2016-01-31T09:48:35-08:00</updated>
   <id>http://technoblogic.io/</id>
   <author>
     <name><![CDATA[Jeff Malnick]]></name>
@@ -12,6 +12,14 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[]]></title>
+    <link href="http://technoblogic.io/blog/2016/01/31/building-an-installer-for-the-data-center-operating-system/"/>
+    <updated>2016-01-31T08:51:38-08:00</updated>
+    <id>http://technoblogic.io/blog/2016/01/31/building-an-installer-for-the-data-center-operating-system</id>
+    <content type="html"><![CDATA[]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[]]></title>
@@ -162,14 +170,6 @@
     <link href="http://technoblogic.io/blog/2014/10/29/the-proxy-module/"/>
     <updated>2014-10-29T20:50:15-07:00</updated>
     <id>http://technoblogic.io/blog/2014/10/29/the-proxy-module</id>
-    <content type="html"><![CDATA[]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[]]></title>
-    <link href="http://technoblogic.io/blog/2014/10/07/streamlining-puppet-dev-part-duce-branch-the-enviro/"/>
-    <updated>2014-10-07T14:31:39-07:00</updated>
-    <id>http://technoblogic.io/blog/2014/10/07/streamlining-puppet-dev-part-duce-branch-the-enviro</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   
