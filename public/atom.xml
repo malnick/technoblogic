@@ -4,7 +4,7 @@
   <title><![CDATA[]]></title>
   <link href="http://technoblogic.io/atom.xml" rel="self"/>
   <link href="http://technoblogic.io/"/>
-  <updated>2016-01-31T09:48:35-08:00</updated>
+  <updated>2016-03-24T10:25:36-07:00</updated>
   <id>http://technoblogic.io/</id>
   <author>
     <name><![CDATA[Jeff Malnick]]></name>
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[]]></title>
-    <link href="http://technoblogic.io/blog/2016/01/31/building-an-installer-for-the-data-center-operating-system/"/>
-    <updated>2016-01-31T08:51:38-08:00</updated>
-    <id>http://technoblogic.io/blog/2016/01/31/building-an-installer-for-the-data-center-operating-system</id>
+    <link href="http://technoblogic.io/blog/2016/03/24/the-data-center-operating-system-installer-part-1/"/>
+    <updated>2016-03-24T08:54:43-07:00</updated>
+    <id>http://technoblogic.io/blog/2016/03/24/the-data-center-operating-system-installer-part-1</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   

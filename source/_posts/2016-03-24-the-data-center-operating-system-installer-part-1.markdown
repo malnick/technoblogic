@@ -5,8 +5,8 @@ date: 2016-03-24 08:54:43 -0700
 comments: true
 categories: 
 ---
-The Data Center Operating System (DCOS) is a distributed, highly available task scheduler built by [Mesosphere](http://mesosphere.io). It uses a number of open and close source projects to make running and administering Apache Mesos as seemless and simple as possible. The DCOS runs at scale (we have customers running production deployments of 50,000 nodes), across thousands of machines. 
-
+The Data Center Operating System (DCOS) is a distributed, highly available task scheduler built by [Mesosphere](http://mesosphere.io). It uses a number of open and close source projects to make running and administering Apache Mesos as seemless and simple as possible. The DCOS runs at scale (we have customers running production deployments of 50,000 nodes), across thousands of machines. This post covers challengees, design and an overview of the final GUI installer we built to install an operating system for the data center.  
+<!--more-->
 ## Installation Challenge
 Installation of the DCOS has always been a tricky endeavor. Each cluster has site-specific customizations which must be translated into configuration files for various pieces of the DCOS ecosystem. These configuration files need to be compiled into a shippable package and those packages need to be installed on tens of thousands of hosts.
 
