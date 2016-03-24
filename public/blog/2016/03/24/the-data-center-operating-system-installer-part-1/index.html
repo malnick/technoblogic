@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>The Data Center Operating System Installer, Part 1 - Technoblogic</title>
+  <title>Building an Installer for the Data Center Operating System - Technoblogic</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -71,7 +71,7 @@
   
   <header>
     
-      <h1 class="entry-title">The Data Center Operating System Installer, Part 1</h1>
+      <h1 class="entry-title">Building an Installer for the Data Center Operating System</h1>
     
     
       <p class="meta">
@@ -87,7 +87,7 @@
   </header>
 
 
-<div class="entry-content"><p>The Data Center Operating System (DCOS) is a distributed, highly available task scheduler built by <a href="http://mesosphere.io">Mesosphere</a>. It uses a number of open and close source projects to make running and administering Apache Mesos as seemless and simple as possible. The DCOS runs at scale (we have customers running production deployments of 50,000 nodes), across thousands of machines.</p>
+<div class="entry-content"><p>The Data Center Operating System (DCOS) is a distributed, highly available task scheduler built by <a href="http://mesosphere.io">Mesosphere</a>. It uses a number of open and close source projects to make running and administering Apache Mesos as seamless and simple as possible. The DCOS runs at scale (we have customers running production deployments of 50,000 nodes), across thousands of machines. This post covers challenges, design and an overview of the final GUI installer we built to install an operating system for the data center.</p>
 
 <!--more-->
 
@@ -128,7 +128,7 @@
 
 <p>Previous versions of the DCOS shipped what our customers know as <code>dcos_generate_config.sh</code>. This bash script is in fact a self extracting docker container which runs our configuration generation library, this is what builds the DCOS configuration files per input in the config.yaml.</p>
 
-<p>This used to be in JSON format, but we moved this to a YAML format which is more user-friendly. In <code>DCOS v1.5</code> we shipped the first version of this new configuarion file format. In <code>DCOS v1.6</code> we made a modification to the format of this file to flatten the configuration parameters, so there are no nested dictionaries, simplifiying the process further.</p>
+<p>This used to be in JSON format, but we moved this to a YAML format which is more user-friendly. In <code>DCOS v1.5</code> we shipped the first version of this new configuration file format. In <code>DCOS v1.6</code> we made a modification to the format of this file to flatten the configuration parameters, so there are no nested dictionaries, simplifying the process further.</p>
 
 <h2>The User Interface</h2>
 
@@ -140,7 +140,7 @@
 
 <p><SS CONFIGURE></p>
 
-<p>The preflight installs cluster host prerequists for you:</p>
+<p>The preflight installs cluster host prerequisites for you:</p>
 
 <p><SS WARNING></p>
 
@@ -214,7 +214,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/03/24/the-data-center-operating-system-installer-part-1/">The Data Center Operating System Installer, Part 1</a>
+        <a href="/blog/2016/03/24/the-data-center-operating-system-installer-part-1/">Building an Installer for the Data Center Operating System</a>
       </li>
     
       <li class="post">
