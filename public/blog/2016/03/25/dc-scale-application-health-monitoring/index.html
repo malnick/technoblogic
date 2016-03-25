@@ -1,0 +1,311 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>DC-Scale Application Health Monitoring - Technoblogic</title>
+  <meta name="author" content="Jeff Malnick">
+
+  
+  <meta name="description" content="The Data Center Operating System (DCOS) runs on tens of thousands of hosts. Monitoring the health of all the pieces that make up this amazing &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://technoblogic.io/blog/2016/03/25/dc-scale-application-health-monitoring/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Technoblogic</a></h1>
+  
+    <h2>Musings on DevOps</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="technoblogic.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/blog/archives">All Posts</a></li>
+  <li><a href="/blog/resume">Resume</a></li>
+  <li><a href="/blog/talks">Talks/Public Venues</a></li>
+  <li><a href="https://github.com/malnick">Github</a></li>
+  <li><a href="https://www.flickr.com/photos/129457394@N03/">Flickr</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">DC-Scale Application Health Monitoring</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-25T10:04:54-07:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:04 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>The Data Center Operating System (DCOS) runs on tens of thousands of hosts. Monitoring the health of all the pieces that make up this amazing application is vital to data center operators and for troubleshoooting hard-to-diagnose bugs. In DCOS v1.7 we&rsquo;re releasing a new system health API to monitor the core DCOS components (more on the terminology of &lsquo;components&rsquo; later). In the futrue we&rsquo;re hoping to expand the usage of the system health API to other metrics as well as exposing a plugins-style architecture to allow operators to customize system health monitoring.</p>
+
+<h2>Getting Started</h2>
+
+<p>If you&rsquo;re using DCOS 1.7, getting started with System Health is easy. When you launch your new cluster, you&rsquo;ll notice a new application badge in the main DCOS user interface:</p>
+
+<p><SCREEN SHOT></p>
+
+<p>You can click on this badge, taking you to the main system health user interface:</p>
+
+<p><SCREEN SHOT></p>
+
+<p>You can sort by node health:</p>
+
+<p><SCREE SHOT></p>
+
+<p>Or component health:</p>
+
+<p><SCREEN SHOT></p>
+
+<h2>What are Components?</h2>
+
+<p>What we refer to as components are in fact the <a href="URL">systemd units</a> that make up the core of the DCOS application. These systemd &lsquo;components&rsquo; are monitored by our internal diagnostics utility (dcos-diagnostics.service). This utility scans all the DCOS units, and then exposes an HTTP API on each host.</p>
+
+<p>You can query this HTTP API for any host in the cluster:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>curl &lt;host_ip&gt;:1050/api/v1/health</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Aggregation</h2>
+
+<p>Aggregation of the cluster health endpoints is actually accomplished by the same diagnostics application, except this aggregation mode is only ran on master hosts. You can explore this API further by making a few queries to any master in your cluster:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>curl &lt;master_ip&gt;:1050/api/v1/health/units
+</span><span class='line'>curl &lt;master_ip&gt;:1050/api/v1/health/nodes
+</span><span class='line'>curl &lt;master_ip&gt;:1050/api/v1/health/report</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The DCOS user interface uses these aggregation endpoints to generate the data you explore in the system health console.</p>
+
+<h2>Health States</h2>
+
+<p>Today, there are only binary health states, <code>healthy</code> and <code>unhealthy</code>. We logically infer this from codes 0 and 1 respectively. We did however build the system health API to have four possible states: 0 - 3, OK; CRITICAL; WARNING; UNKNOWN.</p>
+
+<p>In the future we will leverage these codes to give more robust and detailed cluster health state information.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jeff Malnick</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-03-25T10:04:54-07:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:04 am</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://technoblogic.io/blog/2016/03/25/dc-scale-application-health-monitoring/" data-via="jmalnick" data-counturl="http://technoblogic.io/blog/2016/03/25/dc-scale-application-health-monitoring/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/03/24/the-data-center-operating-system-installer-part-1/" title="Previous Post: Building an Installer for the Data Center Operating System">&laquo; Building an Installer for the Data Center Operating System</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">DC-Scale Application Health Monitoring</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/03/24/the-data-center-operating-system-installer-part-1/">Building an Installer for the Data Center Operating System</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/17/automated-installs-over-ssh-lessons-learned/">How to Deploy Highly Scalable Systems Over SSH</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/09/05/mantle-encrypted-json-for-the-marathon-api/">Mantle: Encrypted JSON for the Marathon API</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/08/28/elasticsearch-logstash-cli-utility/">Logasaurus: A CLI Utility for Elasticsearch / Logstash</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/malnick">@malnick</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'malnick',
+            count: 3,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+Included file 'asides/twitter.html' not found in _includes directory
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Jeff Malnick -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+<script>
+  $(document).ready(function() {  
+    var stickyNavTop = $('nav').offset().top;  
+      
+    var stickyNav = function(){  
+      var scrollTop = $(window).scrollTop(); 
+      var navHasClassSticky = $('nav').hasClass('sticky');
+
+      if (scrollTop > stickyNavTop && navHasClassSticky) {   
+        return true;
+      } else if (scrollTop > stickyNavTop) {
+        $('nav').hide();
+        $('nav').addClass('sticky');
+        $('nav').fadeIn('2000');
+      } else {  
+        $('nav').removeClass('sticky');   
+      }  
+    };  
+      
+    stickyNav();  
+      
+    $(window).scroll(function() {  
+      stickyNav();  
+    });  
+  });  
+</script>
+
+
+</body>
+</html>
