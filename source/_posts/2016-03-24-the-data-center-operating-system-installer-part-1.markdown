@@ -5,6 +5,8 @@ date: 2016-03-24 08:54:43 -0700
 comments: true
 categories: 
 ---
+![welcome](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/Welcome%20%28New%20User%29%401x.png)
+
 The [Mesosphere](http://mesosphere.io) Data Center Operating System (DCOS) is a distributed, highly available task scheduler. It uses a number of open and closed source projects to make running and administering Apache Mesos as seamless and simple as possible. DCOS runs at scale (we have customers running production deployments of 50,000 nodes) across thousands of machines. This post covers challenges, design, and an overview of the final GUI installer we built to install an operating system for the data center. <!-- not sure about that last sentence --> 
 <!--more-->
 ## Installation Challenge

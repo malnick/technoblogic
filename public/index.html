@@ -74,7 +74,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">DC-Scale Application Health Monitoring</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">System Health at Enterprise Scale</a></h1>
     
     
       <p class="meta">
@@ -92,55 +92,12 @@
 
   <div class="entry-content"><p>The Data Center Operating System (DCOS) runs on tens of thousands of hosts. Monitoring the health of all the pieces that make up this amazing application is vital to data center operators and for troubleshoooting hard-to-diagnose bugs. In DCOS v1.7 we&rsquo;re releasing a new system health API to monitor the core DCOS components (more on the terminology of &lsquo;components&rsquo; later). In the futrue we&rsquo;re hoping to expand the usage of the system health API to other metrics as well as exposing a plugins-style architecture to allow operators to customize system health monitoring.</p>
 
-<h2>Getting Started</h2>
-
-<p>If you&rsquo;re using DCOS 1.7, getting started with System Health is easy. When you launch your new cluster, you&rsquo;ll notice a new application badge in the main DCOS user interface:</p>
-
-<p><SCREEN SHOT></p>
-
-<p>You can click on this badge, taking you to the main system health user interface:</p>
-
-<p><SCREEN SHOT></p>
-
-<p>You can sort by node health:</p>
-
-<p><SCREE SHOT></p>
-
-<p>Or component health:</p>
-
-<p><SCREEN SHOT></p>
-
-<h2>What are Components?</h2>
-
-<p>What we refer to as components are in fact the <a href="URL">systemd units</a> that make up the core of the DCOS application. These systemd &lsquo;components&rsquo; are monitored by our internal diagnostics utility (dcos-diagnostics.service). This utility scans all the DCOS units, and then exposes an HTTP API on each host.</p>
-
-<p>You can query this HTTP API for any host in the cluster:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>curl &lt;host_ip&gt;:1050/api/v1/health</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>Aggregation</h2>
-
-<p>Aggregation of the cluster health endpoints is actually accomplished by the same diagnostics application, except this aggregation mode is only ran on master hosts. You can explore this API further by making a few queries to any master in your cluster:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>curl &lt;master_ip&gt;:1050/api/v1/health/units
-</span><span class='line'>curl &lt;master_ip&gt;:1050/api/v1/health/nodes
-</span><span class='line'>curl &lt;master_ip&gt;:1050/api/v1/health/report</span></code></pre></td></tr></table></div></figure>
-
-
-<p>The DCOS user interface uses these aggregation endpoints to generate the data you explore in the system health console.</p>
-
-<h2>Health States</h2>
-
-<p>Today, there are only binary health states, <code>healthy</code> and <code>unhealthy</code>. We logically infer this from codes 0 and 1 respectively. We did however build the system health API to have four possible states: 0 - 3, OK; CRITICAL; WARNING; UNKNOWN.</p>
-
-<p>In the future we will leverage these codes to give more robust and detailed cluster health state information.</p>
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/03/25/dc-scale-application-health-monitoring/">Read on &rarr;</a>
+    </footer>
   
 
 
@@ -167,7 +124,9 @@
   </header>
 
 
-  <div class="entry-content"><p>The <a href="http://mesosphere.io">Mesosphere</a> Data Center Operating System (DCOS) is a distributed, highly available task scheduler. It uses a number of open and closed source projects to make running and administering Apache Mesos as seamless and simple as possible. DCOS runs at scale (we have customers running production deployments of 50,000 nodes) across thousands of machines. This post covers challenges, design, and an overview of the final GUI installer we built to install an operating system for the data center. <!-- not sure about that last sentence --></p>
+  <div class="entry-content"><p><img src="https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/Welcome%20%28New%20User%29%401x.png" alt="welcome" /></p>
+
+<p>The <a href="http://mesosphere.io">Mesosphere</a> Data Center Operating System (DCOS) is a distributed, highly available task scheduler. It uses a number of open and closed source projects to make running and administering Apache Mesos as seamless and simple as possible. DCOS runs at scale (we have customers running production deployments of 50,000 nodes) across thousands of machines. This post covers challenges, design, and an overview of the final GUI installer we built to install an operating system for the data center. <!-- not sure about that last sentence --></p>
 
 </div>
   
@@ -475,7 +434,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">DC-Scale Application Health Monitoring</a>
+        <a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">System Health at Enterprise Scale</a>
       </li>
     
       <li class="post">
