@@ -96,27 +96,27 @@
 
 <p>If you&rsquo;re using DCOS 1.7, getting started with System Health is easy. When you launch your new cluster, you&rsquo;ll notice a new application badge in the main DCOS user interface:</p>
 
-<p><SS Badge UI></p>
+<p><img src="https://dl.dropboxusercontent.com/u/77193293/systemHealthScreens/dcos_ui.png" alt="login" /></p>
 
 <p>You can click on this badge, taking you to the main system health user interface:</p>
 
-<p><SS Main Sys Health Page></p>
+<p><img src="https://dl.dropboxusercontent.com/u/77193293/systemHealthScreens/badge_close.png" alt="badge" /></p>
 
-<p>You can sort by node health:</p>
+<p>You can sort by health:</p>
 
-<p>&lt;SS Sort by Node Health</p>
+<p><img src="https://dl.dropboxusercontent.com/u/77193293/systemHealthScreens/sort_by_health.png" alt="sort" /></p>
 
-<p>Or component health:</p>
+<p>When a component isn&rsquo;t healthy, you can drill in on it, seeing all the nodes on which that component runs:</p>
 
-<p><SS Sort by component health></p>
+<p><img src="https://dl.dropboxusercontent.com/u/77193293/systemHealthScreens/sys_unhealthy_view.png" alt="view" /></p>
 
-<p>When a component isn&rsquo;t healthy, you can see the journald output:</p>
+<p>You can debug more by clicking the node, where you&rsquo;ll be able to see the unhealthy component journald (log) output:</p>
 
-<p><SS journald output></p>
+<p><img src="https://dl.dropboxusercontent.com/u/77193293/systemHealthScreens/sys_unhealthy.png" alt="log" /></p>
 
-<h2>What are Components?</h2>
+<h2>Components</h2>
 
-<p>What we refer to as components are in fact the <a href="URL">systemd units</a> that make up the core of the DCOS application. These systemd &lsquo;components&rsquo; are monitored by our internal diagnostics utility (dcos-diagnostics.service). This utility scans all the DCOS units, and then exposes an HTTP API on each host.</p>
+<p>What we refer to as components are in fact the <a href="https://www.freedesktop.org/wiki/Software/systemd/">systemd units</a> that make up the core of the DCOS application. These systemd &lsquo;components&rsquo; are monitored by our internal diagnostics utility (dcos-diagnostics.service). This utility scans all the DCOS units, and then exposes an HTTP API on each host.</p>
 
 <p>You can query this HTTP API for any host in the cluster:</p>
 

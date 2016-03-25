@@ -54,4 +54,5 @@ Today, there are only binary health states, ```healthy``` and ```unhealthy```. W
 
 In the future we will leverage these codes to give more robust and detailed cluster health state information.
 
-
+## That's It!
+That's it for the system health addition to the DCOS ecosystem. We're going to be adding many more features in upcoming releases to DCOS, stay tuned to this blog for more information.
