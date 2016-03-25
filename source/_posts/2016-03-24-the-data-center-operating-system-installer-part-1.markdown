@@ -42,32 +42,31 @@ This used to be in JSON format, but we moved this to a YAML format which is more
 ## The User Interface
 Finally, we built a completely new web-based graphical user interface. Previously, DCOS end-users relied on our documentation to get the configuration parameters in their config.yaml correct. These parameters were often a source of constant documentation updates and inputing them was error prone. The new GUI gives our end users constant feedback about the state of their configuration, and we hope to build this experience to make it even more dynamic in the future:
 
-<SS WELCOME>
+![welcome](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/Welcome%20%28New%20User%29%401x.png)
 
 The configuration page gives you robust error information:
 
-<SS CONFIGURE>
+![configure](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/Setup%20%28Error%29%401x.png)
 
 The preflight installs cluster host prerequisites for you:
 
-<SS WARNING>
+![warning](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/Setup%20%28Installation%20Warning%29%401x.png)
 
 The preflight process gives you real-time preflight feedback across all cluster hosts:
 
-<SS PREFLIGHT ERROR OUTPUT>
+![preflight](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/Pre-Flight%20%28Error%29%401x.png)
 
 All stages give you real-time status bars:
 
-<SS DEPLOY STATUS BARS>
+![deploy](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/Deploy%20%28Partial%20Complete%29%401x.png)
 
 The postflight ensures the deployment process was successful, and your cluster is ready for use:
 
-<SS POSTFLIGHT RUNNING>
-<SS SUCCESS>
+![success](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/Success%401x.png)
 
 You can get a detailed log of each stage at anytime, and send this to our support team if you run into issues:
 
-<SS LOGS>
+![logs](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/Log%20Modal%20%28Error%29%401x.png)
 
 ## That's It! 
 And that's all there is to it, your one-stop shop to deploying your highly available, fault tolerant, enterprise-scale Data Center Operating System. We have many improvements and features we'll be adding to our new installer in the very near future, please stay up to date and watch this blog for more great additions to our installer.  

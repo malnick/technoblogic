@@ -4,7 +4,7 @@
   <title><![CDATA[]]></title>
   <link href="http://technoblogic.io/atom.xml" rel="self"/>
   <link href="http://technoblogic.io/"/>
-  <updated>2016-03-24T10:32:46-07:00</updated>
+  <updated>2016-03-25T11:33:31-07:00</updated>
   <id>http://technoblogic.io/</id>
   <author>
     <name><![CDATA[Jeff Malnick]]></name>
@@ -12,6 +12,14 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[]]></title>
+    <link href="http://technoblogic.io/blog/2016/03/25/dc-scale-application-health-monitoring/"/>
+    <updated>2016-03-25T10:04:54-07:00</updated>
+    <id>http://technoblogic.io/blog/2016/03/25/dc-scale-application-health-monitoring</id>
+    <content type="html"><![CDATA[]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[]]></title>
@@ -162,14 +170,6 @@
     <link href="http://technoblogic.io/blog/2014/10/31/the-benefits-of-being-sheep/"/>
     <updated>2014-10-31T06:44:08-07:00</updated>
     <id>http://technoblogic.io/blog/2014/10/31/the-benefits-of-being-sheep</id>
-    <content type="html"><![CDATA[]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[]]></title>
-    <link href="http://technoblogic.io/blog/2014/10/29/the-proxy-module/"/>
-    <updated>2014-10-29T20:50:15-07:00</updated>
-    <id>http://technoblogic.io/blog/2014/10/29/the-proxy-module</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   
