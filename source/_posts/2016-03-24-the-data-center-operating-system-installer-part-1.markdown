@@ -70,5 +70,69 @@ You can get a detailed log of each stage at anytime and send this to our support
 
 ![logs](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/Log%20Modal%20%28Error%29%401x.png)
 
+## Command Line Ready
+Even though you can deploy DCOS from the web UI, we also include all the functionality on the CLI too. 
+
+Optional arguments for the CLI are:
+```bash
+  -h, --help            show this help message and exit
+  
+  --hash-password       Hash a password on the CLI for use in the config.yaml.
+  
+  -v, --verbose         Verbose log output (DEBUG).
+  
+  --offline             Do not install preflight prerequisites on CentOS7, RHEL7 in web mode
+
+  --web                 Run the web interface.
+  
+  --genconf             Execute the configuration generation (genconf).
+  
+  --preflight           Execute the preflight checks on a series of nodes.
+  
+  --install-prereqs     Install preflight prerequisites. Works only on CentOS7 and RHEL7.
+  
+  --deploy              Execute a deploy.
+  
+  --postflight          Execute postflight checks on a series of nodes.
+  
+  --uninstall           Execute uninstall on target hosts.
+  
+  --validate-config     Validate the configuration for executing genconf and deploy arguments in config.yaml
+```
+
+Deploying from the CLI is great for building the installer into your automated workflows, or using advanced configuration parameters in your config.yaml that are not currently supported by the UI. You can also skip steps that you're forced through using the UI, which is sometimes simply a matter of convenience.
+
+If you choose this route, you'll have to execute a few different arguments to get the desired outcome of a fully deployed cluster. 
+
+Once you've made your config.yaml and ip-detect script in a sibling directory to ```dcos_generate_config.sh``` called ```genconf/```, you can start executing configuration generation and deploy arguments to ```dcos_generate_config.sh```:
+
+Execute configuration validation:
+
+<SS config val>
+
+Execute configuration generation:
+
+<SS genconf>
+
+Execute preflight:
+
+<SS preflight>
+
+If things are not right in your cluster, preflight will let you know:
+
+<SS preflight fail>
+
+Execute deploy:
+
+<SS deploy>
+
+Execute postflight:
+
+<SS postflight>
+
+Optionally, if things go south, you can execute uninstall:
+
+<SS uninstall>
+
 ## That's It! 
 And that's all there is to it, your one-stop shop to deploying your highly available, fault tolerant, enterprise-scale Data Center Operating System. We have many improvements and features we'll be adding to our new installer in the very near future. Watch this blog for more great additions to our installer.  
