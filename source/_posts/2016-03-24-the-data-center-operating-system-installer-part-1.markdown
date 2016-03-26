@@ -108,31 +108,41 @@ Once you've made your config.yaml and ip-detect script in a sibling directory to
 
 Execute configuration validation:
 
-<SS config val>
+![val](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_validate_config_good.png)
+
+And if configuration needs some work:
+
+![valb](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_bad_validation.png)
 
 Execute configuration generation:
 
-<SS genconf>
+![gen](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_genconf.png)
+
+Execute installing prerequisists to your cluster hosts:
+
+![prer](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_prereqs.png)
 
 Execute preflight:
 
-<SS preflight>
+![preg](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_pre_good.png)
 
 If things are not right in your cluster, preflight will let you know:
 
-<SS preflight fail>
+![preb](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_pre_errrors.png)
 
-Execute deploy:
+Execute deploy with robust state feedback:
 
-<SS deploy>
+![dep](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_bad_deploy.png)
 
-Execute postflight:
+You can also execute `--postflight` to tell you when your cluster has gained a quorum and is in a usable state. 
 
-<SS postflight>
+Optionally, if things go south, you can execute uninstall, but only after accepting the agreement:
 
-Optionally, if things go south, you can execute uninstall:
+![accpt](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_uninstall_accept.png)
 
-<SS uninstall>
+Then:
+
+![unin](https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_uninstall_errors.png)
 
 ## That's It! 
 And that's all there is to it, your one-stop shop to deploying your highly available, fault tolerant, enterprise-scale Data Center Operating System. We have many improvements and features we'll be adding to our new installer in the very near future. Watch this blog for more great additions to our installer.  

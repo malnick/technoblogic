@@ -162,6 +162,105 @@
 
 <p><img src="https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/Log%20Modal%20%28Error%29%401x.png" alt="logs" /></p>
 
+<h2>Command Line Ready</h2>
+
+<p>Even though you can deploy DCOS from the web UI, we also include all the functionality on the CLI too.</p>
+
+<p>Optional arguments for the CLI are:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>  -h, --help            show this <span class="nb">help </span>message and <span class="nb">exit</span>
+</span><span class='line'>
+</span><span class='line'>  --hash-password       Hash a password on the CLI <span class="k">for</span> use in the config.yaml.
+</span><span class='line'>
+</span><span class='line'>  -v, --verbose         Verbose log output <span class="o">(</span>DEBUG<span class="o">)</span>.
+</span><span class='line'>
+</span><span class='line'>  --offline             Do not install preflight prerequisites on CentOS7, RHEL7 in web mode
+</span><span class='line'>
+</span><span class='line'>  --web                 Run the web interface.
+</span><span class='line'>
+</span><span class='line'>  --genconf             Execute the configuration generation <span class="o">(</span>genconf<span class="o">)</span>.
+</span><span class='line'>
+</span><span class='line'>  --preflight           Execute the preflight checks on a series of nodes.
+</span><span class='line'>
+</span><span class='line'>  --install-prereqs     Install preflight prerequisites. Works only on CentOS7 and RHEL7.
+</span><span class='line'>
+</span><span class='line'>  --deploy              Execute a deploy.
+</span><span class='line'>
+</span><span class='line'>  --postflight          Execute postflight checks on a series of nodes.
+</span><span class='line'>
+</span><span class='line'>  --uninstall           Execute uninstall on target hosts.
+</span><span class='line'>
+</span><span class='line'>  --validate-config     Validate the configuration <span class="k">for</span> executing genconf and deploy arguments in config.yaml
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Deploying from the CLI is great for building the installer into your automated workflows, or using advanced configuration parameters in your config.yaml that are not currently supported by the UI. You can also skip steps that you&rsquo;re forced through using the UI, which is sometimes simply a matter of convenience.</p>
+
+<p>If you choose this route, you&rsquo;ll have to execute a few different arguments to get the desired outcome of a fully deployed cluster.</p>
+
+<p>Once you&rsquo;ve made your config.yaml and ip-detect script in a sibling directory to <code>dcos_generate_config.sh</code> called <code>genconf/</code>, you can start executing configuration generation and deploy arguments to <code>dcos_generate_config.sh</code>:</p>
+
+<p>Execute configuration validation:</p>
+
+<p><img src="https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_validate_config_good.png" alt="val" /></p>
+
+<p>And if configuration needs some work:</p>
+
+<p><img src="https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_bad_validation.png" alt="valb" /></p>
+
+<p>Execute configuration generation:</p>
+
+<p><img src="https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_genconf.png" alt="gen" /></p>
+
+<p>Execute installing prerequisists to your cluster hosts:</p>
+
+<p><img src="https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_prereqs.png" alt="prer" /></p>
+
+<p>Execute preflight:</p>
+
+<p><img src="https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_pre_good.png" alt="preg" /></p>
+
+<p>If things are not right in your cluster, preflight will let you know:</p>
+
+<p><img src="https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_pre_errrors.png" alt="preb" /></p>
+
+<p>Execute deploy with robust state feedback:</p>
+
+<p><img src="https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_bad_deploy.png" alt="dep" /></p>
+
+<p>You can also execute <code>--postflight</code> to tell you when your cluster has gained a quorum and is in a usable state.</p>
+
+<p>Optionally, if things go south, you can execute uninstall, but only after accepting the agreement:</p>
+
+<p><img src="https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_uninstall_accept.png" alt="accpt" /></p>
+
+<p>Then:</p>
+
+<p><img src="https://dl.dropboxusercontent.com/u/77193293/Installer%20Screens/cli_uninstall_errors.png" alt="unin" /></p>
+
 <h2>That&rsquo;s It!</h2>
 
 <p>And that&rsquo;s all there is to it, your one-stop shop to deploying your highly available, fault tolerant, enterprise-scale Data Center Operating System. We have many improvements and features we&rsquo;ll be adding to our new installer in the very near future. Watch this blog for more great additions to our installer.</p>
