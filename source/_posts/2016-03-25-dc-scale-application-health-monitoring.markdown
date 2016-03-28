@@ -50,7 +50,7 @@ curl <master_ip>:1050/api/v1/health/report
 The DCOS user interface uses these aggregation endpoints to generate the data you explore in the system health console.
 
 ## Health States
-Today, there are only binary health states, ```healthy``` and ```unhealthy```. We logically infer this from codes 0 and 1 respectively. We did however build the system health API to have four possible states: 0 - 3, OK; CRITICAL; WARNING; UNKNOWN.
+Today, there are only binary health states, ```healthy``` and ```unhealthy```. We infer this from codes 0 and 1 respectively. We did however build the system health API to have four possible states: 0 - 3, OK; CRITICAL; WARNING; UNKNOWN.
 
 In the future we will leverage these codes to give more robust and detailed cluster health state information.
 
