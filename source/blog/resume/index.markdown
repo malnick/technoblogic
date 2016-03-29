@@ -8,14 +8,20 @@ footer: true
 ---
 ##Experience
 
-###Mesosphere - mesosphere.io, Site Reliability Engineer, Foundations Team
+###Mesosphere - mesosphere.com **Engineering Manager**, *Foundations Team*
 
-October 2015 - Present
+March 2016 - Present
+
+Same thing as before with more Jira. 
+
+###Mesosphere - mesosphere.com **Site Reliability Engineer**, *Foundations Team*
+
+October 2015 - March 2016
 
 Foundations Team at Mesosphere. We build the foundation to the Data Center Operating System. From system architecture to the installation process, we touch almost every piece that goes into the DCOS ecosystem. Collaborate with foundations team, front end, design and core developers to design and build an asynchronous, highly concurrent and stabled SSH deployment method of the DCOS open source and enterprise product and associated HTTP API. Work with support, sales and core engineers to troubleshoot customer P0's and implement fixes. Listen to customer feedback and implement design with a customer first attitute.  
 
 
-###SRC:CLR - srcclr.com, Lead DevOps Engineer
+###SRC:CLR - srcclr.com, **Lead DevOps Engineer**
 
 January 2015 - October 2015
 
@@ -23,13 +29,13 @@ Scalable chaos; Puppet; All things IT Operations.
 
 Wrote, deployed and managed our merge-to-master continuous integration pipeline (jenkns-puppet master-deploy to cluster in aws); single handedly wrote all the configuration management code, cloud formation templates for full stack one click deployments to AWS; managed migration of domain from @sourceclear to @srcclr including google apps, DNS, application layer configuration and other associated services; deployed all our company SAAS applications for SAML auth via Ping Managed SSO; worked with developers from the frontend to backend to build out sophisticated monitoring solutions using logstash -> ELK stack (for analytics and visualizations), logstash -> pager duty (alerts), New Relic -> pager duty.
 
-###ConnectSolutions, Senior Systems Engineer
+###ConnectSolutions, **Senior Systems Engineer**
 
 October 2014 - January 2015
 
 Leading the systems engieering team at Connect Solutions, a cloud hosting provider for Adobe Connect and MS Lync. Write tools to amend the automation pipeline built around Puppet. Develop new integrations with service discovery tools. Implement continuous integration webhooks and workflows around Jenkins to automate the dev­test­deploy workflow around our Puppet codebase. Lead the team by constantly learning about new technologies and methodologies and disseminate institutional knowledge. Own the automation of the application layer and design bare metal provisioning methodologies for our corporate and FedRAMP datacenters.
 
-###Puppet Labs, Professional Services Engineer
+###Puppet Labs, **Professional Services Engineer**
 
 December 2013 - October 2014
 
@@ -37,7 +43,7 @@ Pro services @puppetlabs: Customer­facing with Puppet Enterprise customers, con
 ￼
 Teach the Puppet DSL at various public and private venues. Contribute to the development of the Puppet Enterprise rapid deployment product which leverages FOSS continuous integration tools to generate puppet development pipeline for greenfield customers.
 
-###Cart Logic, Inc. Infrastructure Engineering Consultant, Part-Time Contract 
+###Cart Logic, Inc. **Infrastructure Engineering Consultant**, *Part-Time Contract* 
 
 March 2013 - August 2013
 
