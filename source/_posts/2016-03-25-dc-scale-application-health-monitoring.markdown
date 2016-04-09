@@ -5,7 +5,7 @@ date: 2016-03-25 10:04:54 -0700
 comments: true
 categories: 
 ---
-The Data Center Operating System (DCOS) runs on tens of thousands of hosts. Monitoring the health of all the pieces that make up this amazing application is vital to data center operators and for troubleshoooting hard-to-diagnose bugs. In DCOS v1.7 we're releasing a new system health API to monitor the core DCOS components (more on the terminology of 'components' later). In the futrue we're hoping to expand the usage of the system health API to other metrics as well as exposing a plugins-style architecture to allow operators to customize system health monitoring.
+Hello bitches! 
 <!-- More -->
 
 ## Getting Started
