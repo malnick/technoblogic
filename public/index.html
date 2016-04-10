@@ -9,7 +9,17 @@
   <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content=" Nagios is a popular monitoring framework for distributed hosts. This guide explains how to monitor a DC/OS cluster with Nagios Core 4x using NRPE. ">
+  <meta name="description" content="1
+2
+3
+4
+5
+6
+7
+8
+ip-10-0-6-126 system # ls dcos.target.wants/
+dcos-adminrouter-reload.service dcos-exhibitor.service dcos-marathon.service
+dcos- &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +84,58 @@
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/2016/04/10/dc-slash-os-components/">An Introduction to DC/OS Components</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-10T13:20:36-07:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:20 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ip-10-0-6-126 system # ls dcos.target.wants/
+</span><span class='line'>dcos-adminrouter-reload.service  dcos-exhibitor.service        dcos-marathon.service
+</span><span class='line'>dcos-adminrouter-reload.timer    dcos-gen-resolvconf.service   dcos-mesos-dns.service
+</span><span class='line'>dcos-adminrouter.service         dcos-gen-resolvconf.timer     dcos-mesos-master.service
+</span><span class='line'>dcos-cluster-id.service          dcos-history-service.service  dcos-minuteman.service
+</span><span class='line'>dcos-cosmos.service              dcos-keepalived.service       dcos-signal.service
+</span><span class='line'>dcos-ddt.service                 dcos-logrotate.service        dcos-signal.timer
+</span><span class='line'>dcos-epmd.service                dcos-logrotate.timer          dcos-spartan.service</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What are the core DC/OS components?</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/04/10/dc-slash-os-components/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/2016/04/10/monitoring-dc-slash-os-with-nagios/">Monitoring DC/OS With Nagios</a></h1>
     
     
@@ -110,7 +172,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">System Health at Enterprise Scale</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">DC/OS System Health Monitoring</a></h1>
     
     
       <p class="meta">
@@ -126,7 +188,9 @@
   </header>
 
 
-  <div class="entry-content"><p>The Data Center Operating System (DCOS) runs on tens of thousands of hosts. Monitoring the health of all the pieces that make up this amazing application is vital to data center operators and for troubleshoooting hard-to-diagnose bugs. In DCOS v1.7 we&rsquo;re releasing a new system health API to monitor the core DCOS components (more on the terminology of &lsquo;components&rsquo; later). In the futrue we&rsquo;re hoping to expand the usage of the system health API to other metrics as well as exposing a plugins-style architecture to allow operators to customize system health monitoring.</p>
+  <div class="entry-content"><p><img src="https://dl.dropboxusercontent.com/u/77193293/systemHealthScreens/sys_unhealthy.png" alt="log" /></p>
+
+<p>The Data Center Operating System (DCOS) runs on tens of thousands of hosts. Monitoring the health of all the pieces that make up this amazing application is vital to data center operators and for troubleshoooting hard-to-diagnose bugs. In DCOS v1.7 we&rsquo;re releasing a new system health API to monitor the core DCOS components (more on the terminology of &lsquo;components&rsquo; later). In the futrue we&rsquo;re hoping to expand the usage of the system health API to other metrics as well as exposing a plugins-style architecture to allow operators to customize system health monitoring.</p>
 
 </div>
   
@@ -385,40 +449,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/07/14/static-service-provisioning-sucks/">Static Service Provisioning Sucks</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-07-14T13:05:01-07:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>1:05 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Many tools exist to help automate and orchestrate provisioning servers. Each tool serves a purpose, or is tailored for a specific task. One realization I had not to long ago was that configuration management tools, as a framework, suck at provisioning micro services. I say that at the risk of bringing on the deluge of comments that often accompany such a blunt, over arching statement.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/07/14/static-service-provisioning-sucks/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/">&larr; Older</a>
@@ -434,11 +464,15 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/04/10/dc-slash-os-components/">An Introduction to DC/OS Components</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/04/10/monitoring-dc-slash-os-with-nagios/">Monitoring DC/OS With Nagios</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">System Health at Enterprise Scale</a>
+        <a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">DC/OS System Health Monitoring</a>
       </li>
     
       <li class="post">
@@ -447,10 +481,6 @@
     
       <li class="post">
         <a href="/blog/2016/01/17/automated-installs-over-ssh-lessons-learned/">How to Deploy Highly Scalable Systems Over SSH</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/09/05/mantle-encrypted-json-for-the-marathon-api/">Mantle: Encrypted JSON for the Marathon API</a>
       </li>
     
   </ul>

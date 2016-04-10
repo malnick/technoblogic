@@ -1,0 +1,752 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>An Introduction to DC/OS Components - Technoblogic</title>
+  <meta name="author" content="Jeff Malnick">
+
+  
+  <meta name="description" content="1
+2
+3
+4
+5
+6
+7
+8
+ip-10-0-6-126 system # ls dcos.target.wants/
+dcos-adminrouter-reload.service dcos-exhibitor.service dcos-marathon.service
+dcos- &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://technoblogic.io/blog/2016/04/10/dc-slash-os-components/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Technoblogic</a></h1>
+  
+    <h2>Musings on DevOps</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="technoblogic.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/blog/archives">All Posts</a></li>
+  <li><a href="/blog/resume">Resume</a></li>
+  <li><a href="/blog/talks">Talks/Public Venues</a></li>
+  <li><a href="https://github.com/malnick">Github</a></li>
+  <li><a href="https://www.flickr.com/photos/129457394@N03/">Flickr</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">An Introduction to DC/OS Components</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-10T13:20:36-07:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:20 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ip-10-0-6-126 system # ls dcos.target.wants/
+</span><span class='line'>dcos-adminrouter-reload.service  dcos-exhibitor.service        dcos-marathon.service
+</span><span class='line'>dcos-adminrouter-reload.timer    dcos-gen-resolvconf.service   dcos-mesos-dns.service
+</span><span class='line'>dcos-adminrouter.service         dcos-gen-resolvconf.timer     dcos-mesos-master.service
+</span><span class='line'>dcos-cluster-id.service          dcos-history-service.service  dcos-minuteman.service
+</span><span class='line'>dcos-cosmos.service              dcos-keepalived.service       dcos-signal.service
+</span><span class='line'>dcos-ddt.service                 dcos-logrotate.service        dcos-signal.timer
+</span><span class='line'>dcos-epmd.service                dcos-logrotate.timer          dcos-spartan.service</span></code></pre></td></tr></table></div></figure>
+
+
+<p>What are the core DC/OS components?</p>
+
+<!--more-->
+
+
+<p>By components, we&rsquo;re referring to the services which work together to bring the DC/OS ecosystem alive. The core component is of course <a href="http://mesos.apache.org/">Apache Mesos</a> but the DC/OS is actually made of of <em>many</em> more services than just this.</p>
+
+<p>If you log into any host in the DC/OS cluster, you can view the currently running services by inspecting <code>/etc/systemd/system/dcos.target.wants/</code>.</p>
+
+<h2>Admin Router Service</h2>
+
+<p>Admin router is our core internal load balancer. Admin router is a customized <a href="https://www.nginx.com/resources/wiki/">Nginx</a> which allows us to proxy all the internal services on :80.</p>
+
+<p>Without admin router being up, you could not access the DCOS UI. Admin router is a core component of the DC/OS ecosystem.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[Unit]
+</span><span class='line'>Description=Admin Router: A high performance web server and a reverse proxy server
+</span><span class='line'>After=dcos-gen-resolvconf.service
+</span><span class='line'>ConditionPathExists=/var/lib/dcos/cluster-id
+</span><span class='line'>
+</span><span class='line'>[Service]
+</span><span class='line'>Restart=always
+</span><span class='line'>StartLimitInterval=0
+</span><span class='line'>RestartSec=5
+</span><span class='line'>EnvironmentFile=/etc/environment
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/environment
+</span><span class='line'>Type=forking
+</span><span class='line'>PIDFile=/opt/mesosphere/packages/adminrouter--1ec9969794ff4fcbde235d029652679b6a51e51e/nginx/logs/nginx.pid
+</span><span class='line'>PrivateDevices=yes
+</span><span class='line'>StandardOutput=journal
+</span><span class='line'>StandardError=journal
+</span><span class='line'>ExecStartPre=/bin/ping -c1 ready.spartan
+</span><span class='line'>ExecStartPre=/bin/ping -c1 marathon.mesos
+</span><span class='line'>ExecStartPre=/bin/ping -c1 leader.mesos
+</span><span class='line'>ExecStart=/opt/mesosphere/packages/adminrouter--1ec9969794ff4fcbde235d029652679b6a51e51e/nginx/sbin/nginx
+</span><span class='line'>ExecReload=/usr/bin/kill -HUP $MAINPID
+</span><span class='line'>KillSignal=SIGQUIT
+</span><span class='line'>KillMode=mixed</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Cluster ID Service</h2>
+
+<p>The cluster-id service allows us to generate a UUID for each cluster. We use this ID to track cluster health remotely (if enabled). This remote tracking allows our support team to better assist our customers.</p>
+
+<p>The cluster-id service runs an internal tool called <code>zk-value-consensus</code> which uses our internal Zookeeper to generate a UUID that all the masters agree on. Once an agreement is reached, the ID is written to disk at <code>/var/lib/dcos/cluster-id</code>. We write it to <code>/var/lib/dcos</code> so the ID is ensured to persist cluster upgrades without changing.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[Unit]
+</span><span class='line'>Description=Cluster ID: Generates anonymous DCOS Cluster ID
+</span><span class='line'>[Service]
+</span><span class='line'>Type=oneshot
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/environment
+</span><span class='line'>ExecStartPre=/bin/mkdir -p /var/lib/dcos
+</span><span class='line'>ExecStart=/bin/sh -c "/opt/mesosphere/bin/python -c 'import uuid; print(uuid.uuid4())'  | /opt/mesosphere/bin/zk-value-consensus /cluster-id &gt; /var/lib/dcos/cluster-id"</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Cosmos Service</h2>
+
+<p>The Cosmos service is our internal packaging API service. You access this service everytime you run <code>dcos package install...</code> from the CLI. This API allows us to deploy DC/OS packages from the DC/OS universe to your DC/OS cluster.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[Unit]
+</span><span class='line'>Description=Package Service: DCOS Packaging API
+</span><span class='line'>After=dcos-mesos-master.service
+</span><span class='line'>After=dcos-gen-resolvconf.service
+</span><span class='line'>
+</span><span class='line'>[Service]
+</span><span class='line'>Restart=always
+</span><span class='line'>StartLimitInterval=0
+</span><span class='line'>RestartSec=15
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/environment
+</span><span class='line'>ExecStartPre=/bin/ping -c1 ready.spartan
+</span><span class='line'>ExecStartPre=/opt/mesosphere/bin/exhibitor_wait.py
+</span><span class='line'>## CoreOS
+</span><span class='line'>ExecStartPre=-/usr/bin/mkdir -p /var/lib/cosmos
+</span><span class='line'>## Ubuntu
+</span><span class='line'>ExecStartPre=-/bin/mkdir -p /var/lib/cosmos
+</span><span class='line'>ExecStart=/opt/mesosphere/bin/java -Xmx2G -jar "/opt/mesosphere/packages/cosmos--e5b42c8cd703c1eb7b83868b1</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Diagnostics (DDT) Service</h2>
+
+<p>The diagnostics service (also known as 3DT or dcos-ddt.service, no relationship to the pesticide!) is our diagnostics utility for DC/OS systemd components. This service runs on every host, tracking the internal state of the systemd unit. The service runs in two modes, with or without the <code>-pull</code> argument. If running on a master host, it executes <code>/opt/mesosphere/bin/3dt -pull</code> which queries MesosDNS for a list of known masters in the cluster, then queries a master (usually itself) <code>:5050/statesummary</code> and gets a list of slaves.</p>
+
+<p>From this complete list of cluster hosts, it queries all 3DT health endpoints (<code>:1050/system/health/v1/health</code>). This endpoint returns health state for the DC/OS systemd units on that host. The master 3DT processes, along with doing this aggregation also expose <code>/system/health/v1/</code> endpoints to feed this data by <code>unit</code> or <code>node</code> IP to the DC/OS user interface.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[Unit]
+</span><span class='line'>Description=Diagnostics: DCOS Distributed Diagnostics Tool Master API and Aggregation Service
+</span><span class='line'>[Service]
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/environment
+</span><span class='line'>Restart=always
+</span><span class='line'>StartLimitInterval=0
+</span><span class='line'>RestartSec=5
+</span><span class='line'>ExecStart=/opt/mesosphere/bin/3dt -pull</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Erlang Port Mapper (EPMD) Service</h2>
+
+<p>The erlang port mapper is designed to support our internal layer 4 load balancer we call <code>minuteman</code>.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[Unit]
+</span><span class='line'>Description=Erlang Port Mapping Daemon: DCOS Erlang Port Mapping Daemon
+</span><span class='line'>
+</span><span class='line'>[Service]
+</span><span class='line'>Restart=always
+</span><span class='line'>StartLimitInterval=0
+</span><span class='line'>RestartSec=5
+</span><span class='line'>WorkingDirectory=/opt/mesosphere/packages/erlang--8035129e271fc5b27124e3e8e3d7b63395c5ef31
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/environment
+</span><span class='line'>ExecStart=/opt/mesosphere/packages/erlang--8035129e271fc5b27124e3e8e3d7b63395c5ef31/bin/epmd -port 61420
+</span><span class='line'>Environment=HOME=/opt/mesosphere</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Exhibitor Service</h2>
+
+<p>Exhibitor is a project from <a href="https://github.com/Netflix/exhibitor">netflix</a> that allows us to manage and automate the deployment of Zookeeper.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[Unit]
+</span><span class='line'>Description=Exhibitor: Zookeeper Supervisor Service
+</span><span class='line'>After=network-online.target
+</span><span class='line'>[Service]
+</span><span class='line'>StandardOutput=journal
+</span><span class='line'>StandardError=journal
+</span><span class='line'>Restart=always
+</span><span class='line'>StartLimitInterval=0
+</span><span class='line'>RestartSec=5
+</span><span class='line'>MountFlags=private
+</span><span class='line'>RuntimeDirectory=dcos_exhibitor
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/environment
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/etc/dns_config
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/etc/exhibitor
+</span><span class='line'># run in new mount namespace to create custom resolv.conf
+</span><span class='line'>ExecStart=/usr/bin/unshare --mount /opt/mesosphere/packages/exhibitor--8b9dac1cdd3a5ea25ae5a2e66f18000ad72c3f26/usr/exhibitor/start_exhibitor.py</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Generate resolv.conf (gen-resolvconf) Serivce</h2>
+
+<p>The gen-resolvconf service allows us to dynamically provision <code>/etc/resolv.conf</code> for your cluster hosts.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[Unit]
+</span><span class='line'>Description=Generate Resolv.conf: Update systemd-resolved for MesosDNS
+</span><span class='line'>After=dcos-spartan.service
+</span><span class='line'>
+</span><span class='line'>[Service]
+</span><span class='line'>Type=oneshot
+</span><span class='line'>StandardOutput=journal
+</span><span class='line'>StandardError=journal
+</span><span class='line'>EnvironmentFile=/etc/environment
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/environment
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/etc/dns_config
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/etc/dns_search_config
+</span><span class='line'>EnvironmentFile=-/opt/mesosphere/etc/dns_config_master
+</span><span class='line'>ExecStart=/opt/mesosphere/bin/gen_resolvconf.py /etc/resolv.conf</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>History Service</h2>
+
+<p>The history service provides a simple service for storing stateful information about your DC/OS cluster. This data is stored on disk for 24 hours. Along with storing this data, the history service also exposes a HTTP API for the DC/OS user interface to query. All DC/OS cluster stats which involve memory, CPU and disk usage are driven by this service (including the donuts!).</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[Unit]
+</span><span class='line'>Description=Mesos History: DCOS Resource Metrics History Service/API
+</span><span class='line'>After=dcos-mesos-master.service
+</span><span class='line'>[Service]
+</span><span class='line'>Restart=always
+</span><span class='line'>StartLimitInterval=0
+</span><span class='line'>RestartSec=5
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/environment
+</span><span class='line'>Environment=HISTORY_BUFFER_DIR=/var/lib/mesosphere/dcos/history-service
+</span><span class='line'>ExecStart=/opt/mesosphere/bin/dcos-history</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Logrotate Service</h2>
+
+<p>This service does what you think it does: ensures DC/OS services don&rsquo;t blow up cluster hosts with to much log data on disk.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[Unit]
+</span><span class='line'>Description=Logrotate: Rotate various logs on the system
+</span><span class='line'>[Service]
+</span><span class='line'>Type=simple
+</span><span class='line'>EnvironmentFile=/etc/environment
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/environment
+</span><span class='line'>ExecStartPre=/usr/bin/mkdir -p /var/log/mesos/archive
+</span><span class='line'>ExecStart=/opt/mesosphere/packages/logrotate--52aee4fc02aab1082880abd4411d7825148ea024/bin/logrotate /opt/mesosphere/packages/logrotate--52aee4fc02aab1082880abd4411d7825148ea024/etc/logrotate.conf</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Marathon Service</h2>
+
+<p>Marathon shouldn&rsquo;t need any introduction, it&rsquo;s the distributed init system for the DC/OS cluster. We run an internal marathon for packages and other DC/OS services.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[Unit]
+</span><span class='line'>Description=Marathon: DCOS Init System
+</span><span class='line'>After=dcos-mesos-master.service
+</span><span class='line'>[Service]
+</span><span class='line'>Restart=always
+</span><span class='line'>StartLimitInterval=0
+</span><span class='line'>RestartSec=15
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/environment
+</span><span class='line'>EnvironmentFile=-/opt/mesosphere/environment.ip.marathon
+</span><span class='line'>ExecStartPre=/opt/mesosphere/bin/exhibitor_wait.py
+</span><span class='line'>ExecStartPre=/bin/bash -c 'echo "HOST_IP=$($MESOS_IP_DISCOVERY_COMMAND)" &gt; /opt/mesosphere/environment.ip.marathon'
+</span><span class='line'>ExecStartPre=/bin/bash -c 'echo "MARATHON_HOSTNAME=$($MESOS_IP_DISCOVERY_COMMAND)" &gt;&gt; /opt/mesosphere/environment.ip.marathon'
+</span><span class='line'>ExecStartPre=/bin/bash -c 'echo "LIBPROCESS_IP=$($MESOS_IP_DISCOVERY_COMMAND)" &gt;&gt; /opt/mesosphere/environment.ip.marathon'
+</span><span class='line'>ExecStart=/opt/mesosphere/bin/java -Xmx2G -jar "/opt/mesosphere/packages/marathon--fbc1c97b180500cd4ec6d26520c1db9e105879f8/usr/marathon.jar" --zk zk://localhost:2181/marathon --master zk://localhost:2181/mesos --hostname "$MARATHON_HOSTNAME" --default_accepted_resource_roles "*" --mesos_role "slave_public" --max_tasks_per_offer 100 --task_launch_timeout 86400000 --decline_offer_duration 300000 --revive_offers_for_new_apps --zk_compression --mesos_leader_ui_url "/mesos" --enable_features "vips,task_killing" --mesos_authentication_principal "marathon"</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>MesosDNS Service</h2>
+
+<p>MesosDNS is the internal DNS service for the DC/OS cluster. MesosDNS provides the namespace <code>$service.mesos</code> to all cluster hosts. For example, you can login to your leading mesos master with <code>ssh leader.mesos</code>.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[Unit]
+</span><span class='line'>Description=Mesos DNS: DNS based Service Discovery
+</span><span class='line'>After=dcos-mesos-master.service
+</span><span class='line'>[Service]
+</span><span class='line'>Restart=always
+</span><span class='line'>StartLimitInterval=0
+</span><span class='line'>RestartSec=5
+</span><span class='line'>EnvironmentFile=/etc/environment
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/environment
+</span><span class='line'>ExecStart=/opt/mesosphere/bin/mesos-dns --config=/opt/mesosphere/etc/mesos-dns.json -logtostderr=true</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Minuteman Service</h2>
+
+<p>This is our internal layer 4 loadbalancer.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[Unit]
+</span><span class='line'>Description=Layer 4 Load Balancer: DCOS Layer 4 Load Balancing Service
+</span><span class='line'>After=dcos-gen-resolvconf.service
+</span><span class='line'>After=dcos-epmd.service
+</span><span class='line'>BindsTo=dcos-epmd.service
+</span><span class='line'>
+</span><span class='line'>[Service]
+</span><span class='line'>Restart=always
+</span><span class='line'>StartLimitInterval=0
+</span><span class='line'>RestartSec=5
+</span><span class='line'>WorkingDirectory=/opt/mesosphere/packages/minuteman--841ef0a5edaa8cffedf4946c47929e477a3aef92/minuteman
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/environment
+</span><span class='line'>ExecStartPre=/bin/ping -c1 ready.spartan
+</span><span class='line'>ExecStartPre=/bin/ping -c1 leader.mesos
+</span><span class='line'>ExecStartPre=/usr/bin/env mkdir -p /var/lib/dcos/minuteman/mnesia
+</span><span class='line'>ExecStartPre=/usr/bin/env mkdir -p /var/lib/dcos/minuteman/lashup
+</span><span class='line'>ExecStart=/opt/mesosphere/packages/minuteman--841ef0a5edaa8cffedf4946c47929e477a3aef92/minuteman/bin/env foreground
+</span><span class='line'>Environment=HOME=/opt/mesosphere</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Signal Service</h2>
+
+<p>The DC/OS signal service queries the diagnostics service <code>/system/health/v1/report</code> endpoint on the leading master and sends this data to SegmentIO for use in tracking metrics and customer support.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[Unit]
+</span><span class='line'>Description=Signal Service: DCOS Telemetry and Support Utility
+</span><span class='line'>After=dcos-mesos-master.service
+</span><span class='line'>[Service]
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/environment
+</span><span class='line'>EnvironmentFile=-/opt/mesosphere/etc/cfn_signal_metadata
+</span><span class='line'>ExecStart=/opt/mesosphere/bin/dcos-signal --write_key=51ybGTeFEFU1xo6u10XMDrr6kATFyRyh</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Spartan Service</h2>
+
+<p>Spartan is our internal DNS dispater. It conforms to RFC5625 as a DNS forwarder for DC/OS cluster services.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[Unit]
+</span><span class='line'>Description=DNS Dispatcher: An RFC5625 Compliant DNS Forwarder
+</span><span class='line'>[Service]
+</span><span class='line'>Restart=always
+</span><span class='line'>StartLimitInterval=0
+</span><span class='line'>RestartSec=5
+</span><span class='line'>WorkingDirectory=/opt/mesosphere/active/spartan/spartan
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/environment
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/etc/dns_config
+</span><span class='line'>EnvironmentFile=/opt/mesosphere/etc/dns_search_config
+</span><span class='line'>EnvironmentFile=-/opt/mesosphere/etc/dns_config_master
+</span><span class='line'>ExecStartPre=/usr/bin/env modprobe dummy
+</span><span class='line'>ExecStartPre=-/usr/bin/env ip link add spartan type dummy
+</span><span class='line'>ExecStartPre=/usr/bin/env ip link set spartan up
+</span><span class='line'>ExecStartPre=-/usr/bin/env ip addr add 198.51.100.1/32 dev spartan
+</span><span class='line'>ExecStartPre=-/usr/bin/env ip addr add 198.51.100.2/32 dev spartan
+</span><span class='line'>ExecStartPre=-/usr/bin/env ip addr add 198.51.100.3/32 dev spartan
+</span><span class='line'>ExecStart=/opt/mesosphere/active/spartan/spartan/bin/spartan foreground
+</span><span class='line'>Environment=HOME=/opt/mesosphere</span></code></pre></td></tr></table></div></figure>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jeff Malnick</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-04-10T13:20:36-07:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:20 pm</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://technoblogic.io/blog/2016/04/10/dc-slash-os-components/" data-via="jmalnick" data-counturl="http://technoblogic.io/blog/2016/04/10/dc-slash-os-components/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/04/10/monitoring-dc-slash-os-with-nagios/" title="Previous Post: Monitoring DC/OS with Nagios">&laquo; Monitoring DC/OS with Nagios</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/04/10/dc-slash-os-components/">An Introduction to DC/OS Components</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/10/monitoring-dc-slash-os-with-nagios/">Monitoring DC/OS With Nagios</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">DC/OS System Health Monitoring</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/03/24/the-data-center-operating-system-installer-part-1/">Building an Installer for the Data Center Operating System</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/17/automated-installs-over-ssh-lessons-learned/">How to Deploy Highly Scalable Systems Over SSH</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/malnick">@malnick</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'malnick',
+            count: 3,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+Included file 'asides/twitter.html' not found in _includes directory
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Jeff Malnick -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+<script>
+  $(document).ready(function() {  
+    var stickyNavTop = $('nav').offset().top;  
+      
+    var stickyNav = function(){  
+      var scrollTop = $(window).scrollTop(); 
+      var navHasClassSticky = $('nav').hasClass('sticky');
+
+      if (scrollTop > stickyNavTop && navHasClassSticky) {   
+        return true;
+      } else if (scrollTop > stickyNavTop) {
+        $('nav').hide();
+        $('nav').addClass('sticky');
+        $('nav').fadeIn('2000');
+      } else {  
+        $('nav').removeClass('sticky');   
+      }  
+    };  
+      
+    stickyNav();  
+      
+    $(window).scroll(function() {  
+      stickyNav();  
+    });  
+  });  
+</script>
+
+
+</body>
+</html>
