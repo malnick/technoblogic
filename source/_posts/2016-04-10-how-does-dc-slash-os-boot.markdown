@@ -9,6 +9,8 @@ It's an operating system right? What happens when you start DC/OS?
 
 DC/OS is composed of many services, acting across the cluster, to bring the entire state of the cluster into an 'up' state. 
 
+<!--more-->
+
 ## Installation
 Genesis begins with the installer. The installer runs in three stages, each with their own sub-stages:
 
@@ -52,4 +54,11 @@ Genesis begins with the installer. The installer runs in three stages, each with
     - /opt/mesosphere
     - Install DC/OS roles: /etc/mesosphere/roles/$role
     - Configure and start DC/OS services
+
+1. Postflight
+  1. Run `/opt/mesosphere/bin/3dt -diag` until all services come up or 10 minute timeout.
+
+## Service Start Order
+### Master Services
+### Agent Services
  
