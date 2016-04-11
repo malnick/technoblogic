@@ -94,49 +94,12 @@
 
 <p>DC/OS is composed of many services, acting across the cluster, to bring the entire state of the cluster into an &lsquo;up&rsquo; state.</p>
 
-<h2>Installation</h2>
-
-<p>Genesis begins with the installer. The installer runs in three stages, each with their own sub-stages:</p>
-
-<ol>
-<li>Preflight</li>
-<li>Install DC/OS Prerequists (only on CentOS 7x):
-
-<ul>
-<li>Install packages:
-
-<ul>
-<li>docker</li>
-<li>wget</li>
-<li>git</li>
-<li>unzip</li>
-<li>curl</li>
-<li>xz</li>
-<li>ipsec</li>
-</ul>
-</li>
-<li>Add the <code>nogroup</code> group</li>
-<li>Configure docker for overlay filesystem</li>
-<li>If running and enforcing, disable selinux</li>
-</ul>
-</li>
-<li>Run preflight checks to ensure prerequists are correctly provisioned and configured:
-
-<ol>
-<li>Check for packages:</li>
-<li>curl</li>
-<li>bash</li>
-<li>ping</li>
-<li>tar</li>
-<li>xz</li>
-<li>unzip</li>
-<li>systemd-notify</li>
-</ol>
-</li>
-</ol>
-
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/04/10/how-does-dc-slash-os-boot/">Read on &rarr;</a>
+    </footer>
   
 
 

@@ -91,6 +91,9 @@
 
 <p>DC/OS is composed of many services, acting across the cluster, to bring the entire state of the cluster into an &lsquo;up&rsquo; state.</p>
 
+<!--more-->
+
+
 <h2>Installation</h2>
 
 <p>Genesis begins with the installer. The installer runs in three stages, each with their own sub-stages:</p>
@@ -117,10 +120,12 @@
 <li>If running and enforcing, disable selinux</li>
 </ul>
 </li>
-<li>Run preflight checks to ensure prerequists are correctly provisioned and configured:
+<li><p>Run preflight checks to ensure prerequists are correctly provisioned and configured:</p>
 
-<ol>
-<li>Check for packages:</li>
+<ul>
+<li>Check for packages:
+
+<ul>
 <li>curl</li>
 <li>bash</li>
 <li>ping</li>
@@ -128,10 +133,45 @@
 <li>xz</li>
 <li>unzip</li>
 <li>systemd-notify</li>
-</ol>
+</ul>
 </li>
+<li>Ensure ports for DC/OS are available:
+
+<ul>
+<li>80 Mesos UI</li>
+<li>53 Mesos DNS</li>
+<li>15055 History Service</li>
+<li>5050 Mesos Master</li>
+<li>2181 Zookeeper</li>
+<li>8080 Marathon</li>
+<li>3888 Zookeeper</li>
+<li>8181 Exhibitor</li>
+<li>8123 Mesos DNS</li>
+</ul>
+</li>
+<li>Ensure Docker is not using devicemapper in loopback as storage driver</li>
+<li>Ensure there is not pre existing DC/OS cluster installed</li>
+</ul>
+</li>
+<li><p>Install DC/OS</p></li>
+<li><p>Setup working directories</p>
+
+<ul>
+<li>/opt/mesosphere</li>
+<li>Install DC/OS roles: /etc/mesosphere/roles/$role</li>
+<li>Configure and start DC/OS services</li>
+</ul>
+</li>
+<li><p>Postflight</p></li>
+<li>Run <code>/opt/mesosphere/bin/3dt -diag</code> until all services come up or 10 minute timeout.</li>
 </ol>
 
+
+<h2>Service Start Order</h2>
+
+<h3>Master Services</h3>
+
+<h3>Agent Services</h3>
 </div>
 
 
