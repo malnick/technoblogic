@@ -15,7 +15,7 @@ DC/OS is composed of many services, acting across the cluster, to bring the enti
 Genesis begins with the installer. The installer runs in three stages, each with their own sub-stages:
 
 1. Preflight
-  1. Install DC/OS Prerequists (only on CentOS 7x):
+  1. Install DC/OS Prerequists (only on CentOS 7x, use `--install-prereqs` if on the CLI):
     - Install packages:
       - docker
       - wget
