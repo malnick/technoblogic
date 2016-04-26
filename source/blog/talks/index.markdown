@@ -6,6 +6,10 @@ comments: true
 sharing: true
 footer: true
 ---
+### Tech in Motion Presents: Containerization + DevOps Tech Talk SF, March 2016
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/OWg8kz_ZiEU" frameborder="0" allowfullscreen></iframe>
+
 ### PuppetConf: Vertically Scaled Design Patterns, September 2015
 
 Links:
