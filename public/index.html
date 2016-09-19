@@ -9,7 +9,7 @@
   <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content="Day 2 operations are actions which DC/OS operators take after the initial deployment of a DC/OS cluster. At Mesosphere, we place high value on this &hellip;">
+  <meta name="description" content="Day 2 operations are actions which DC/OS operators take after the initial deployment of a DC/OS cluster. For the DC/OS operator, this is where their &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -90,9 +90,9 @@
   </header>
 
 
-  <div class="entry-content"><p>Day 2 operations are actions which DC/OS operators take after the initial deployment of a DC/OS cluster. At Mesosphere, we place high value on this critical time period. For a DC/OS operator, this is where their job truely begins. We at Mesosphere also believe that this is where DC/OS truely shines. Since DC/OS is an operating system, not simply a container orchestrator (though we have frameworks such as Marathon which do that in spades), we have the perfect platform for gathering metrics, logs and implementing intuitive debugging features that our competitors lack.</p>
+  <div class="entry-content"><p>Day 2 operations are actions which DC/OS operators take after the initial deployment of a DC/OS cluster. For the DC/OS operator, this is where their job truly begins; as a product, DC/OS strives to make day 2 operations as seamless and intuitive as possible. Since DC/OS is an operating system, not simply a container orchestrator (though we have frameworks such as Marathon which do that in spades), we have the perfect platform for gathering metrics, logs and implementing these intuitive debugging features that our competitors lack.</p>
 
-<p>Enabling our operators with rich API&rsquo;s that are generic enough to fit into any stack, whether it&rsquo;s ELK for logs, or Data Dog for metrics, our aim is to ship features which interate gracefully with the most common, feature-full solutions available. And we are not aiming to ship just cluster metrics and logs, we aim to ship metrics and logs for the applications you run on the cluster as well.</p>
+<p>Enabling our operators with rich API&rsquo;s that are generic enough to fit into any stack, whether it&rsquo;s ELK for logs, or Data Dog for metrics, our aim is to ship features which integrate gracefully with the most common, feature-full solutions available. And we are not aiming to ship just cluster metrics and logs, we aim to ship metrics and logs for the applications you run on the cluster as well.</p>
 
 <p>For our Enterprise customers, you can expect these API&rsquo;s to be secured with the same authentication and authorization you&rsquo;ve come to expect since the release of Enterprise DC/OS 1.8.</p>
 
@@ -105,7 +105,33 @@
 
 <h2>DC/OS Logging API</h2>
 
-<p>The loggin</p>
+<p>Without automated log aggregation your monitoring, alerting and derived metrics are nothing. Logs provide some of the best possible insights into your application health as well as DC/OS cluster health. They&rsquo;re invaluable for debugging and are where first responders go when things head South.</p>
+
+<p>Our aim in building a cluster-wide logging API is to ensure our operators can integrate DC/OS with any log aggregator. That means it needs to work as seamlessly with an ELK stack which is front-ended with Redis as well as it does dumping to Splunk or other hosted log systems. For our enterprise customers it needs to obey our security requirements for authorization and authentication when being queried by services or cluster operators.</p>
+
+<h3>Architecture</h3>
+
+<p>The logging API has one goal: make DC/OS core service logs and applications deployed to DC/OS (frameworks or containers) logs available through one, secured, intuitive HTTP API.</p>
+
+<h4>Step 1: Everything goes to Journald</h4>
+
+<p>In order to do this we needed to re-design how we currently get logs from frameworks. Today, DC/OS frameworks dump their <code>STDOUT</code> and <code>STDERR</code> to the <a href="http://mesos.apache.org/documentation/latest/sandbox/">Mesos Sandbox</a>. This isn&rsquo;t easily accessible or integrated with where all the other host-level (read: DC/OS core services such as Adminrouter) dump their logs. Core services or anything running as a systemd unit, dumps its logs to <a href="https://www.freedesktop.org/software/systemd/man/systemd-journald.service.html">journald</a>.</p>
+
+<p>Our first step then, is to make the framework logs go to journald. To do this, we had to write a Mesos Module. This module takes every line a framework produces and mutates it using the journald API, using journald labels to mark what framework the log line is associated with along with other metadata. With this new module in place, we get all the logs on a cluster aggregated into one place, and we can build an API on top of that to expose it to the rest of the world.</p>
+
+<h4>Step 2: Build a (secure) HTTP API on Journald</h4>
+
+<p>Having all the framework and container logs in journald posses some serious security risks:
+1. How do we ensure authorized users access only the log data which their applications produce?
+1. How do we filter log results based on these ACLs?</p>
+
+<p>For our enterprise customers, the logging API needs to follow fine-grained access control lists (ACLs) for any log line. That means, if Alice does not have permission to touch Bob&rsquo;s application, then she must not be allowed to access logs which pertain to Bob&rsquo;s application. If Bob gives Alice permission to view his application, then Alice should be able to view the Bob&rsquo;s application log data.</p>
+
+<p>In order to put these assurances to rest, we use the meta-data that the Mesos Logging Module amends each log line and leverage it at the application layer to ensure logs which are not meant for a specific user are not served. The logging API talks to the same services which provide fine-grained ACLs as our other DC/OS components to ensure these assurances are met.</p>
+
+<h4>Step 3: Proxy the Logs API on Adminrouter</h4>
+
+<h3>Journald Performance Testing</h3>
 
 <h2>DC/OS Metrics Shippers // Collectors</h2>
 
@@ -116,51 +142,6 @@
 <h3>Integration Examples</h3>
 
 <h2>DC/OS Debugging API</h2>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/05/31/what-makes-dc-slash-os-different/">What Makes DC/OS Different</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-05-31T17:41:07-07:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>31</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>5:41 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>True story: Every single day I&rsquo;m posed with this question, what makes DC/OS different? What sets us apart from Kubernetes, Docker Swarm, Rancher and other schedulers that seemingly show up in the market every day?</p>
-
-<p>I could go into great detail about how amazing the company is (we are hiring!), or the ingenious vision of an &ldquo;app store&rdquo; for the data center. But what really sets DC/OS apart is two level scheduling.</p>
-
-<p>You can ask <a href="https://www.quora.com/How-does-two-level-scheduling-work-in-Apache-Mesos">Quora</a>, or <a href="https://opensource.com/business/14/9/open-source-datacenter-computing-apache-mesos">Opensource.com</a>, and of course good ol'fashioned <a href="http://stackoverflow.com/questions/21953111/mesos-scheduling-how-this-works">Stack Overflow</a> but we&rsquo;ll deep dive on it here so you can really come to appreciate this overlooked feature of Mesos and of course DC/OS.</p>
-
-<p>What if I told you that you can run Kubernetes on Mesos? Well, <a href="https://github.com/mesosphere/kubernetes-mesos">you can</a>. The magic that makes this possible is the two level scheduler. That means you can run your docker container that has your app on top of Mesos next to a Kubernetes cluster that has other things your app might want. Or, your organization as one developer who loves Docker and another who loves Kubernetes, they can both use the same infrastructure to run their development pipelines.</p>
-
-<p>The two level scheduler allows you to abstract any application, and deploy it to a highly available, fault tolerant environment that reacts to fail over crashes in ways specific to your your application. This deployment mechanism is a <code>Framework</code> and is the second layer to the two level scheduler. When you write a framework for your application you provide Mesos with very fine grained details about how you want your application and Mesos to work together to ensure uptime and availablility of the service. This also means you can turn most modern applications into web frameworks, since there are bindings for <a href="https://github.com/mesos/mesos-go">golang</a>, <a href="https://github.com/apache/mesos/tree/master/src/examples/python">python</a>, Scala, and of course C++ (links on <a href="https://open.mesosphere.com/getting-started/resources/">the Mesosphere website</a>.</p>
-
-<p>Under the framework is Mesos, which has a agent and master service. The agent tells the master what resources it has available (cpu, memory, disk), and the master makes these resources offers to the Frameworks which ask for them. If the resource offer is accepted by the Framework, the master schedules the Framework to run.</p>
-
-<p>A very popular framework is <a href="https://mesosphere.github.io/marathon/">Marathon</a>, which is a container orchestration engine that runs on Mesos. When I think of Docker Swarm or Kubernetes, I often compare them to Marathon, since at their essence, those tools do the same job: orchestrate the deployment of containers to a set of hosts in a cluster.</p>
-
-<p>And that&rsquo;s where the beauty of DC/OS lives: our ecosystem isn&rsquo;t just container orchestration, it&rsquo;s that plus application orchestration of almost any kind. Be it Python code, C++, Scala, Golang, you can write a framework and deploy it on Mesos next to other application, or orchestration engines providing other services. It&rsquo;s what allows us to make our one click deployments of <a href="https://github.com/mesosphere/cassandra-mesos">Cassandra</a> or <a href="https://mesosphere.com/velocity/">Jenkins</a> so bomb proof and dead simple.</p>
-
-<p>We abstract all the nuances of how the application should behave, from deployment to crashing to rehabilitiation so you can focus on what&rsquo;s important: making your own amazing product. DC/OS is simply a catalyst for your work.</p>
 </div>
   
   
@@ -448,6 +429,40 @@
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/07/31/a-restful-haproxy-service-abstraction/">A Restful Haproxy Service Abstraction</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-07-31T06:05:55-07:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>31</span><span class='date-suffix'>st</span>, <span class='date-year'>2015</span></span> <span class='time'>6:05 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>A major hurdle of microservices is visibility into the versions of your deployed infrastructure. At SRC:CLR we have 7 different micro services plus our platform that drive our product. These services are deployed as immutable infrastructure, their IP&rsquo;s and configuration is fluid and changing all the time. During a deployment, we might to a canary update of our services, but having to manually query the <code>/info</code> endpoint across &lsquo;n&rsquo; number of nodes, IP addresses, and dynamic management port assignments is error prone and difficult. In order to gain visibility into the currently running services, we wrote a tool that finds available services by querying our frontend and internal loadbalancers for running services, and then queries those running services to get their running versions and display them in a lightweight frontend.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/07/31/a-restful-haproxy-service-abstraction/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
   <div class="pagination">
     
       <a class="prev" href="/posts/">&larr; Older</a>
@@ -467,10 +482,6 @@
       </li>
     
       <li class="post">
-        <a href="/blog/2016/05/31/what-makes-dc-slash-os-different/">What Makes DC/OS Different</a>
-      </li>
-    
-      <li class="post">
         <a href="/blog/2016/04/26/containerization-in-devops-talk/">Containerization in DevOps Talk</a>
       </li>
     
@@ -480,6 +491,10 @@
     
       <li class="post">
         <a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">DC/OS System Health Monitoring</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/03/24/the-data-center-operating-system-installer-part-1/">Building an Installer for the Data Center Operating System</a>
       </li>
     
   </ul>

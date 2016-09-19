@@ -9,7 +9,7 @@
   <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content="Day 2 operations are actions which DC/OS operators take after the initial deployment of a DC/OS cluster. At Mesosphere, we place high value on this &hellip;">
+  <meta name="description" content="Day 2 operations are actions which DC/OS operators take after the initial deployment of a DC/OS cluster. For the DC/OS operator, this is where their &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -87,9 +87,9 @@
   </header>
 
 
-<div class="entry-content"><p>Day 2 operations are actions which DC/OS operators take after the initial deployment of a DC/OS cluster. At Mesosphere, we place high value on this critical time period. For a DC/OS operator, this is where their job truely begins. We at Mesosphere also believe that this is where DC/OS truely shines. Since DC/OS is an operating system, not simply a container orchestrator (though we have frameworks such as Marathon which do that in spades), we have the perfect platform for gathering metrics, logs and implementing intuitive debugging features that our competitors lack.</p>
+<div class="entry-content"><p>Day 2 operations are actions which DC/OS operators take after the initial deployment of a DC/OS cluster. For the DC/OS operator, this is where their job truly begins; as a product, DC/OS strives to make day 2 operations as seamless and intuitive as possible. Since DC/OS is an operating system, not simply a container orchestrator (though we have frameworks such as Marathon which do that in spades), we have the perfect platform for gathering metrics, logs and implementing these intuitive debugging features that our competitors lack.</p>
 
-<p>Enabling our operators with rich API&rsquo;s that are generic enough to fit into any stack, whether it&rsquo;s ELK for logs, or Data Dog for metrics, our aim is to ship features which interate gracefully with the most common, feature-full solutions available. And we are not aiming to ship just cluster metrics and logs, we aim to ship metrics and logs for the applications you run on the cluster as well.</p>
+<p>Enabling our operators with rich API&rsquo;s that are generic enough to fit into any stack, whether it&rsquo;s ELK for logs, or Data Dog for metrics, our aim is to ship features which integrate gracefully with the most common, feature-full solutions available. And we are not aiming to ship just cluster metrics and logs, we aim to ship metrics and logs for the applications you run on the cluster as well.</p>
 
 <p>For our Enterprise customers, you can expect these API&rsquo;s to be secured with the same authentication and authorization you&rsquo;ve come to expect since the release of Enterprise DC/OS 1.8.</p>
 
@@ -102,7 +102,33 @@
 
 <h2>DC/OS Logging API</h2>
 
-<p>The loggin</p>
+<p>Without automated log aggregation your monitoring, alerting and derived metrics are nothing. Logs provide some of the best possible insights into your application health as well as DC/OS cluster health. They&rsquo;re invaluable for debugging and are where first responders go when things head South.</p>
+
+<p>Our aim in building a cluster-wide logging API is to ensure our operators can integrate DC/OS with any log aggregator. That means it needs to work as seamlessly with an ELK stack which is front-ended with Redis as well as it does dumping to Splunk or other hosted log systems. For our enterprise customers it needs to obey our security requirements for authorization and authentication when being queried by services or cluster operators.</p>
+
+<h3>Architecture</h3>
+
+<p>The logging API has one goal: make DC/OS core service logs and applications deployed to DC/OS (frameworks or containers) logs available through one, secured, intuitive HTTP API.</p>
+
+<h4>Step 1: Everything goes to Journald</h4>
+
+<p>In order to do this we needed to re-design how we currently get logs from frameworks. Today, DC/OS frameworks dump their <code>STDOUT</code> and <code>STDERR</code> to the <a href="http://mesos.apache.org/documentation/latest/sandbox/">Mesos Sandbox</a>. This isn&rsquo;t easily accessible or integrated with where all the other host-level (read: DC/OS core services such as Adminrouter) dump their logs. Core services or anything running as a systemd unit, dumps its logs to <a href="https://www.freedesktop.org/software/systemd/man/systemd-journald.service.html">journald</a>.</p>
+
+<p>Our first step then, is to make the framework logs go to journald. To do this, we had to write a Mesos Module. This module takes every line a framework produces and mutates it using the journald API, using journald labels to mark what framework the log line is associated with along with other metadata. With this new module in place, we get all the logs on a cluster aggregated into one place, and we can build an API on top of that to expose it to the rest of the world.</p>
+
+<h4>Step 2: Build a (secure) HTTP API on Journald</h4>
+
+<p>Having all the framework and container logs in journald posses some serious security risks:
+1. How do we ensure authorized users access only the log data which their applications produce?
+1. How do we filter log results based on these ACLs?</p>
+
+<p>For our enterprise customers, the logging API needs to follow fine-grained access control lists (ACLs) for any log line. That means, if Alice does not have permission to touch Bob&rsquo;s application, then she must not be allowed to access logs which pertain to Bob&rsquo;s application. If Bob gives Alice permission to view his application, then Alice should be able to view the Bob&rsquo;s application log data.</p>
+
+<p>In order to put these assurances to rest, we use the meta-data that the Mesos Logging Module amends each log line and leverage it at the application layer to ensure logs which are not meant for a specific user are not served. The logging API talks to the same services which provide fine-grained ACLs as our other DC/OS components to ensure these assurances are met.</p>
+
+<h4>Step 3: Proxy the Logs API on Adminrouter</h4>
+
+<h3>Journald Performance Testing</h3>
 
 <h2>DC/OS Metrics Shippers // Collectors</h2>
 
@@ -147,7 +173,7 @@
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2016/05/31/what-makes-dc-slash-os-different/" title="Previous Post: What Makes DC/OS Different">&laquo; What Makes DC/OS Different</a>
+        <a class="basic-alignment left" href="/blog/2016/04/26/containerization-in-devops-talk/" title="Previous Post: Containerization in DevOps Talk">&laquo; Containerization in DevOps Talk</a>
       
       
     </p>
@@ -167,10 +193,6 @@
       </li>
     
       <li class="post">
-        <a href="/blog/2016/05/31/what-makes-dc-slash-os-different/">What Makes DC/OS Different</a>
-      </li>
-    
-      <li class="post">
         <a href="/blog/2016/04/26/containerization-in-devops-talk/">Containerization in DevOps Talk</a>
       </li>
     
@@ -180,6 +202,10 @@
     
       <li class="post">
         <a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">DC/OS System Health Monitoring</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/03/24/the-data-center-operating-system-installer-part-1/">Building an Installer for the Data Center Operating System</a>
       </li>
     
   </ul>
