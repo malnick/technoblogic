@@ -5,12 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Blog Post #1 - Technoblogic</title>
+  <title>DC/OS Day 2 Operations - Technoblogic</title>
   <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content="Is this thing on?
-">
+  <meta name="description" content="Day 2 operations are actions which DC/OS operators take after the initial deployment of a DC/OS cluster. At Mesosphere, we place high value on this &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://technoblogic.io/blog/2014/01/02/blog-post-number-1/">
+  <link rel="canonical" href="http://technoblogic.io/blog/2016/09/19/dc-slash-os-day-2-operations/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
@@ -72,7 +71,7 @@
   
   <header>
     
-      <h1 class="entry-title">Blog Post #1</h1>
+      <h1 class="entry-title">DC/OS Day 2 Operations</h1>
     
     
       <p class="meta">
@@ -81,14 +80,39 @@
 
 
 
-<time class='entry-date' datetime='2014-01-02T10:52:00-08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2014</span></span> <span class='time'>10:52 am</span></time>
+<time class='entry-date' datetime='2016-09-19T13:08:44-07:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:08 pm</span></time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><p>Is this thing on?</p>
+<div class="entry-content"><p>Day 2 operations are actions which DC/OS operators take after the initial deployment of a DC/OS cluster. At Mesosphere, we place high value on this critical time period. For a DC/OS operator, this is where their job truely begins. We at Mesosphere also believe that this is where DC/OS truely shines. Since DC/OS is an operating system, not simply a container orchestrator (though we have frameworks such as Marathon which do that in spades), we have the perfect platform for gathering metrics, logs and implementing intuitive debugging features that our competitors lack.</p>
+
+<p>Enabling our operators with rich API&rsquo;s that are generic enough to fit into any stack, whether it&rsquo;s ELK for logs, or Data Dog for metrics, our aim is to ship features which interate gracefully with the most common, feature-full solutions available. And we are not aiming to ship just cluster metrics and logs, we aim to ship metrics and logs for the applications you run on the cluster as well.</p>
+
+<p>For our Enterprise customers, you can expect these API&rsquo;s to be secured with the same authentication and authorization you&rsquo;ve come to expect since the release of Enterprise DC/OS 1.8.</p>
+
+<p>We identified 3 core areas that we are aiming to ship in DC/OS 1.10 for both open source and enterprise distributions:
+- Logging
+- Metrics
+- Debugging</p>
+
+<p>The only difference between the two across these distros is the enterprise version will have authorization and authentication.</p>
+
+<h2>DC/OS Logging API</h2>
+
+<p>The loggin</p>
+
+<h2>DC/OS Metrics Shippers // Collectors</h2>
+
+<h3>Shipping Metrics</h3>
+
+<h3>Collecting Metrics</h3>
+
+<h3>Integration Examples</h3>
+
+<h2>DC/OS Debugging API</h2>
 </div>
 
 
@@ -104,21 +128,15 @@
 
 
 
-<time class='entry-date' datetime='2014-01-02T10:52:00-08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2014</span></span> <span class='time'>10:52 am</span></time>
+<time class='entry-date' datetime='2016-09-19T13:08:44-07:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:08 pm</span></time>
       
-
-<span class="categories">
-  
-    <a class='category' href='//misc/'>misc</a>
-  
-</span>
 
 
     </p>
     
       <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://technoblogic.io/blog/2014/01/02/blog-post-number-1/" data-via="jmalnick" data-counturl="http://technoblogic.io/blog/2014/01/02/blog-post-number-1/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://technoblogic.io/blog/2016/09/19/dc-slash-os-day-2-operations/" data-via="jmalnick" data-counturl="http://technoblogic.io/blog/2016/09/19/dc-slash-os-day-2-operations/" >Tweet</a>
   
   
   
@@ -129,8 +147,8 @@
     
     <p class="meta">
       
+        <a class="basic-alignment left" href="/blog/2016/05/31/what-makes-dc-slash-os-different/" title="Previous Post: What Makes DC/OS Different">&laquo; What Makes DC/OS Different</a>
       
-        <a class="basic-alignment right" href="/blog/2014/01/03/the-need-to-a-replication-provider/" title="Next Post: The Need for a Replication Provider">The Need for a Replication Provider &raquo;</a>
       
     </p>
   </footer>
