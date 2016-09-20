@@ -4,6 +4,7 @@ title: "DC/OS Day 2 Operations"
 date: 2016-09-19 13:08:44 -0700
 comments: true
 categories: 
+author: Jeff Malnick, Nicholas Parker
 ---
 This blog post is the first in a 3 part series on day 2 operations for DC/OS. The first part is an introduction to what we mean by "day 2 operations" and the first piece of this product road map, our logging API. Part 2 is on metrics gathering, shipping and integrations with popular metrics analytics solutions. The final part is on debugging and how we intend to build our debugging API for executing interactive sessions from the DC/OS CLI with a running task in the cluster. 
 
@@ -52,24 +53,30 @@ The logging API and Mesos logging module together provide the foundation for sea
 The DC/OS CLI has had it's own log command to get framework logs to the end-user for some time. This command will not change in usage but will be leveraging this new log API. Before, users could only use this CLI command to get logs from frameworks, but now they'll be able to get logs for DC/OS core services such as Adminrouter or the Mesos Master and Slave services. This is invaluable for debugging. For example, when you need to view the Marathon logs and your application logs at the same time. This is now possible from the same utility without having to SSH into a cluster host. 
 
 ## DC/OS Metrics
-DC/OS has two main focus points for metrics:
+DC/OS has three main focus points for metrics:
 
-- Application metrics: metrics emitted by the deployed applications in the DC/OS cluster
-- Host/container metrics: metrics about the host systems, and the resources allocated to each of their containers
+- Host metrics: metrics about the host systems themselves
+- Container metrics: metrics about the resource utilization of each container
+- Application metrics: metrics emitted by the deployed applications within each container
 
-Both cases have almost endless possibilities for metric gathering, but we'll discuss how we approach each of these cases. You can also see our [recent presentation from Mesoscon EU](http://schd.ws/hosted_files/mesosconeu2016/e7/Metrics%20on%20DC-OS%20Enterprise%20%28Mesoscon%29.pdf).
+Across these areas there are endless possibilities for metric gathering. We'll discuss how we approach each of these cases. For more information, see our recent [presentation at Mesoscon EU](http://schd.ws/hosted_files/mesosconeu2016/e7/Metrics%20on%20DC-OS%20Enterprise%20%28Mesoscon%29.pdf).
+
+### Host Metrics
+Host metrics such as system-wide CPU usage, Memory usage, and System load are automatically collected for each system in the cluster. This information is automatically tagged with the system it came from, via the `agent_id` tag.
+
+### Container Metrics
+In addition to the metrics collected for the system as a whole, metrics are also automatically collected for each container on that system, and those data are automatically tagged to identify the container. These metrics mainly focus on resource utilization, as containers are a effectively collection of allocated resources after all.
 
 ### Application Metrics
-We mentioned a few specific metrics regarding host-level metrics, but how do we know what metrics to gather from an application which is deployed on DC/OS?
+While it's easy to think about collecting system-level metrics, we'd also like to allow applications themselves to emit their own custom metrics. This opens a world of possibilities, as it effectively allows every application in the cluster to emit any measurable value at any time.
 
-For this case, we expose two environment variables to each container: `STATSD_UDP_HOST` and `STATSD_UDP_PORT`. Any statsd-formatted metrics sent to this advertised endpoint by the application will automatically be tagged with the originating container and forwarded to the rest of the metrics infrastructure. The [Datadog StatsD tag format](http://docs.datadoghq.com/guides/dogstatsd/#datagram-format) is also supported by this endpoint, so any such tags will automatically be parsed out and included in the forwarded data. But the application itself only needs to look for these environment variables and configure a local emitter to send the metrics. The rest is handled automatically.
+For this case, we explicitly sought a solution that was easy to integrate with any application, written in any programming language. To this end we expose two environment variables to each container: `STATSD_UDP_HOST` and `STATSD_UDP_PORT`. Any statsd-formatted metrics sent by the application to this environment-advertised endpoint will automatically be tagged with the originating container and forwarded to the rest of the metrics infrastructure. The [Datadog StatsD tag format](http://docs.datadoghq.com/guides/dogstatsd/#datagram-format) is also supported by this endpoint, so any such tags produced by the application will automatically be parsed out and included in the forwarded data. But from the application's perspective, it only needs to check for those two environment variables and configure a local emitter to send the metrics. The rest is handled automatically.
 
-### Host/Container Metrics
-While the application-level metrics require some minimal involvement by the applications themselves, the host/container-level metrics are collected automatically by DC/OS metrics. Each agent system has a process which retrieves metrics from the local host, both for the system as a whole as well as the resource utilization of individual containers. Like application metrics, this data is sent upstream to a shipper process.
+To see some examples of this integration in practice, see how it's done by the [DC/OS Apache Cassandra](https://github.com/mesosphere/dcos-cassandra-service/blob/964fc1e5d6809a8b2dc040efe9c065405ff56118/cassandra-executor/src/main/java/com/mesosphere/dcos/cassandra/executor/metrics/MetricsConfig.java#L68) and [DC/OS Apache Kafka](https://github.com/mesosphere/dcos-kafka-service/blob/acf844c413ddb8ea7bdb2b1f58b1d79e56c8c6ad/kafka-config-overrider/src/main/java/com/mesosphere/dcos/kafka/config/Overrider.java#L163) services. In each of these cases, it was straightforward to configure even third-party code to support DC/OS Metrics, without needing to touch the code itself for either of these services (modulo the addition of necessary .jars to support emitting StatsD).
 
 ### Tagging Metrics
 In order to support easy drill-down, filtering, and grouping of metrics data, all data sent through the DC/OS Metrics stack is automatically tagged with its origin. The tags include the following, but this list is expected to grow over time:
-- Container identification (for all data relating to a single container): `container_id`, `executor_id`, `framework_id`, `framework_name`
+- Container identification (for all Container and Application metrics): `container_id`, `executor_id`, `framework_id`, `framework_name`
 - Application identification (for e.g. Marathon apps): `application_name`
 - System identification: `agent_id`
 
@@ -79,6 +86,8 @@ For example, grouping metrics by `agent_id` would allow an administrator to dete
 Now that metrics have been collected from the applications and from the host itself, they need to be forwarded to a customer-managed location so that the customer can consume them. As with all our day 2 operations API's, our end-goal is ease of integration with popular stacks and solutions. To forward that goal we currently support two widely used methods for outputting the metrics data from the cluster. These methods are:
 - Kafka service (either in DC/OS itself, or external to the cluster). Widely understood performance and maintenance characteristics. Good throughput for larger clusters.
 - StatsD service (eg `dogstatsd` or the original Etsy `statsd`). Lighter-weight solution for smaller clusters, where running a Kafka instance may be overkill. Optionally supports outputting Datadog-format tags.
+
+In either of these cases, it's extremely easy to consume the outputted metrics data and forward it to any customer-managed or third-party monitoring infrastructure.
 
 ### Integration Examples
 
