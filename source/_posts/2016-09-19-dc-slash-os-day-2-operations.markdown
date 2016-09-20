@@ -52,8 +52,16 @@ The logging API and Mesos logging module together provide the foundation for sea
 The DC/OS CLI has had it's own log command to get framework logs to the end-user for some time. This command will not change in usage but will be leveraging this new log API. Before, users could only use this CLI command to get logs from frameworks, but now they'll be able to get logs for DC/OS core services such as Adminrouter or the Mesos Master and Slave services. This is invaluable for debugging. For example, when you need to view the Marathon logs and your application logs at the same time. This is now possible from the same utility without having to SSH into a cluster host. 
 
 ## DC/OS Metrics Shippers // Collectors
+DC/OS has two main focus points for metrics: framework and container metrics - the metrics from applications you deploy to a DC/OS cluster; cluster host metrics - metrics about host memory, CPU, storage, load and cGroup allocations. Both cases have almost endless possibilities for metric gathering. We mentioned a few specific metrics regarding host level metrics, but how do we know what metrics to gather from a deployed container on DC/OS? We don't, so to enable our end-users we've simply made a [statsd](https://github.com/etsy/statsd) port available to any deployed container. This port number is available via an environment variable inside the container: `STATSD_PORT`.   
+
 ### Shipping Metrics
+As mentioned, shipping metrics from a deployed container is made simple through the use of statsd and an environment variable to expose the port your shipper needs to dump to. For host level metrics we have a host level shipper that we're building which will also dump statsd metrics about memory, CPU, load, storage and other important host level metrics, to a unified metrics collector. This collector will exist on each host, and serve as the single point of metrics aggregation from both containers and the host. 
+
 ### Collecting Metrics
+To collect metrics from containers and host-level resources we build a unified collector. This collector can be configured to dump metrics to either Kafaka or another statsd aggregation solution. These outputs are referred to as producers. In the case of the Kafka producer, you'll most likely need a Kafka cluster available in the DC/OS cluster or otherwise available over the network to ship to. The statsd producer is intended as a more generic metrics shipping solution, since many stacks exist that can ingest statsd metrics. 
+
+As with all our day 2 operations API's, our end-goal is ease of integration with popular stacks and solutions. In the future we'll add more producers to the unified collector on each host so you can ship to even more metrics analytics endpoints. 
+
 ### Integration Examples
 
 ## DC/OS Debugging API
