@@ -48,6 +48,9 @@ The entry point to our logging API for the DC/OS CLI, user interface or external
 ### Log Integrations
 The logging API and Mesos logging module together provide the foundation for seamless integrations with popular log shipping stacks such as [ELK](https://www.elastic.co/webinars/introduction-elk-stack), [Splunk](https://www.splunk.com/) or [Fluentd](http://www.fluentd.org/). Since all the logs end up in journald, you can easily add shipping agents for these popular log aggregation stacks. Through ACL's within those systems, you can then build your own secured log viewing solution or charts. Or, if you want to build into our logging API, you can design a secured log aggregation solution for almost any need by leveraging the HTTP stack. In any case, these two primitive logging solutions give our customers and end-users a first class experience for both application and DC/OS service logs. 
 
+### DC/OS CLI Node Log Command
+The DC/OS CLI has had it's own log command to get framework logs to the end-user for some time. This command will not change in usage but will be leveraging this new log API. Before, users could only use this CLI command to get logs from frameworks, but now they'll be able to get logs for DC/OS core services such as Adminrouter or the Mesos Master and Slave services. This is invaluable for debugging. For example, when you need to view the Marathon logs and your application logs at the same time. This is now possible from the same utility without having to SSH into a cluster host. 
+
 ## DC/OS Metrics Shippers // Collectors
 ### Shipping Metrics
 ### Collecting Metrics
