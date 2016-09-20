@@ -51,16 +51,34 @@ The logging API and Mesos logging module together provide the foundation for sea
 ### DC/OS CLI Node Log Command
 The DC/OS CLI has had it's own log command to get framework logs to the end-user for some time. This command will not change in usage but will be leveraging this new log API. Before, users could only use this CLI command to get logs from frameworks, but now they'll be able to get logs for DC/OS core services such as Adminrouter or the Mesos Master and Slave services. This is invaluable for debugging. For example, when you need to view the Marathon logs and your application logs at the same time. This is now possible from the same utility without having to SSH into a cluster host. 
 
-## DC/OS Metrics Shippers // Collectors
-DC/OS has two main focus points for metrics: framework and container metrics - the metrics from applications you deploy to a DC/OS cluster; cluster host metrics - metrics about host memory, CPU, storage, load and cGroup allocations. Both cases have almost endless possibilities for metric gathering. We mentioned a few specific metrics regarding host level metrics, but how do we know what metrics to gather from a deployed container on DC/OS? We don't, so to enable our end-users we've simply made a [statsd](https://github.com/etsy/statsd) port available to any deployed container. This port number is available via an environment variable inside the container: `STATSD_PORT`.   
+## DC/OS Metrics
+DC/OS has two main focus points for metrics:
 
-### Shipping Metrics
-As mentioned, shipping metrics from a deployed container is made simple through the use of statsd and an environment variable to expose the port your shipper needs to dump to. For host level metrics we have a host level shipper that we're building which will also dump statsd metrics about memory, CPU, load, storage and other important host level metrics, to a unified metrics collector. This collector will exist on each host, and serve as the single point of metrics aggregation from both containers and the host. 
+- Application metrics: metrics emitted by the deployed applications in the DC/OS cluster
+- Host/container metrics: metrics about the host systems, and the resources allocated to each of their containers
 
-### Collecting Metrics
-To collect metrics from containers and host-level resources we build a unified collector. This collector can be configured to dump metrics to either Kafaka or another statsd aggregation solution. These outputs are referred to as producers. In the case of the Kafka producer, you'll most likely need a Kafka cluster available in the DC/OS cluster or otherwise available over the network to ship to. The statsd producer is intended as a more generic metrics shipping solution, since many stacks exist that can ingest statsd metrics. 
+Both cases have almost endless possibilities for metric gathering, but we'll discuss how we approach each of these cases. You can also see our [recent presentation from Mesoscon EU](http://schd.ws/hosted_files/mesosconeu2016/e7/Metrics%20on%20DC-OS%20Enterprise%20%28Mesoscon%29.pdf).
 
-As with all our day 2 operations API's, our end-goal is ease of integration with popular stacks and solutions. In the future we'll add more producers to the unified collector on each host so you can ship to even more metrics analytics endpoints. 
+### Application Metrics
+We mentioned a few specific metrics regarding host-level metrics, but how do we know what metrics to gather from an application which is deployed on DC/OS?
+
+For this case, we expose two environment variables to each container: `STATSD_UDP_HOST` and `STATSD_UDP_PORT`. Any statsd-formatted metrics sent to this advertised endpoint by the application will automatically be tagged with the originating container and forwarded to the rest of the metrics infrastructure. The [Datadog StatsD tag format](http://docs.datadoghq.com/guides/dogstatsd/#datagram-format) is also supported by this endpoint, so any such tags will automatically be parsed out and included in the forwarded data. But the application itself only needs to look for these environment variables and configure a local emitter to send the metrics. The rest is handled automatically.
+
+### Host/Container Metrics
+While the application-level metrics require some minimal involvement by the applications themselves, the host/container-level metrics are collected automatically by DC/OS metrics. Each agent system has a process which retrieves metrics from the local host, both for the system as a whole as well as the resource utilization of individual containers. Like application metrics, this data is sent upstream to a shipper process.
+
+### Tagging Metrics
+In order to support easy drill-down, filtering, and grouping of metrics data, all data sent through the DC/OS Metrics stack is automatically tagged with its origin. The tags include the following, but this list is expected to grow over time:
+- Container identification (for all data relating to a single container): `container_id`, `executor_id`, `framework_id`, `framework_name`
+- Application identification (for e.g. Marathon apps): `application_name`
+- System identification: `agent_id`
+
+For example, grouping metrics by `agent_id` would allow an administrator to detect a situation that's system-specific (eg a faulty disk). Meanwhile grouping data by `framework_id` would allow them to detect which Mesos Frameworks are using the most resources in the system, and grouping that data by `container_id` would show the same information except with per-container granularity.
+
+### Forwarding Metrics
+Now that metrics have been collected from the applications and from the host itself, they need to be forwarded to a customer-managed location so that the customer can consume them. As with all our day 2 operations API's, our end-goal is ease of integration with popular stacks and solutions. To forward that goal we currently support two widely used methods for outputting the metrics data from the cluster. These methods are:
+- Kafka service (either in DC/OS itself, or external to the cluster). Widely understood performance and maintenance characteristics. Good throughput for larger clusters.
+- StatsD service (eg `dogstatsd` or the original Etsy `statsd`). Lighter-weight solution for smaller clusters, where running a Kafka instance may be overkill. Optionally supports outputting Datadog-format tags.
 
 ### Integration Examples
 
