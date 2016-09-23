@@ -83,3 +83,4 @@ Now that metrics have been collected from the applications and from the host its
 ### Integration Examples
 
 ## DC/OS Debugging API
+### Debugging via Co-Located Container in a Pod
