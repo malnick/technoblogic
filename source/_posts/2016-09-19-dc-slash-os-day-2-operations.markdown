@@ -89,7 +89,7 @@ Now that metrics have been collected from the applications and from the host its
 
 In either of these cases, it's extremely easy to consume the outputted metrics data and forward it to any customer-managed or third-party monitoring infrastructure.
 
-### Integration Examples
-
 ## DC/OS Debugging API
-### Debugging via Co-Located Container in a Pod
+*Nobody wants to debug Docker in production*
+
+This is more true than ever, and I'd add that nobody wants to debug any containerized application in production, no matter what container technology you use. Debugging deployed containers is paramount to figuring out what is broken and why; having he ability to `docker exec` your way into a running container and troubleshoot the underlying application is, for better or orse, a front line method of fixing a running  application.
