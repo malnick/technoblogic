@@ -4,7 +4,7 @@
   <title><![CDATA[]]></title>
   <link href="http://technoblogic.io/atom.xml" rel="self"/>
   <link href="http://technoblogic.io/"/>
-  <updated>2016-10-11T06:56:17-07:00</updated>
+  <updated>2016-10-11T07:01:55-07:00</updated>
   <id>http://technoblogic.io/</id>
   <author>
     <name><![CDATA[Jeff Malnick]]></name>
@@ -26,14 +26,6 @@
     <link href="http://technoblogic.io/blog/2016/04/26/containerization-in-devops-talk/"/>
     <updated>2016-04-26T14:50:25-07:00</updated>
     <id>http://technoblogic.io/blog/2016/04/26/containerization-in-devops-talk</id>
-    <content type="html"><![CDATA[]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[]]></title>
-    <link href="http://technoblogic.io/blog/2016/04/10/monitoring-dc-slash-os-with-nagios/"/>
-    <updated>2016-04-10T12:02:02-07:00</updated>
-    <id>http://technoblogic.io/blog/2016/04/10/monitoring-dc-slash-os-with-nagios</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   
@@ -170,6 +162,14 @@
     <link href="http://technoblogic.io/blog/2015/02/06/puppet-webhook/"/>
     <updated>2015-02-06T06:52:36-08:00</updated>
     <id>http://technoblogic.io/blog/2015/02/06/puppet-webhook</id>
+    <content type="html"><![CDATA[]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[]]></title>
+    <link href="http://technoblogic.io/blog/2014/12/23/using-dns-for-applying-roles-to-nodes-in-puppet/"/>
+    <updated>2014-12-23T16:49:37-08:00</updated>
+    <id>http://technoblogic.io/blog/2014/12/23/using-dns-for-applying-roles-to-nodes-in-puppet</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   
