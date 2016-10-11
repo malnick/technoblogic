@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>http://technoblogic.io/blog/2016/09/19/dc-slash-os-day-2-operations/</loc>
+    <loc>http://technoblogic.io/blog/2016/09/19/day2-logging/</loc>
     <lastmod>2016-09-19T13:08:44-07:00</lastmod>
   </url>
   <url>
@@ -192,25 +192,25 @@
     <loc>http://technoblogic.io/temp/2015-12-06-architecting-an-installer-for-the-data-center-operating-system.html</loc>
   </url>
   <url>
-    <loc>http://technoblogic.io/blog/about/</loc>
+    <loc>http://technoblogic.io/</loc>
   </url>
   <url>
     <loc>http://technoblogic.io/blog/contact/</loc>
   </url>
   <url>
-    <loc>http://technoblogic.io/blog/archives/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/</loc>
-  </url>
-  <url>
     <loc>http://technoblogic.io/posts/</loc>
   </url>
   <url>
-    <loc>http://technoblogic.io/blog/resume/</loc>
+    <loc>http://technoblogic.io/blog/about/</loc>
+  </url>
+  <url>
+    <loc>http://technoblogic.io/blog/archives/</loc>
   </url>
   <url>
     <loc>http://technoblogic.io/blog/talks/</loc>
+  </url>
+  <url>
+    <loc>http://technoblogic.io/blog/resume/</loc>
   </url>
   <url>
     <loc>http://technoblogic.io/categories/misc/</loc>
