@@ -32,7 +32,7 @@ This sinatra hook sits on a Puppet Master and listens for POSTs on :1015, when h
 
 This is great when used in conjunction with [puppet-s3](https://github.com/malnick/puppet-s3) provider or something similar where you can classify the resrouce like 
 
-```ruby
+```
 s3 { "/path/to/service-${version}":
   ...
 ```
@@ -46,7 +46,7 @@ Lets say you wanted to use the [open sourced](https://github.com/malnick/jenkins
 
 1. The payload from Jenkins, or whatever tool you're using to hit this hook, will pass the following parameters:
 
-```json
+```
 {
   "service":      "your_name_in_hiera_data",
   "environment":  "your_environment",               # qa or production?
@@ -57,7 +57,7 @@ Lets say you wanted to use the [open sourced](https://github.com/malnick/jenkins
 
 1. The Hiera data key matches the following pattern:
 
-```yaml
+```
 # Overlay with vars from JSON
 ${service_name}_version_${environment}: '1.2.1'
 # A real-world example
@@ -72,7 +72,7 @@ You can override this in the options you pass via the JSON POST with the key ```
 
 1. You'll fork this repo, and update the ```data_file``` and maybe the ```key``` values in ```lib/options.rb```:
 
-```ruby
+```
 module Update
   class Options
 
@@ -111,20 +111,20 @@ end
 
 1. Clone the repo to your pupetmaster and make the above suggested changes to make it work with your deployment
 
-```bash
+```
 git clone git@github.com:malnick/jenkins-puppet-webhook.git
 ```
 
 1. Turn it on:
 
-```bash
+```
 bin/webhook start
 # Should come up on :1015
 ```
 
 1. Have a post-run stage in your jenkins build for a given service that executes something akin to the following:
 
-```sh
+```
 # Assuming you're running this from $WORKSPACE in jenkins, your paths will vary as well as your method of obtaining the version off the build.
 VERSION=$(echo service/target/service-*.jar | cut -d- -f2 | cut -d. -f1,2,3)
 
@@ -153,7 +153,7 @@ This should implement the following chain:
 1. The Webhook executes an MCO call to run puppet on the node running this service based on the ```$::role``` fact
 1. The nodes matching the ```$::role``` get the updated version in hiera data and match that against the ```s3``` resource in that:
 
-```ruby
+```
 ...
 s3 { "${basedir}/${service}-${version}.jar":
     ensure            => present,
@@ -167,7 +167,7 @@ s3 { "${basedir}/${service}-${version}.jar":
 
 Where ```$version``` is derived from 
 
-```ruby
+```
 $service = 'my_service'
 $version = hiera(my_service_version_qa)
 ...

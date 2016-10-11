@@ -17,7 +17,7 @@ This graph is created every time an 'agent' of some sort checks in or is manuall
 ## Service Primer
 In terms of services, we might have an abstract service definition that looks like this:
 
-```ruby
+```
 service { 'haproxy':
   ensure => running,
 }
@@ -25,7 +25,7 @@ service { 'haproxy':
 
 or
 
-```ruby
+```
 service 'nginx' do
   action :start
 end

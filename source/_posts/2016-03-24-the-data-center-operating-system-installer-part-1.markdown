@@ -74,7 +74,7 @@ You can get a detailed log of each stage at anytime and send this to our support
 Even though you can deploy DCOS from the web UI, we also include all the functionality on the CLI too. 
 
 Optional arguments for the CLI are:
-```bash
+```
   -h, --help            show this help message and exit
   
   --hash-password       Hash a password on the CLI for use in the config.yaml.

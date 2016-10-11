@@ -31,7 +31,7 @@ The top level Rakefile will allocate class variables such as directory strucutre
 ## Rakefile
 We'll start with the top level Rakefile and work our way down:
 
-```ruby
+```
 
 begin
 	require 'rake'
@@ -83,7 +83,7 @@ It would not reliably get a proper IP address and I also needed to do some fancy
 
 ## Create 
 
-```ruby
+```
 
 #!/bin/ruby
 require 'rake'
@@ -200,7 +200,7 @@ task :create do
 
 ## Build
 
-```ruby
+```
 desc 'Build the vBox VM with Vagrant parameters'
 task :build do
 	def vmrunning? ()
@@ -327,7 +327,7 @@ So, that first method is what I'm going to wrap this entire program in - as long
 
 ### vmrunning?()
 
-```ruby
+```
 def vmrunning? ()
 	if system('vboxmanage list runningvms')
 		runningvms = []
@@ -354,7 +354,7 @@ Pop open a vboxmanage process to list out the running VM's, ensure our VM exists
 
 ### vminfo()
 
-```ruby
+```
 def vminfo()
 	@vmdata = IO.popen("VBoxManage guestproperty enumerate #{@vmname}").readlines
 end
@@ -364,7 +364,7 @@ Super simple, use vbox manage to get a listing of VM data using ```guestproperty
 
 ### vmcp(locpath) 
 
-```ruby
+```
 def vmcp(locpath)
 	unless system("vboxmanage guestcontrol #{@vmname} copyto #{locpath} /root/ --username #{@vmuser} --password #{@vmpwd} --domain 0755 --verbose")
 		abort "Failed to copy #{locpath}"
@@ -376,7 +376,7 @@ Use the guestcontrol command for vboxmanage to copy stuff from my host to the gu
 
 ### vmexec(cmd)
 
-```ruby
+```
 def vmexec(cmd)
 	unless system("vboxmanage guestcontrol #{@vmname} exec --image #{cmd} --username #{@vmuser} --password #{@vmpwd} --verbose --wait-stdout")
 		abort "Failed to run #{cmd} on guest machine"
@@ -389,7 +389,7 @@ Execute commands without arguments on the guest VM. Handy for running my scripts
 
 ### vmexec_with_args(cmd, args)
 
-```ruby
+```
 def vmexec_with_args(cmd, args)
 	unless system("vboxmanage guestcontrol #{@vmname} exec --image #{cmd} --username #{@vmuser} --password #{@vmpwd} --verbose --wait-stdout -- #{args}")
 		abort "Failed to run #{cmd} on guest machine"

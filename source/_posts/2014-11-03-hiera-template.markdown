@@ -22,20 +22,20 @@ hiera-template accepts a single path to a profile as an argument. It can be a lo
 
 By default, hiera-template will store all processed yaml's in ```~/.hiera-template/templates/${profile_name}-${hierarchy_level}-template.yaml```
 
-```bash
+```
 cd $confdir/modules/profiles/manifests
 hiera-template company_frontend.pp
 ```
 
 The above will create a baseline hiera data file from all the explicit hiera() lookups in the profile. Yes, you read that right, it will not work on non-explicit hiera() lookups. That will be a feature down the road. For now, the following like-lines will be parsed:
 
-```ruby
+```
 $myvar = hiera('profiles::company_frontend::myvar'),
 ```
 
 That line will be written to a yaml file as:
 
-```yaml
+```
 profiles::company_frontend::myvar:
 ```
 
@@ -44,7 +44,7 @@ hiera-template uses ```#[keys]``` in the profile to determine what part of the h
 
 Given the following:
 
-```ruby
+```
 class profiles::csx_frontend_base(
   #[node]
   $csx_db_name                          = hiera('profiles::csx_frontend_base::csx_db_name'),

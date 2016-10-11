@@ -12,7 +12,7 @@ Well now you can!
 
 This module contains a ```http``` type which can be ensureed to GET or POST. At the time of this writing the POST route has not been completed, however the GET route is implemnted as:
 
-```ruby
+```
 http { 'the_route':
     ensure  => get,
     fqdn    => 'your.domain.com',
@@ -29,7 +29,7 @@ curl http://your.domain.com:6969/the_route
 ### Real world example
 Ok great, now we have an access point to the ruby HTTP lib from Puppet. Now what? Well, eventually you'll be able to do something like this:
 
-```ruby
+```
 http { 'my_api':
     ensure  => post,
     fqdn    => 'your.domain.com',
@@ -54,7 +54,7 @@ Well, we could have a run stage at the end of our role (for the new node which w
 
 Given a role of ```haproxy_member_backend_service```:
 
-```ruby
+```
 class roles::haproxy_member_backend_service {
     stage { 'last':
         requires => Stage['main'],
@@ -70,7 +70,7 @@ class roles::haproxy_member_backend_service {
 
 ...and a update_loadbalancer profiles like:
 
-```ruby
+```
 class profiles::update_loadbalancer {
     
     http { 'update_loadbalancer':
@@ -83,7 +83,7 @@ class profiles::update_loadbalancer {
 
 We can implement a webhook profile that is included in our puppetmaster module (or role, if your puppetmaster doesn't need a lot of configuration like mine) like this (which uses the handy ```webhook::listener``` defined type) to build out a dynamically generated sinatra server:
 
-```ruby
+```
 class puppetmaster::webhook {
 
     include webhook
@@ -101,7 +101,7 @@ class puppetmaster::webhook {
 
 That ```webhook::listener``` builds a sinatra server at ```/usr/local/bin/webhook_puppet/```. It looks like this:
 
-```ruby
+```
 require 'rubygems'
 require 'rack'
 require 'sinatra'
@@ -170,7 +170,7 @@ I'm not sure why that needed to be in all caps. Maybe you'll understand if you h
 ### Where I'm going to take this...
 I'm going to add the above mentioned route for Jenkins as an optional default. That route is the glue that ties in how we execute puppet runs via MCO when new builds are pushed down the pipeline. The flow would look something like this:
 
-```ruby
+```
 On my.jenkins.com, final build process is: 
 
     POST my.puppetmaster.com {
@@ -193,7 +193,7 @@ Boom, we just implemented and end-to-end CI chain from our Jenkins build process
 
 In our infrastructure the profile for the micro service executes a ```s3file``` resource to pull down the build which matches:
 
-```ruby
+```
 s3file { 'micro_service_${version}:
     path    => '/some/bucket/',
     ensure  => latest,

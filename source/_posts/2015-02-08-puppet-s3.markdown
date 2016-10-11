@@ -9,7 +9,7 @@ The (puppet-s3)[https://www.github.com/malnick/puppet-s3] module.
 
 Usage:
 
-```ruby
+```
 s3 { '/path/to/file/on/my/local/filesystem':
     # Required paramters:
     ensure              => present,
@@ -54,7 +54,7 @@ The pipeline from ```git push``` to ```puppet agent -t``` looks like this:
     3. Places this jar on S3 as: ```our_app_${version}.zip``` Let's assume $version is 3.2.1
     4. Sends a HTTP POST to our Puppet Master with the following JSON:
 
-```json
+```
 {
     'environment':'production',
     'role':'application_backend',
@@ -69,7 +69,7 @@ the value sent in the POST: 3.2.1. $environment and $role are also inserted in t
 2. Commits this yaml data file locally and pushes it back up to our Puppet control repo. 
 3. It then invokes MCO as:
 
-```ruby
+```
 su - peadmin -c 'mco puppet runonce -F role=${role}
 ```
 

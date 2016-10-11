@@ -9,7 +9,7 @@ A week ago I was modifiying a webhook to run r10k on push to a git repository. T
 
 I figured the first place to start was modifying the ['post'](https://github.com/acidprime/r10k/blob/master/templates/usr/local/bin/webhook.erb#L35) method:
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 post '/payload' do
       #protected!
       deploy()
@@ -18,7 +18,7 @@ post '/payload' do
 
  to parse the json sent by git (in this case I was integrating with gitlab) for the [ref branch](http://demo.gitlab.com/help/web_hooks). So the 'post' hook now looks like [this](https://github.com/malnick/r10k/blob/master/templates/usr/local/bin/webhook.erb#L52):
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 post '/payload' do
     #protected!
     request.body.rewind  # in case someone already read it
@@ -37,7 +37,7 @@ In order to pass this ref branch in and leverage 'r10k deploy environmnet #{topi
 
 [Zach's current r10k agent](https://github.com/acidprime/r10k/blob/master/files/agent/r10k.rb#L28) is pretty good, so we'll stick to modifying that (at this point I handed over the agent writing to a colleague Andrew Brader since I was sent to a training site and he had a week/time to modifying the mco agent):
 
-{% codeblock lang:ruby %}
+{% codeblock %}
      def run_cmd(action,path=nil)
         output = ''
         git  = ['/usr/bin/env', 'git']
@@ -63,7 +63,7 @@ In order to pass this ref branch in and leverage 'r10k deploy environmnet #{topi
 
 In order to parse the topic branch from the hook we need to add a method, which Andrew did [here](https://github.com/abrader/r10k/blob/master/files/agent/r10k.rb#L59):
 
-{% codeblock lang:ruby %}
+{% codeblock %}
       def deploy_only_cmd(r10k_env=nil)
         output = ''
         r10k = ['/usr/bin/env', 'r10k']

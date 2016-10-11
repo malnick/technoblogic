@@ -18,7 +18,7 @@ Create private/public keys and eyaml data from cleartext in JSON for Marathon:
 
 2. ```vi marathon_data.json```:
 
-```json
+```
 {
   "container": {
     "type": "DOCKER",
@@ -53,7 +53,7 @@ Add as many ```ENC[eyaml_key:cleartext_value]``` as you need.
 
 Adds those key/values to the eyaml file, and saves the eyaml file to ```$eyaml_directory/$user.yaml``` as:
 
-```yaml
+```
 ---
 my_license_key: !!binary |
   iFpLHn3wsr6/ZpoolepdT7uhp6hRq/2Tr+LyJXOpJAxkulMsb1pxE8GjKlR9iTTIV9IYnU
@@ -75,7 +75,7 @@ user: some_user
 ```
  new "safe" JSON is saved to ```$safe_dir/marathon_data.json``` as:
 
-```yaml
+```
 {
         "container": {
                 "docker": {
@@ -113,7 +113,7 @@ user: some_user
 The final POST from our example, with decrypted data:
 The final POST from our example, with decrypted data:
 
-```json
+```
 {
         "container": {
                 "docker": {
@@ -151,7 +151,7 @@ Mantle was developed with the DevOps process in mind. However, it's unlikely tha
 
 1. ```mantle -generate -u sally```: Mantle will generate pub/private keypair and deposit them in `key_dir` specified in config.yaml.
 
-```bash
+```
 INFO[0000] Generating PKCS keys...
 INFO[0000] Private Key: /Users/malnick/.mantle/keys/privatekey_sally.pem
 -----BEGIN RSA PRIVATE KEY-----
@@ -185,7 +185,7 @@ cWIx5FPWgqWu+SHBcQIDAQAB
 
 `vi sallys/local/machine/sallys_container.json`:
 
-```json
+```
 {
   "container": {
     "type": "DOCKER",
@@ -220,7 +220,7 @@ cWIx5FPWgqWu+SHBcQIDAQAB
 
 6. ```mantle -encode sallys/local/machine/sallys_container.json```: Sally can then encode the JSON. Mantle will save the JSON and user-level eyaml in the git repo's she just checked out:
 
-```bash
+```
 INFO[0000] Encoding sallys_container.json
 WARN[0000] /Users/malnick/.mantle/eyaml/sally.yaml does not exist, creating.
 INFO[0000] eyaml saved: /Users/malnick/.mantle/eyaml/sally.yaml
@@ -261,7 +261,7 @@ Notice the WARN statement. Since Mantle did not find a `eyaml_dir/$user.yaml` it
 
 The eyaml looks like this:
 
-```yaml
+```
 ---
 newrelic_api_key: !!binary |
   N4JpKRvQoRBusI7Yp7BN1L/wTdexGH3NFidxvTM0P3IeGM8OnU9TfGI19j+qDQt/XVOQln
@@ -283,7 +283,7 @@ user: sally
 
 8. Now the safe JSON and eyaml repo's can be pulled by the operations team. At this point, a review of the Safe JSON can be made to ensure everything looks right. Finally, we can deploy the safe JSON via Mantle to Marathon with the key for Sally:
 
-```bash
+```
 user@localhost: mantle -deploy ~/.mantle/safe/sallys_container.json -u sally
 
 INFO[0000] Deploying ~/.mantle/safe/sallys_container.json

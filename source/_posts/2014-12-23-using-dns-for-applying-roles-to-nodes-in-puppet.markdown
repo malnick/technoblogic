@@ -17,7 +17,7 @@ You could, at this point, go the route of external facts. External facts are coo
 You can however implement some DNS magic. DNS has specific resources that include more than just a mapping of IP addresses to domains. Domains can have TXT resources associated with them. So let's assume your load balancer, ```lb-p-dc.domain.prd.int```, has a TXT resource associated with it in DNS. Now we can write a fact that looks up that TXT resource. 
 
 That fact might look something like:
-```ruby
+```
 require 'resolv'
 Facter.add('role') do
 	setcode do
@@ -54,7 +54,7 @@ Buzz kill ahead!
 
 This fact is only somewhat secure. Since this isn't a secure fact, like clientcert, it can be overridden on the command line like this:
 
-```ruby
+```
 FACTER_role=application puppet agent -t
 ```
 
@@ -67,7 +67,7 @@ The best way to fix this issue is to get the DNS TXT resource using a secure fac
 
 For example, your function instanciation migth look like this:
 
-```ruby
+```
 class MyClass (
 	$role = role_resolver($::clientcert),
 ){
@@ -76,7 +76,7 @@ class MyClass (
 
 Then your function ```role_resolver()``` might look like this:
 
-```ruby
+```
 require 'resolv'
 module Puppet::Parser::Functions
 	newfunction(:role_resolver, :type => :rvalue) do |args|

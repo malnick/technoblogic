@@ -125,20 +125,8 @@
     <lastmod>2014-06-03T07:54:12-07:00</lastmod>
   </url>
   <url>
-    <loc>http://technoblogic.io/blog/2014/05/30/what-is-this-module-doing/</loc>
-    <lastmod>2014-05-30T15:58:12-07:00</lastmod>
-  </url>
-  <url>
     <loc>http://technoblogic.io/blog/2014/05/29/packer-templates-and-vmware/</loc>
     <lastmod>2014-05-29T12:19:53-07:00</lastmod>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/blog/2014/05/16/r10k-control-repos.markdown/</loc>
-    <lastmod>2014-05-16T12:34:33-07:00</lastmod>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/blog/2014/05/16/r10k-control-repos.markdown/</loc>
-    <lastmod>2014-05-16T12:34:33-07:00</lastmod>
   </url>
   <url>
     <loc>http://technoblogic.io/blog/2014/05/16/r10k-control-repos/</loc>
@@ -151,10 +139,6 @@
   <url>
     <loc>http://technoblogic.io/blog/2014/05/04/continous-integration-hooks-with-r10k-and-puppet/</loc>
     <lastmod>2014-05-04T07:47:05-07:00</lastmod>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/blog/2014/04/19/puppet-types-understanding-parameters-and-properties/</loc>
-    <lastmod>2014-04-19T08:30:28-07:00</lastmod>
   </url>
   <url>
     <loc>http://technoblogic.io/blog/2014/03/20/brief-intro-to-puppetizing-stig-compliance/</loc>
@@ -171,22 +155,6 @@
   <url>
     <loc>http://technoblogic.io/blog/2014/03/12/debugging-activemq-jvm-heap-memory-errors/</loc>
     <lastmod>2014-03-12T21:08:06-07:00</lastmod>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/blog/2014/01/17/extracting-json-from-puppet-yaml-report/</loc>
-    <lastmod>2014-01-17T06:55:04-08:00</lastmod>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/blog/2014/01/13/test/</loc>
-    <lastmod>2014-01-13T09:35:57-08:00</lastmod>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/blog/2014/01/03/the-need-to-a-replication-provider/</loc>
-    <lastmod>2014-01-03T09:05:51-08:00</lastmod>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/blog/2014/01/02/blog-post-number-1/</loc>
-    <lastmod>2014-01-02T10:52:00-08:00</lastmod>
   </url>
   <url>
     <loc>http://technoblogic.io/temp/2015-12-06-architecting-an-installer-for-the-data-center-operating-system.html</loc>
@@ -213,22 +181,7 @@
     <loc>http://technoblogic.io/blog/resume/</loc>
   </url>
   <url>
-    <loc>http://technoblogic.io/categories/misc/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/categories/puppet/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/categories/ruby/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/categories/providers/</loc>
-  </url>
-  <url>
     <loc>http://technoblogic.io/categories/devops/</loc>
-  </url>
-  <url>
-    <loc>http://technoblogic.io/posts/</loc>
   </url>
   <url>
     <loc>http://technoblogic.io/posts/</loc>

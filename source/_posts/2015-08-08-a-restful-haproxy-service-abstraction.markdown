@@ -13,7 +13,7 @@ In order to get the server lines and service names from Haproxy we [wrote a tool
 
 Given a haproxy configuration at path ```/etc/haproxy/haproxy.cfg```:
 
-```ini
+```
 global
   daemon
   group  haproxy
@@ -50,7 +50,7 @@ backend other_service
 
 Will result in the following JSON endpoint available at: ```localhost:3000/services```
 
-```json
+```
 {
   "Service": {
     "other_service": [
@@ -85,7 +85,7 @@ The result is a 7.5MB binary that runs on any AMD64 architecture. I don't need t
 
 The service comes up instantly when started:
 
-```bash
+```
 root@qa-haproxy-internal-recanted:/opt/rest_haproxy# time /etc/init.d/rest_haproxy start
      (       (                )      (
      )\ )    )\ )  *   )   ( /(      )\ )
@@ -106,7 +106,7 @@ sys     0m0.001s
 
 ... and is exceptionally stable. The entire thing installs in less than 30 lines of configuration managment code:
 
-```bash
+```
 for i in `find . -name \*.pp`;do cat $i | sed '/^\s*#/d;/^\s*$/d' | wc -l;done
       29
 ```

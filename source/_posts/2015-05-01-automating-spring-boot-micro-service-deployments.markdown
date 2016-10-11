@@ -29,7 +29,7 @@ First, lets talk about how we provision a node that runs our backend Spring serv
 
 A typical service might have the following deployment in Puppetland:
 
-```ruby
+```
 class profiles::sc_services::some_service ( $version ){
 
   $properties_file = {
@@ -68,7 +68,7 @@ This configuration will boot a node with an init script managing 2 Java processe
 ## Method 2: Environment Variables
 Since Sping allows you to also override any configuration as ENV variables it makes it incredibly easy to roll this service into a docker container:
 
-```ruby
+```
   $rabbitmq_password  = hiera('rabbitmq_password')
   $mandrill_api_key   = hiera('mandrill_api_key')
 

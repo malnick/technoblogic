@@ -10,14 +10,14 @@ There's not a lot of docs on Packer and the logging can be tricky to find someti
 
 Some people seem to think this can be $anything that sounds reasonable (I did!) and there is no documentation on what should actually go there (as of writing this, Google was sparce). So if you have a doubt on what the ```guest_os_type``` value should be the best bet is to ```$ diff``` it with an already existing ```*.your_vm_type``` ('vmx', 'ovf', et cetera).
 
-```bash
+```
 cat centos65-puppetmaster.json | grep -i guest_os_type
     "guest_os_type": "centos-65",
 ```
 
 However, if I query an already built `*.vmx` this is incorrect:
 
-```bash
+```
 cat master2.vmx | grep -i guestos
    guestos = "redhat"
 ```
@@ -32,7 +32,7 @@ The long and the short of it, me and my team decided to implement Vagrant and Pa
 
 After scripting the json for this node I ran `packer build centos65.json`:
 
-```bash
+```
 ==> vmware-iso: Downloading or copying ISO
 ==> vmware-iso: Downloading or copying ISO
 vmware-iso: Downloading or copying: http://mirrors.kernel.org/centos/6.5/isos/x86_64/CentOS-6.5
@@ -51,7 +51,7 @@ Build 'vmware-iso' errored: Error starting VM: VMware error:
 
 The vm booted into fusion and opened but failed in `vmrun`. How did I know that was the issue? 
 
-```bash
+```
 grep -r vmrun /var/log/*
 system.log:May 29 05:30:32 bohr vmrun[13249]: com.vmware.fusion.78704: Invalid argument
 ... # lots of other crap 
@@ -61,14 +61,14 @@ BUT WHAT ARGUMENT???
 
 After digging around I found that logging for this issue was sketchy at best. Syslog, `/var/tmp/vmware`, the `guest_os_type` key needs to have an appropriate value (i.e., arugment from syslog):
 
-```bash
+```
 cat centos65-puppetmaster.json | grep -i guest_os_type
     "guest_os_type": "centos-65",
 ```
 
 However, if I query an already built `*.vmx` this is incorrect:
 
-```bash
+```
 cat master2.vmx | grep -i guestos
    guestos = "redhat"
 ```

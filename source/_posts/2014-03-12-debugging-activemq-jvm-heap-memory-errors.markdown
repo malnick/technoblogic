@@ -13,7 +13,7 @@ INFO   | jvm 1    | 2014/03/11 16:12:34 | Exception in thread "ActiveMQ BrokerSe
 
 Since this is on a production server you need to recreate it in a testing environment. Since I'm partial to vagrant I stand up 4 agent nodes and a master via pe-build vagrant plugin. My Vagrantfile looks something like this:
 
-{% codeblock lang:ruby %}
+```
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
@@ -112,7 +112,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 end
-{% endcodeblock %}
+```
 
 This error occured on an ActiveMQ install that works as the message que for a 1000 node deployment of puppet agents. To get terminology straight here, we have puppet agents and AMQ agents running on these 1000 nodes. They're all qued from a singular AMQ broker. 
 
@@ -120,7 +120,7 @@ My first impression was that this error may be caused by having 1000 agents ping
 
 I check locally on my test master:
 
-{% codeblock lang:bash %}
+{% codeblock %}
 [root@master vagrant]# pgrep -f pe-activemq
 1271
 [root@master vagrant]# cat /proc/1271/limits | grep files
@@ -135,14 +135,14 @@ I'm limited to my laptop, 16GB of memory, and I'm too lazy to stand up 1000 inst
 
 Given the above information, I start open a shell, and ssh into my master:
 
-{% codeblock lang:bash %}
+{% codeblock %}
 [root@master vagrant]# echo -n "Max open files=3:3" > /proc/1271/limits
 [root@master vagrant]# cat /proc/1271/limits | grep files
 Max open files            3                    3                    files
 {% endcodeblock %}
 
 Why 3? Because:
-{% codeblock lang:bash %}
+{% codeblock %}
 [root@master vagrant]# ls /proc/1271/fd | wc -l
 6
 {% endcodeblock %}
@@ -152,7 +152,7 @@ So a quick 'service pe-activemq restart' and bang...
 Oh shit, new PID, new proc instance. Damnit. I have to figure out something else to fake the resource limits here. 
 
 Since ulimit commands are shell-bound I can ssh into the master from another shell and run:
-{% codeblock lang:ruby %}
+{% codeblock %}
 [root@master vagrant]# ulimit -n 10
 [root@master vagrant]# service pe-activemq restart
 /etc/init.d/functions: redirection error: cannot duplicate fd: Invalid argument

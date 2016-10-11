@@ -48,7 +48,7 @@ Every time we deploy service 'x' or service 'a', service 'y' or service 'b', we 
 
 Those assignments might be a table such as:
 
-```sh
+```
 service 'a': 1000-1010
 service 'b': 1011-1020
 service 'x': 1021-1030
@@ -61,7 +61,7 @@ Now we have 100 million users, and we need to scale our application's backend se
 
 Now we've got:
 
-```sh
+```
 service 'a': 1000-1050
 service 'b': 1051-1100
 service 'c': 1101-1150
@@ -87,14 +87,14 @@ Those frameworks can assign ephemeral $PORT mappings for our services, as long a
 
 For example, if you run ```docker ps``` and service 'x' is running you might see:
 
-```sh
+```
 CONTAINER ID        IMAGE             COMMAND  CREATED             STATUS              PORTS                   NAMES
 d7588285b831        service_x:0.5.1   "java"   57 minutes ago      Up 57 minutes       0.0.0.0:1322->1301/tcp  stoic_elion
 ```
 
 and in ```netstat``` you would see something akin to:
 
-```sh
+```
 tcp6       0      0 :::1132      :::*      LISTEN      4743/docker-proxy
 ```
 

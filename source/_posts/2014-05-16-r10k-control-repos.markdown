@@ -33,7 +33,7 @@ Populate your Puppetfile with what ever crap you need.
 
 In ```$confdir```:
 
-```bash
+```
 git init
 git remote add origin git@whatever.com:your_name/control_repo.git
 git branch -m master production
@@ -49,7 +49,7 @@ git push -u origin production:production # or whatever branch, maybe production?
 
 Your hiera.yaml needs to have a ```datadir``` configured for dynamic lookup so:
 
-```yaml
+```
 ---
 :backends:
   - yaml
@@ -65,12 +65,12 @@ Your hiera.yaml needs to have a ```datadir``` configured for dynamic lookup so:
 ###Branching your Puppetfile
 For example, assuming you already have a master or production branch:
 
-```bash
+```
 vi Puppetfile
 ```
 ...add some git modules etc...
 
-```bash
+```
 git checkout -b development
 git push origin development:development
 git commit -am Puppetfile
@@ -82,7 +82,7 @@ Now you have a new topic branch 'development' and a new Puppet environment in ``
 
 Our ```development``` branch needs it's own data too:
 
-```bash
+```
 cd $confdir/hieradata
 ```
 
@@ -90,7 +90,7 @@ cd $confdir/hieradata
 * modify other K,V's as needed for your development environment
 
 
-```bash
+```
 git branch # check your branch, make sure it's still development
 git commit -am hieradata
 git push 
@@ -103,7 +103,7 @@ Check ```$confdir/environments/development/hieradata```
 ###Configuration files for r10k, hiera, puppet:
 
 ####/etc/r10k.yaml
-```bash
+```
 root@master hieradata]# cat /etc/r10k.yaml
 :cachedir: /var/cache/r10k
 :sources:
@@ -115,7 +115,7 @@ root@master hieradata]# cat /etc/r10k.yaml
   - ""
 ```
 ####/etc/puppetlabs/puppet/puppet.conf
-```bash
+```
 [root@master hieradata] cat /etc/puppetlabs/puppet/puppet.conf
 [main]
 certname = master.puppetlabs.vm
@@ -132,7 +132,7 @@ archive_file_server = master.puppetlabs.vm
 # cut [master] & [agent] sections, $modulepath above is the important config key here.
 ```
 ####/etc/puppetlabs/puppet/hiera.yaml
-```bash
+```
 [root@master puppet] cat hiera.yaml
 ---
 :backends:
@@ -145,7 +145,7 @@ archive_file_server = master.puppetlabs.vm
   :datadir: '/etc/puppetlabs/puppet/environmets/%{environment}/hieradata'
 ```
 ####/etc/puppetlabs/puppet/Puppetfile
-```bash
+```
 [root@master puppet]# cat Puppetfile
 # mod, <module name>, <version or tag>, <source>
 forge "http://forge.puppetlabs.com"
@@ -173,7 +173,7 @@ mod "wordpress",
 
 ####Our topic branches:
 
-```bash
+```
 [root@master puppet] git branch
   development
 * production
@@ -182,7 +182,7 @@ mod "wordpress",
 
 ####For the given topic branch above, production, let's look at our hieradata in ```$confdir/hieradata```:
 
-```bash
+```
 [root@master hieradata] pwd
 /etc/puppetlabs/puppet/hieradata
 [root@master hieradata] ls
@@ -191,7 +191,7 @@ agent1.puppetlabs.vm.yaml  agent2.puppetlabs.vm.yaml  agent3.puppetlabs.vm.yaml 
 
 ####and for each of these files we have the same K,V:
 
-```bash
+```
 [root@master hieradata] cat master.puppetlabs.vm.yaml
 ---
 message: "%{fqdn} is running in environment %{environment}"
@@ -202,7 +202,7 @@ message: "%{fqdn} is running in environment %{environment}"
 
 ###Now let's switch over to our development branch and compare:
 
-```bash
+```
 [root@master puppet] git checkout development
 Switched to branch 'development'
 root@master hieradata] pwd
@@ -219,7 +219,7 @@ message: "%{fqdn} is running in environment %{environment}"
 
 Sync everything up with r10k so we can test:
 
-```bash
+```
 [root@master puppet] r10k deploy environment -pv
 [R10K::Task::Deployment::DeployEnvironments - INFO] Loading environments from all sources
 [R10K::Task::Environment::Deploy - NOTICE] Deploying environment staging
@@ -248,7 +248,7 @@ Sync everything up with r10k so we can test:
 
 Since there is a ```%{certname}.yaml``` for the master we can do a quick check on the command line that we're accessing the correct data:
 
-```bash
+```
 [root@master puppet] git checkout production
 Already on 'production'
 
@@ -261,7 +261,7 @@ Notice: Finished catalog run in 0.24 seconds
 
 The ```$fqdn``` and ```$environment``` values were correctly filled in. **Note** that this is a poor test since my data files are essentially all the same, ```$environment``` will always match it's environment and ```$fqdn``` will always match it's fqdn -  we could be grabbing this value from anywhere. So Let's try with hard coded values:
 
-```bash
+```
 [root@master hieradata] pwd
 /etc/puppetlabs/puppet/hieradata
 [root@master hieradata] git branch
@@ -314,7 +314,7 @@ Notice: Finished catalog run in 0.26 seconds
 YAY!
 
 ####And again on the development branch
-```bash
+```
 [root@master hieradata] pwd
 /etc/puppetlabs/puppet/hieradata
 [root@master hieradata] git branch
@@ -328,7 +328,7 @@ message: "I'm hard coding this value: environment development, master.puppetlabs
 
 Push our new hieradata for ```development``` to gitlab:
 
-```bash
+```
 [root@master puppet] git add hieradata/
 [root@master puppet] git commit -m "hieradata hard coded"
 [development 2873db5] hieradata hard coded

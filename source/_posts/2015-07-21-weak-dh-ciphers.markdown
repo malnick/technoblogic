@@ -17,7 +17,7 @@ Usually this would be due to supporting export grade crypto suites, which can be
 
 In order to double check the SSL labs output, I ran my own scan using nmap:
 
-```bash
+```
 nmap --script ssl-enum-ciphers -p 443 srcclr.com                  
 Starting Nmap 6.47 ( http://nmap.org ) at 2015-07-21 11:31 PDT
 Nmap scan report for srcclr.com (107.23.63.147)
@@ -75,7 +75,7 @@ Low and behold, there were the weak DHE non EC type ciphers.
 
 Our front ends for our corporate site are hosted on Elastic Load Balancers. I double checked their configuration, and it appears AWS updated the default cipher suite in May, about a month after we deployed the site. The new cipher policy removes the non EC Diffe-Helman ciphers from the list. I turned on the new policy (which should automatically default to newest, IMO) and re-ran a scan:
 
-```bash
+```
 nmap --script ssl-enum-ciphers -p 443 srcclr.com
 
 Starting Nmap 6.47 ( http://nmap.org ) at 2015-07-21 12:21 PDT

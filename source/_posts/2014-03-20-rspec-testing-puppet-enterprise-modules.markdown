@@ -49,9 +49,10 @@ This should build:
 
 [puppetlabs/pe_gem](https://github.com/puppetlabs/puppetlabs-pe_gem) has the provider for pe_gem so you can simply:
 
-	package { 'json':
- 		ensure   => present,
-  		provider => pe_gem,
-		}
-
+```
+package { 'json':
+  ensure   => present,
+    provider => pe_gem,
+  }
+```
 That's it! 

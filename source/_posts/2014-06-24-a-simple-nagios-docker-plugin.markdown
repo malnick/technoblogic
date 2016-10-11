@@ -25,7 +25,7 @@ To do this I am going to do the following:
 ## The Vagrantfile
 I start with a basic Vagrantfile to deploy an Ubuntu Precise VM:
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 Vagrant.configure("2") do |config|
 config.vm.provider "virtualbox" do |v|
 	v.customize ["modifyvm", :id, "--memory", 1024]
@@ -48,7 +48,7 @@ In order to provision the VM on boot I used the Puppet provisioner which ships w
 
 The ```deploy_nagios.pp``` manifest looks like this:
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 
 
 
@@ -139,7 +139,7 @@ First, let's define some basic outputs for the Nagios API. Since Nagios is only 
 
 #### The first part of my Plugin defines these:
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 #!/usr/bin/ruby
 # Checks the docker status command for number of running containers
 # Ensures the docker container is running by checking that the socket exists
@@ -170,7 +170,7 @@ end
 #### Check to ensure docker is installed
 Now let's check to ensure Docker is installed, we can use a simple ```system()``` method which returns exit codes only:
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 def docker_installed()
 	if system("which docker > /dev/null")
 		webapp_status()
@@ -185,7 +185,7 @@ Yup, it's that easy, ```which docker``` will return '0' or 'false' if it does no
 #### Check the webapp status
 First, I want to make sure the webapp is running on the VM on a specific port. I'm going to use a ```netstat``` command and ```awk``` to return the process running on port 5000:
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 def webapp_status()
 	# Ensure the webapp is running on localhost:5000
 	webapp_run = `netstat -anp | grep 5000 | awk '{print $7}' | cut -d/ -f2`
@@ -195,13 +195,13 @@ def webapp_status()
 
 This should return this this: 
 
-{% codeblock lang:bash %}
+{% codeblock %}
 root@nagios:/home/vagrant# netstat -anp | grep 5000 | awk '{print $7}' | cut -d/ -f2
 docker
 {% endcodeblock %}
 
 Then we pass this into some basic 'if' logic:
-{% codeblock lang:ruby %}
+{% codeblock %}
 	if webapp_run == should_be
 		# Check to ensure there are no 404 errors in the log
 		check_this = "docker logs $(docker ps -l | awk '{print $1}' | awk '{if (NR == 2){print $0}}') 2>&1 | grep 404 | awk '{print $7}' | sort | uniq -c"
@@ -232,7 +232,7 @@ Lot's of things are happening there.
 
 But first, ```docker logs``` needs to have the process hash of the container you want to query, so I run a ```docker ps -l``` and ```awk``` for the hash of the process I want. 
 
-{% codeblock lang:bash %}
+{% codeblock %}
 root@nagios:/home/vagrant# docker ps -l
 CONTAINER ID        IMAGE                    COMMAND             CREATED             STATUS              PORTS                    NAMES
 c968cced9f32        training/webapp:latest   python app.py       33 minutes ago      Up 33 minutes       0.0.0.0:5000->5000/tcp   berserk_pare
@@ -242,7 +242,7 @@ This would definitely break if you had many containers running.
 
 So anyways, if we have that hash we can now pass it to ```docker logs``` like I did in the ruby script like this:
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 root@nagios:/home/vagrant# docker logs c968cced9f32
  * Running on http://0.0.0.0:5000/
 {% endcodeblock %}
@@ -251,7 +251,7 @@ Tight.
 
 Now that I have access to the log from the webapp I can grep URL's which have 404 errors, add those to a hash as k,v's and then iterate over the hash for the key with the largest value. 
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 IO.popen(check_this) do |io|
 	line  = io.readlines
 	errors = {} 
@@ -266,7 +266,7 @@ IO.popen(check_this) do |io|
 
 Now I can use that key's value to hit my ```warning``` or ```critical``` methods.
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 case max_value.to_i > 20  
 when false  
 	warning("#{max_value} 404 Errors at localhost#{max_key}")
@@ -277,7 +277,7 @@ end
 
 Of course, the end to this giant loop of loops does...
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 		else
 			ok("Docker & Webapp are in good shape!")
 		end
@@ -289,12 +289,12 @@ end
 
 ... and finally start it
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 docker_installed()
 {% endcodeblock %}
 	
 My entire script looks like this:
-{% codeblock lang:ruby %}
+{% codeblock %}
 # Full 
 #!/usr/bin/ruby
 # Checks the docker status command for number of running containers

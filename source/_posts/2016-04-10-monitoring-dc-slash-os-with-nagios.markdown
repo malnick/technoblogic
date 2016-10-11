@@ -41,7 +41,7 @@ DC/OS runs only on systemd. Tracking units with Nagios is easy. You can use one 
 
 Units differ between agent's and master's, but you can easily determine which units to monitor without hard coding these (since they are prone to changing or being added to). We can modify [jonschipp/nagios-plugins/check_service.sh](https://github.com/jonschipp/nagios-plugins/blob/master/check_service.sh) for monitoring only DC/OS units by adding a simple wrapper:
 
-```bash
+```
 # cat dcos_unit_check.sh
 #!/bin/bash
 for unit in `ls /etc/systemd/system/dcos.target.wants`; do
@@ -57,7 +57,7 @@ done
 
 If a service is not healthy, such as adminrouter, we will get a failure from this script:
 
-```bash
+```
 ip-10-0-6-126 core # ./dcos_unit_check.sh
 Checking dcos-adminrouter-reload.service
 Status for dcos-adminrouter-reload.service is not 0, got 2 

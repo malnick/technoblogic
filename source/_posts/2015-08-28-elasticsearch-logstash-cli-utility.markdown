@@ -19,7 +19,7 @@ Logasuarous was written in Go, so it's performant and lightweight.
 ## How it works
 First, download and build the go binary:
 
-```bash
+```
 git clone https://github.com/malnick/logasaurus
 cd logasaurus
 go build loga.go
@@ -42,7 +42,7 @@ Execute your first query:
 #### Add some queries to config.yaml
 You can store long, hard to type queries in the config.yaml for use later:
 
-```yaml
+```
 ---
   # Defined services
   define:
@@ -71,7 +71,7 @@ INFO[0000] Querying : qa
 #### Want to know what host the log message is coming from?
 You can use `-h` to highlight the hostname/ip address at the beginning of the line:
 
-```bash
+```
 user@shell: loga -d "qa" -h
 
 INFO[0000] Loglevel: Info
@@ -85,7 +85,7 @@ By default Loga will querey time.Now() minus 10 minutes, and return those logs u
 
 To query logs 24 hours ago in a 10 minute window you could run:
 
-```bash
+```
 user@shell: TZ=utc date
 Sun Sep  6 16:31:23 UTC 2015
 user@shell: loga -d "qa" -st 1440

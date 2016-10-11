@@ -17,7 +17,7 @@ The solution was to create a proxy module. This module would wrap up just the pi
 ## The implementation
 The init.pp for our apt proxy module, named cs_apt (since we're Connect Solutions):
 
-```ruby
+```
 # Class: cs_apt
 #
 # Parameters:

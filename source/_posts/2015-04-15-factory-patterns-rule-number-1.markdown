@@ -34,7 +34,7 @@ Puppet uses it’s own DSL for CM based on Ruby, Chef uses it’s own Ruby libra
 
 So a user can be defined as:
 
-```ruby
+```
 # Puppet
 user { ‘jeff’: ensure => present } 
 
@@ -51,7 +51,7 @@ Now this is an incredibly simple task, a single user. When you’re talking abou
 
 At the end of the day this entire, highly complicated process, should be easily readable and understood at it’s highest layer of abstraction, i.e., some sort of role manifest/recipie that takes all those resources and wraps them into a value that conveys the business logic of what that code does.
 
-```ruby
+```
 # Puppet
 # $confdir/modules/role
 class role::qa_haproxy_frontned { … }

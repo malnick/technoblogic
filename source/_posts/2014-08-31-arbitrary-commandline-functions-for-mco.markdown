@@ -15,7 +15,7 @@ Well, since MCO runs through an API we can actually architect templates for this
 
 Let's start with a basic DDL that will inform an agent running this arbitary command:
 
-```ruby
+```
 metadata :name        => '<%= @action_name %>',
          :description => '<%= @description %>',
          :author      => '<%= (@author_name+' '+ @author_email).strip %>',
@@ -48,7 +48,7 @@ So we've templated out the basic DDL for the agent. We've included some metadata
 
 Let's build out the ruby script to run this command:
 
-```ruby
+```
 module MCollective
   module Agent
     class <%= @action_name.capitalize %><RPC::Agent
@@ -69,7 +69,7 @@ Our arbitary command only has 1 action. It's that simple. We run the command and
 
 Now let's look at the Rakefile that actually runs this. For me, I store most of my Rakefiles as ```*.task``` in ```~/.rake``` so I can run them anywhere with ```rake -g ```:
 
-```ruby
+```
 # Rakefile to create MCO agents and associated DDL
 # Author: Jeff Malnick
 

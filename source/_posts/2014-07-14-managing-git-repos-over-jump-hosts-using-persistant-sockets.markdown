@@ -49,55 +49,55 @@ Now that I can create persistant sockets I wrote a script to SSH into the local 
 
 1. Check to ensure I'm connected to the correct VPN Gateway
 
-	{% codeblock lang:ruby %}
-	test -e ~/.ssh || { echo "Create an ssh dir"; exit 1; }
+{% codeblock %}
+test -e ~/.ssh || { echo "Create an ssh dir"; exit 1; }
 
-	VPNENV=`echo $(naclient status | awk 'NR==4' | cut -d: -f2)`
-	VPNREMOTE="data_center"
-	LOCALGIT="10.10.100.100"
-	INTGIT="172.24.100.10"
-	JUMPHOST="172.20.100.11"
+VPNENV=`echo $(naclient status | awk 'NR==4' | cut -d: -f2)`
+VPNREMOTE="data_center"
+LOCALGIT="10.10.100.100"
+INTGIT="172.24.100.10"
+JUMPHOST="172.20.100.11"
 
-	if [ "$VPNENV" == "$VPNREMOTE" ]
-	then
-		echo "Connected to $VPNENV"
-	{% endcodeblock %}
+if [ "$VPNENV" == "$VPNREMOTE" ]
+then
+  echo "Connected to $VPNENV"
+{% endcodeblock %}
 
 2. Build the sockets
 
-	{% codeblock lang:ruby %}
-	echo "Connecting to local git:"
-	ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/LOCALGIT.sock' -N -f root@$LOCALGIT
-	echo "Connecting to jumphost:"
-	ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/jump.sock' -N -f -L $PORT:$INTGIT:22 root@$JUMPHOST
-	echo "Connecting to git in integration:"
-	ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/intgit.sock' -o 'UserKnownHostsFile /dev/null' -N -f root@localhost -p $PORT	
-	{% endcodeblock %}
+{% codeblock %}
+echo "Connecting to local git:"
+ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/LOCALGIT.sock' -N -f root@$LOCALGIT
+echo "Connecting to jumphost:"
+ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/jump.sock' -N -f -L $PORT:$INTGIT:22 root@$JUMPHOST
+echo "Connecting to git in integration:"
+ssh -o 'ControlMaster auto' -o 'ControlPath ~/.ssh/intgit.sock' -o 'UserKnownHostsFile /dev/null' -N -f root@localhost -p $PORT	
+{% endcodeblock %}
 
 3. Use the sockets for SSH and SCP
 
-	{% codeblock lang:ruby %}
-	ssh -S ~/.ssh/LOCALGIT.sock root@$LOCALGIT gitlab-rake gitlab:backup:create
-	ssh -S ~/.ssh/LOCALGIT.sock root@$LOCALGIT "$(typeset -f); stagelatest"
-	{% endcodeblock %}
+{% codeblock %}
+ssh -S ~/.ssh/LOCALGIT.sock root@$LOCALGIT gitlab-rake gitlab:backup:create
+ssh -S ~/.ssh/LOCALGIT.sock root@$LOCALGIT "$(typeset -f); stagelatest"
+{% endcodeblock %}
 
 A note before moving on about the 'stagelatest' function. I had a complicated command that I didn't want to toss into the SSH line, so I wrote a fuction and ran the ```$(typeset -f)``` command to make that function available on the remote SSH shell executing the commands. The function looked like this:
 
-	{% codeblock lang:ruby %}
-	stagelatest () {
-	LATESTBAK=$(ls -t /var/opt/gitlab/backups/ | head -1)
-	rm /tmp/1111111111_gitlab_backup.tar
-	ln -s /var/opt/gitlab/backups/$LATESTBAK /tmp/1111111111_gitlab_backup.tar
-	}
-	{% endcodeblock %}
+{% codeblock %}
+stagelatest () {
+LATESTBAK=$(ls -t /var/opt/gitlab/backups/ | head -1)
+rm /tmp/1111111111_gitlab_backup.tar
+ln -s /var/opt/gitlab/backups/$LATESTBAK /tmp/1111111111_gitlab_backup.tar
+}
+{% endcodeblock %}
 
 Continuing with our SCP and SSH commands:
 
-	{% codeblock lang:ruby %}
-	scp -o 'ControlPath ~/.ssh/LOCALGIT.sock' root@$LOCALGIT:/tmp/1111111111_gitlab_backup.tar /tmp/
-	scp -o 'ControlPath ~/.ssh/intgit.sock' -P $PORT /tmp/1111111111_gitlab_backup.tar root@localhost:/var/opt/gitlab/backups
-	ssh -S ~/.ssh/intgit.sock root@localhost -p $PORT BACKUP=1111111111 gitlab-rake gitlab:backup:restore <<< yes
-	{% endcodeblock %}
+{% codeblock %}
+scp -o 'ControlPath ~/.ssh/LOCALGIT.sock' root@$LOCALGIT:/tmp/1111111111_gitlab_backup.tar /tmp/
+scp -o 'ControlPath ~/.ssh/intgit.sock' -P $PORT /tmp/1111111111_gitlab_backup.tar root@localhost:/var/opt/gitlab/backups
+ssh -S ~/.ssh/intgit.sock root@localhost -p $PORT BACKUP=1111111111 gitlab-rake gitlab:backup:restore <<< yes
+{% endcodeblock %}
 
 ## The final script
 My final script includes a cleanup() function that is exectued via ```trap``` and at the end of the script on a good run. Cleaning up the sockets and ensuring nothing is left is always good practice. 
@@ -106,7 +106,7 @@ I also modified my SSH commands to not use the known_hosts file. This way I coul
 
 I also include some more logic to really make sure that the rake::restore should run on the integration/production gitlab server. Nerver hurts to double check!
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 #!/bin/bash
 cleanup () {
 	echo "Cleaning up sockets and exiting"

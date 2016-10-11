@@ -32,7 +32,7 @@ As you can tell, we’re using Kibana 4.0.0 (as of this post, 4.0.1 is out and I
 ### Logstash Agent Configuration
 In our role for a given node, lets say a backend node that would be running our micro services, I can simply add some logstash configuration:
 
-```ruby
+```
 class roles::backend_services {
 …
   # Logstash for services
@@ -45,7 +45,7 @@ class roles::backend_services {
 
 And then our backend services profile for logstash, we do something like:
 
-```ruby
+```
 class profiles::logstash::backend_services ($redis_logstash_host) { 
 
     class { 'logstash':
@@ -73,7 +73,7 @@ When it comes to logstash, all the magic happens in those templates. For SRC:CLR
 
 ####Log Path Input
 
-```ruby
+```
 # input_micro_service_one.erb
 input {
     file {
@@ -84,7 +84,7 @@ input {
 
 ####Redis Output
 
-```ruby
+```
 output { 
     redis { 
         host => "<%= @redis_logstash_host %>" 
@@ -96,7 +96,7 @@ output {
 
 ####ElasticSearch Output
 
-```ruby
+```
 output {
     elasticsearch {
         cluster => 'logstash' 
@@ -106,7 +106,7 @@ output {
 
 ####The Final ```logstash/conf.d/logstash.conf``` File
 
-```ruby
+```
 input {
     file {
         path => [“/var/log/service_name/service_name*.log”]
@@ -132,7 +132,7 @@ So far, we’ve covered our log pipeline from ```micro_services_node -> redis_ou
 
 It starts, as usual, with the role:
 
-```ruby
+```
 class roles::logging_aggregator  {
     # First, provision our ELK Stack
     class { ::profiles::elasticsearch::log_aggregator:}
@@ -164,7 +164,7 @@ I will however note the importance, again, of using an EBS volume for your ES da
 
 From the role profile given above, lets take a look at ```::profiles::logstash::redis_indexer```:
 
-```ruby
+```
 class profiles::logstash::redis_indexer { 
 
     class { 'logstash':
@@ -181,7 +181,7 @@ class profiles::logstash::redis_indexer {
 
 Where the redis_indexer.erb looks like this:
 
-```ruby
+```
 input {
 
     redis {
@@ -214,7 +214,7 @@ An important note on Resis is that it will, [by defualt](http://redis.io/topics/
 
 My redis configuration for this now looks like this:
 
-```ruby
+```
 class profiles::redis::log_aggregator {
 
     class { ::redis:

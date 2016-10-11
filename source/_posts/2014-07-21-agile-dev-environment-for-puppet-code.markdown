@@ -37,7 +37,7 @@ The first draw back was easily solved, instead of using Puppet-librarian I'd use
 
 An example rake task to deploy the Puppetfile modules with r10k:
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 desc 'Pull down modules in Puppetfile'
 task :pull do
 	confdir = Dir.pwd
@@ -55,7 +55,7 @@ This first rake task uses r10k to read the Puppetfile and pull down the modules 
 
 Let's link this directory into the VM via the Vagrantfile, this way we can edit the code locally on the host while having it available to run on the Master VM:
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 config.vm.define :master do |master|
 	master.vm.network :private_network, ip: "10.10.100.100"
 	master.vm.hostname = 'master.puppetlabs.vm'
@@ -80,7 +80,7 @@ So instead of syncing into a PE-specific PATH I sync into /tmp, and then when th
 
 ### Complete Vagrantfile:
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 
 
 Now we have a Rakefile that wraps up some deploy commands and a
@@ -125,7 +125,7 @@ Now I have an easy to use Vagrantfile that can boot my master with sym linked mo
 
 Now we need to finish out that Rakefile, adding in some dependancy checks and some tasks to setup, deploy, pull (modules on the fly) and destroy as needed:
 
-{% codeblock lang:ruby %}
+{% codeblock %}
 
 begin
   require 'os'

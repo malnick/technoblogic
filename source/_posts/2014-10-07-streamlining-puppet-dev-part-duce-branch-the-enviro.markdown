@@ -20,7 +20,7 @@ A simple example, theMTLB enviro deploys a Puppet Master and an MTLB load balanc
 ## Enviro Management
 Since we have so many enviros we branch the 'puppet-dev-enviro' repo for each one. So if you're testing MTLB code the workflow looks like this:
 
-```ruby
+```
 cd puppet-dev-enviro
 git checkout mtlb
 MONO=true rake deploy
@@ -35,7 +35,7 @@ You might be familiar with the Puppetfile concept if you've used Puppet Libraria
 Both ```puppet/modueles``` and ```puppet/data``` are shared with the puppet master VM deploed with Vagrant. As a Vagrant post-provisioning step I blow away the ```/etc/puppetlabs/puppet/modules```, ```/etc/puppetlabs/puppet/data``` directories and sym link the shared modules and data directories out of ```/tmp```. 
 
 #### The Deploy Task
-```ruby
+```
 desc 'Deploying modules form Puppetfile and booting master and agent VMs' 
 task :deploy do
   puts "Building out Puppet module directory..."
@@ -92,14 +92,14 @@ For large code-base changes, i.e., developing an entireley new topic branch, thi
 
 puppet/Puppetfile:
 
-```ruby
+```
 'puppet-modules', :git => git@github.com:connectsolutions/puppet-modules', :ref => 'my-topic-branch'
 'puppet-configuration', :git => git@github.com:connectsolutions/puppet-configuration'
 ```
 
 puppet/manifests/site.pp:
 
-```ruby
+```
 node 'my.node.dev` {
 	include my::class
 }
@@ -112,7 +112,7 @@ This will now pull down and configure the environment for the VM's. When finishe
 ### Enviro-Specific Vagrantfile
 One step I've skipped here however is making a git-branch for my-enviro. That's a completely different step but mainly involves updateing the Vagrantfile with the neccessary VM information. I won't cover that here since that is specific to every enviro the same way Puppet code is speciic to each module. I will however share what stays the same between most Vagrantfiles in each enviro and that is the Master VM configuration block:
 
-```ruby
+```
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "ubuntuamd64"
   config.vm.box_url = "https://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-amd64-vagrant-disk1.box"
@@ -152,7 +152,7 @@ In the screen or tmux session that is CD'ed to your `puppet-modules` directory g
 
 Keep in mind we are working on our `my-topic-branch` branch of the `puppet-modules` repo. So when we're done making the local changes:
 
-```bash
+```
 git add my-class.pp
 git commit -m "I made changes"
 git push origin my-topic-branch
@@ -160,13 +160,13 @@ git push origin my-topic-branch
 
 Then in the other screen window that's in the `puppet-dev-enviro` directory run:
 
-```bash
+```
 MONO=true rake pull
 ```
 
 This runs only r10k and the workflow neccessary to pull down the new Puppet code. It is a heavy operation if you have a LOT of code in that Puppetfile. We haven't ran into an issue with that yet however for our individual test enviros. The :pull task looks like this:
 
-```ruby
+```
 desc 'Pull down modules in Puppetfile'
 task :pull do
 	puts "This will blow away everything in puppet/modules. Are you sure you want to continue? [y/n]"
