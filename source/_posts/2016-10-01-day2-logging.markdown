@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "DC/OS Day 2 Operations"
+title: "DC/OS Day 2 Operations: Part 1 - Logging API"
 date: 2016-09-19 13:08:44 -0700
 comments: true
 categories: 
