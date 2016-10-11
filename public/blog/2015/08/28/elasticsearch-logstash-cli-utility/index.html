@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Logasaurus: A CLI Utility for Elasticsearch / Logstash - Technoblogic</title>
+  <title>Logasaurus: A CLI Utility for Elasticsearch / Logstash - Technoblogic(.io)</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://technoblogic.io/blog/2015/08/28/elasticsearch-logstash-cli-utility/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic(.io)" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,9 +36,9 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Technoblogic</a></h1>
+  <h1><a href="/">Technoblogic(.io)</a></h1>
   
-    <h2>A Technology Blog.</h2>
+    <h2>Shameful Self Promotion</h2>
   
 </hgroup>
 
@@ -102,95 +102,88 @@
 
 <p>First, download and build the go binary:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>git clone https://github.com/malnick/logasaurus
-</span><span class='line'><span class="nb">cd </span>logasaurus
-</span><span class='line'>go build loga.go
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>git clone https://github.com/malnick/logasaurus
+</span><span class='line'>cd logasaurus
+</span><span class='line'>go build loga.go</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Configure the config.yaml:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>vi config.yaml
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>vi config.yaml</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Update your Elasticsearch URI, and add some service abstractions to the &lsquo;define&rsquo; section.</p>
 
 <p>Execute your first query:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>./loga -s my_example_service
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>./loga -s my_example_service</span></code></pre></td></tr></table></div></figure>
 
 
 <h4>Add some queries to config.yaml</h4>
 
 <p>You can store long, hard to type queries in the config.yaml for use later:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
-</span><span class='line'>  <span class="c1"># Defined services</span>
-</span><span class='line'>  <span class="l-Scalar-Plain">define</span><span class="p-Indicator">:</span>
-</span><span class='line'>    <span class="l-Scalar-Plain">my_example_service</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">some_value AND another_value</span>
-</span><span class='line'>    <span class="l-Scalar-Plain">webhooks_frontend</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">webhooks AND haproxy</span>
-</span><span class='line'><span class="nn">...</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>---
+</span><span class='line'>  # Defined services
+</span><span class='line'>  define:
+</span><span class='line'>    my_example_service: some_value AND another_value
+</span><span class='line'>    webhooks_frontend: webhooks AND haproxy
+</span><span class='line'>...</span></code></pre></td></tr></table></div></figure>
 
 
 
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">./loga -s webhooks_frontend</span>
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>./loga -s webhooks_frontend</span></code></pre></td></tr></table></div></figure>
 
 
 <h4>Do a defined query on the CLI</h4>
 
 <p>If you need to run a lookup quickly you can do a defined query directly on the CLI:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">user@shell</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">./loga -d &quot;qa&quot;</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>user@shell: ./loga -d "qa"
 </span><span class='line'>
-</span><span class='line'><span class="l-Scalar-Plain">INFO[0000] Loglevel</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Info</span>
-</span><span class='line'><span class="l-Scalar-Plain">INFO[0000] qa</span>
-</span><span class='line'><span class="l-Scalar-Plain">INFO[0000] Querying</span> <span class="p-Indicator">:</span> <span class="l-Scalar-Plain">qa</span>
-</span><span class='line'><span class="l-Scalar-Plain">2015-09-06 16:03:58.112  INFO 7 --- [nio-8080-exec-3] c.s.websocket.scm.ScmWebSocketHandler</span>    <span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Received heartbeat message from agent REDACTED at /192.168.1.72:53812</span>
-</span><span class='line'><span class="nn">...</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>INFO[0000] Loglevel: Info
+</span><span class='line'>INFO[0000] qa
+</span><span class='line'>INFO[0000] Querying : qa
+</span><span class='line'>2015-09-06 16:03:58.112  INFO 7 --- [nio-8080-exec-3] c.s.websocket.scm.ScmWebSocketHandler    : Received heartbeat message from agent REDACTED at /192.168.1.72:53812
+</span><span class='line'>...</span></code></pre></td></tr></table></div></figure>
 
 
 <h4>Want to know what host the log message is coming from?</h4>
 
 <p>You can use <code>-h</code> to highlight the hostname/ip address at the beginning of the line:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>user@shell: loga -d <span class="s2">&quot;qa&quot;</span> -h
+</pre></td><td class='code'><pre><code class=''><span class='line'>user@shell: loga -d "qa" -h
 </span><span class='line'>
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Loglevel: Info
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> qa
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Querying : qa
-</span><span class='line'>192.168.1.68 2015-09-06 16:01:08.108  INFO <span class="m">7</span> --- <span class="o">[</span>io-8080-exec-10<span class="o">]</span> c.s.websocket.scm.ScmWebSocketHandler    : Received heartbeat message from agent REDACTED at /192.168.1.45:53812
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>INFO[0000] Loglevel: Info
+</span><span class='line'>INFO[0000] qa
+</span><span class='line'>INFO[0000] Querying : qa
+</span><span class='line'>192.168.1.68 2015-09-06 16:01:08.108  INFO 7 --- [io-8080-exec-10] c.s.websocket.scm.ScmWebSocketHandler    : Received heartbeat message from agent REDACTED at /192.168.1.45:53812</span></code></pre></td></tr></table></div></figure>
 
 
 <h4>Change sync window</h4>
@@ -199,7 +192,7 @@
 
 <p>To query logs 24 hours ago in a 10 minute window you could run:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -209,17 +202,16 @@
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
 <span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>user@shell: <span class="nv">TZ</span><span class="o">=</span>utc date
-</span><span class='line'>Sun Sep  <span class="m">6</span> 16:31:23 UTC 2015
-</span><span class='line'>user@shell: loga -d <span class="s2">&quot;qa&quot;</span> -st 1440
+</pre></td><td class='code'><pre><code class=''><span class='line'>user@shell: TZ=utc date
+</span><span class='line'>Sun Sep  6 16:31:23 UTC 2015
+</span><span class='line'>user@shell: loga -d "qa" -st 1440
 </span><span class='line'>
-</span><span class='line'>WARN<span class="o">[</span>0000<span class="o">]</span> Using Start Time: 2015-09-05 09:31:24.961285247 -0700 PDT
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> qa
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Querying : qa
+</span><span class='line'>WARN[0000] Using Start Time: 2015-09-05 09:31:24.961285247 -0700 PDT
+</span><span class='line'>INFO[0000] qa
+</span><span class='line'>INFO[0000] Querying : qa
 </span><span class='line'>
-</span><span class='line'>2015-09-05 16:21:25.009  INFO <span class="m">7</span> --- <span class="o">[</span>nio-8080-exec-3<span class="o">]</span> c.s.websocket.scm.ScmWebSocketHandler    : Received heartbeat message from agent REDACTED at /192.168.1.42:54931
-</span><span class='line'>...
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>2015-09-05 16:21:25.009  INFO 7 --- [nio-8080-exec-3] c.s.websocket.scm.ScmWebSocketHandler    : Received heartbeat message from agent REDACTED at /192.168.1.42:54931
+</span><span class='line'>...</span></code></pre></td></tr></table></div></figure>
 
 
 <h4>Override the sync and depth interval</h4>
@@ -227,18 +219,16 @@
 <p>Sync interval = time in seconds to refresh the logs. Default: 5 seconds.
 Sync depth = time in minutes to go back in the ES datastore. Default: 10 minutes.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>./loga -d my_query -si <span class="m">10</span> -sd 1
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>./loga -d my_query -si 10 -sd 1</span></code></pre></td></tr></table></div></figure>
 
 
 <p>^^ Queries logs from the last 1 minute, refreshing every 10 seconds.</p>
 
 <h4>Something is broken</h4>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>./loga -d my_query -v
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>./loga -d my_query -v</span></code></pre></td></tr></table></div></figure>
 
 
 <h3>Closing Thoughts</h3>
@@ -304,7 +294,7 @@ Sync depth = time in minutes to go back in the ES datastore. Default: 10 minutes
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/09/19/day2-logging/">DC/OS Day 2 Operations</a>
       </li>
     
       <li class="post">

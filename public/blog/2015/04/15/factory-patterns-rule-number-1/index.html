@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Factory Patterns: Rule #1 - Technoblogic</title>
+  <title>Factory Patterns: Rule #1 - Technoblogic(.io)</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://technoblogic.io/blog/2015/04/15/factory-patterns-rule-number-1/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic(.io)" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,9 +36,9 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Technoblogic</a></h1>
+  <h1><a href="/">Technoblogic(.io)</a></h1>
   
-    <h2>A Technology Blog.</h2>
+    <h2>Shameful Self Promotion</h2>
   
 </hgroup>
 
@@ -120,7 +120,7 @@
 
 <p>So a user can be defined as:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -128,15 +128,14 @@
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
 <span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># Puppet</span>
-</span><span class='line'><span class="n">user</span> <span class="p">{</span> <span class="err">‘</span><span class="n">jeff</span><span class="err">’</span><span class="p">:</span> <span class="k">ensure</span> <span class="o">=&gt;</span> <span class="n">present</span> <span class="p">}</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># Puppet
+</span><span class='line'>user { ‘jeff’: ensure =&gt; present } 
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Chef</span>
-</span><span class='line'><span class="n">user</span> <span class="err">“</span><span class="n">jeff</span><span class="err">”</span> <span class="k">do</span> <span class="n">action</span> <span class="ss">:create</span> <span class="k">end</span>
+</span><span class='line'># Chef
+</span><span class='line'>user “jeff” do action :create end
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Ansible</span>
-</span><span class='line'><span class="o">-</span> <span class="ss">user</span><span class="p">:</span> <span class="nb">name</span><span class="o">=</span><span class="n">jeff</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'># Ansible
+</span><span class='line'>- user: name=jeff</span></code></pre></td></tr></table></div></figure>
 
 
 <p>This abstraction enables the operations person to automate the deployment of resources to a given machine, in this example the user ‘jeff’, without having to worry about <strong>how to provision</strong> - the idea being, you don’t need to tell the computer how to make the user ‘jeff’, you simply declare it in your manifest/recipe/playbook and you’re done.</p>
@@ -145,7 +144,7 @@
 
 <p>At the end of the day this entire, highly complicated process, should be easily readable and understood at it’s highest layer of abstraction, i.e., some sort of role manifest/recipie that takes all those resources and wraps them into a value that conveys the business logic of what that code does.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -154,16 +153,15 @@
 <span class='line-number'>7</span>
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># Puppet</span>
-</span><span class='line'><span class="c1"># $confdir/modules/role</span>
-</span><span class='line'><span class="k">class</span> <span class="n">role</span><span class="o">::</span><span class="n">qa_haproxy_frontned</span> <span class="p">{</span> <span class="err">…</span> <span class="p">}</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># Puppet
+</span><span class='line'># $confdir/modules/role
+</span><span class='line'>class role::qa_haproxy_frontned { … }
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Chef</span>
-</span><span class='line'><span class="c1"># ~/chef-repo/roles/qa_haproxy_frontend/role.rb</span>
-</span><span class='line'><span class="nb">name</span> <span class="err">“</span><span class="n">qa_haproxy_frontend</span><span class="err">”</span>
-</span><span class='line'><span class="n">description</span> <span class="err">“</span><span class="no">The</span> <span class="n">outer</span> <span class="n">most</span> <span class="n">layer</span> <span class="n">of</span> <span class="n">the</span> <span class="no">QA</span> <span class="no">Haproxy</span> <span class="n">frontend</span> <span class="no">CM</span> <span class="n">code</span><span class="err">”</span>
-</span><span class='line'><span class="n">run_list</span> <span class="p">(</span><span class="s2">&quot;recipe[qa_haproxy_frontend]”)</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'># Chef
+</span><span class='line'># ~/chef-repo/roles/qa_haproxy_frontend/role.rb
+</span><span class='line'>name “qa_haproxy_frontend”
+</span><span class='line'>description “The outer most layer of the QA Haproxy frontend CM code”
+</span><span class='line'>run_list ("recipe[qa_haproxy_frontend]”)</span></code></pre></td></tr></table></div></figure>
 
 
 <p>All things being equal the end goal is abstraction. The CM factory should make simple the increasingly complicated step of provisioning a node in a specific way. The code should be elegant, readable and maintainable. The output should be a working machine with a repeatably deployable state.</p>
@@ -241,7 +239,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/09/19/day2-logging/">DC/OS Day 2 Operations</a>
       </li>
     
       <li class="post">

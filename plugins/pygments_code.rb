@@ -7,6 +7,8 @@ FileUtils.mkdir_p(PYGMENTS_CACHE_DIR)
 
 module HighlightCode
   def self.highlight(str, lang)
+    p str
+    p lang
     lang = 'ruby' if lang == 'ru'
     lang = 'objc' if lang == 'm'
     lang = 'perl' if lang == 'pl'
@@ -24,7 +26,7 @@ module HighlightCode
         begin
           highlighted_code = Pygments.highlight(code, :lexer => lang, :formatter => 'html', :options => {:encoding => 'utf-8', :startinline => true})
         rescue MentosError
-          raise "Pygments can't parse unknown language: #{lang}: #{}"
+          raise "Pygments can't parse unknown language: #{lang}"
         end
         File.open(path, 'w') {|f| f.print(highlighted_code) }
       end

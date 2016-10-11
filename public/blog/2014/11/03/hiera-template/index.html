@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Hiera-template - Technoblogic</title>
+  <title>Hiera-template - Technoblogic(.io)</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://technoblogic.io/blog/2014/11/03/hiera-template/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic(.io)" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,9 +36,9 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Technoblogic</a></h1>
+  <h1><a href="/">Technoblogic(.io)</a></h1>
   
-    <h2>A Technology Blog.</h2>
+    <h2>Shameful Self Promotion</h2>
   
 </hgroup>
 
@@ -105,25 +105,22 @@
 
 <p>By default, hiera-template will store all processed yaml&rsquo;s in <code>~/.hiera-template/templates/${profile_name}-${hierarchy_level}-template.yaml</code></p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> <span class="nv">$confdir</span>/modules/profiles/manifests
-</span><span class='line'>hiera-template company_frontend.pp
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cd $confdir/modules/profiles/manifests
+</span><span class='line'>hiera-template company_frontend.pp</span></code></pre></td></tr></table></div></figure>
 
 
 <p>The above will create a baseline hiera data file from all the explicit hiera() lookups in the profile. Yes, you read that right, it will not work on non-explicit hiera() lookups. That will be a feature down the road. For now, the following like-lines will be parsed:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="vg">$myvar</span> <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::company_frontend::myvar&#39;</span><span class="p">),</span>
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$myvar = hiera('profiles::company_frontend::myvar'),</span></code></pre></td></tr></table></div></figure>
 
 
 <p>That line will be written to a yaml file as:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="l-Scalar-Plain">profiles::company_frontend::myvar</span><span class="p-Indicator">:</span>
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>profiles::company_frontend::myvar:</span></code></pre></td></tr></table></div></figure>
 
 
 <h3>Hierarchy Keys</h3>
@@ -132,7 +129,7 @@
 
 <p>Given the following:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -142,26 +139,24 @@
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
 <span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="n">profiles</span><span class="o">::</span><span class="n">csx_frontend_base</span><span class="p">(</span>
-</span><span class='line'>  <span class="c1">#[node]</span>
-</span><span class='line'>  <span class="vg">$csx_db_name</span>                          <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_name&#39;</span><span class="p">),</span>
-</span><span class='line'>  <span class="vg">$csx_db_user</span>                          <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_user&#39;</span><span class="p">),</span>
-</span><span class='line'>  <span class="vg">$csx_db_password_hash</span>                 <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_password_hash&#39;</span><span class="p">),</span>
-</span><span class='line'>  <span class="c1">#[datacenter]</span>
-</span><span class='line'>  <span class="vg">$csx_db_host</span>                          <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_host&#39;</span><span class="p">),</span>
-</span><span class='line'>  <span class="vg">$csx_db_driverclassname</span>               <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_driverclassname&#39;</span><span class="p">),</span>
-</span><span class='line'>  <span class="vg">$csx_db_url</span>                           <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_url&#39;</span><span class="p">),</span>
-</span><span class='line'>  <span class="vg">$csx_db_password</span>                      <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;profiles::csx_frontend_base::csx_db_password&#39;</span><span class="p">),</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>class profiles::csx_frontend_base(
+</span><span class='line'>  #[node]
+</span><span class='line'>  $csx_db_name                          = hiera('profiles::csx_frontend_base::csx_db_name'),
+</span><span class='line'>  $csx_db_user                          = hiera('profiles::csx_frontend_base::csx_db_user'),
+</span><span class='line'>  $csx_db_password_hash                 = hiera('profiles::csx_frontend_base::csx_db_password_hash'),
+</span><span class='line'>  #[datacenter]
+</span><span class='line'>  $csx_db_host                          = hiera('profiles::csx_frontend_base::csx_db_host'),
+</span><span class='line'>  $csx_db_driverclassname               = hiera('profiles::csx_frontend_base::csx_db_driverclassname'),
+</span><span class='line'>  $csx_db_url                           = hiera('profiles::csx_frontend_base::csx_db_url'),
+</span><span class='line'>  $csx_db_password                      = hiera('profiles::csx_frontend_base::csx_db_password'),</span></code></pre></td></tr></table></div></figure>
 
 
 <p>hiera-template will create two yaml files in <code>~/.hiera-template/templates</code>:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">csx_frontend_base</span><span class="o">-</span><span class="n">node</span><span class="o">-</span><span class="n">template</span><span class="o">.</span><span class="n">yaml</span>
-</span><span class='line'><span class="n">csx_frontend_base</span><span class="o">-</span><span class="n">datacenter</span><span class="o">-</span><span class="n">template</span><span class="o">.</span><span class="n">yaml</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>csx_frontend_base-node-template.yaml
+</span><span class='line'>csx_frontend_base-datacenter-template.yaml</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Those templates contain all the keys for the given profile. You can <code>cat *-node-template.yaml &gt; my.new.node.yaml</code> or <code>cat *-datacenter-template.yaml &gt;&gt; out_dc.yaml</code> to create or append the keys to data files. Then, all you need to do is fill in your values.</p>
@@ -236,7 +231,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/09/19/day2-logging/">DC/OS Day 2 Operations</a>
       </li>
     
       <li class="post">

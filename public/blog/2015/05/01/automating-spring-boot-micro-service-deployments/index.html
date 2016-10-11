@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Automating Spring Boot Micro Service Deployments - Technoblogic</title>
+  <title>Automating Spring Boot Micro Service Deployments - Technoblogic(.io)</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://technoblogic.io/blog/2015/05/01/automating-spring-boot-micro-service-deployments/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic(.io)" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,9 +36,9 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Technoblogic</a></h1>
+  <h1><a href="/">Technoblogic(.io)</a></h1>
   
-    <h2>A Technology Blog.</h2>
+    <h2>Shameful Self Promotion</h2>
   
 </hgroup>
 
@@ -116,7 +116,7 @@
 
 <p>A typical service might have the following deployment in Puppetland:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -147,38 +147,37 @@
 <span class='line-number'>29</span>
 <span class='line-number'>30</span>
 <span class='line-number'>31</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="n">profiles</span><span class="o">::</span><span class="n">sc_services</span><span class="o">::</span><span class="n">some_service</span> <span class="p">(</span> <span class="vg">$version</span> <span class="p">){</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>class profiles::sc_services::some_service ( $version ){
 </span><span class='line'>
-</span><span class='line'>  <span class="vg">$properties_file</span> <span class="o">=</span> <span class="p">{</span>
-</span><span class='line'>    <span class="s1">&#39;rabbitmq.password&#39;</span> <span class="o">=&gt;</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;qa::rabbitmq_password&#39;</span><span class="p">),</span>
-</span><span class='line'>    <span class="s1">&#39;mandrill.api.key&#39;</span>  <span class="o">=&gt;</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;qa::mandrill_api_key&#39;</span><span class="p">),</span>
-</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  $properties_file = {
+</span><span class='line'>    'rabbitmq.password' =&gt; hiera('qa::rabbitmq_password'),
+</span><span class='line'>    'mandrill.api.key'  =&gt; hiera('qa::mandrill_api_key'),
+</span><span class='line'>  }
 </span><span class='line'>
-</span><span class='line'>  <span class="c1"># The main service definition</span>
-</span><span class='line'>  <span class="n">sc_services</span><span class="o">::</span><span class="n">service</span> <span class="p">{</span> <span class="vg">$some_service</span><span class="p">:</span>
-</span><span class='line'>    <span class="n">deploy_stage</span>        <span class="o">=&gt;</span> <span class="s1">&#39;qa&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">version</span>             <span class="o">=&gt;</span> <span class="vg">$version</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">enable_newrelic_apm</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">loadbalancer_role</span>   <span class="o">=&gt;</span> <span class="s1">&#39;qa_internal&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">xmx_setting</span>         <span class="o">=&gt;</span> <span class="s1">&#39;512&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">xms_setting</span>         <span class="o">=&gt;</span> <span class="s1">&#39;512&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">proc_opts</span>           <span class="o">=&gt;</span> <span class="p">{</span>
-</span><span class='line'>      <span class="s1">&#39;1&#39;</span>  <span class="o">=&gt;</span> <span class="p">{</span>
-</span><span class='line'>        <span class="s1">&#39;env_profile&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;qa&#39;</span><span class="p">,</span>
-</span><span class='line'>        <span class="s1">&#39;port&#39;</span>        <span class="o">=&gt;</span> <span class="s1">&#39;55000&#39;</span><span class="p">,</span>
-</span><span class='line'>        <span class="s1">&#39;mgmt_port&#39;</span>   <span class="o">=&gt;</span> <span class="s1">&#39;55010&#39;</span><span class="p">,</span>
-</span><span class='line'>        <span class="s1">&#39;override&#39;</span>    <span class="o">=&gt;</span> <span class="vg">$properties_file</span><span class="p">,</span>
-</span><span class='line'>      <span class="p">},</span>
-</span><span class='line'>      <span class="s1">&#39;2&#39;</span>  <span class="o">=&gt;</span> <span class="p">{</span>
-</span><span class='line'>        <span class="s1">&#39;env_profile&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;qa&#39;</span><span class="p">,</span>
-</span><span class='line'>        <span class="s1">&#39;port&#39;</span>        <span class="o">=&gt;</span> <span class="s1">&#39;55001&#39;</span><span class="p">,</span>
-</span><span class='line'>        <span class="s1">&#39;mgmt_port&#39;</span>   <span class="o">=&gt;</span> <span class="s1">&#39;55011&#39;</span><span class="p">,</span>
-</span><span class='line'>        <span class="s1">&#39;override&#39;</span>    <span class="o">=&gt;</span> <span class="vg">$properties_file</span><span class="p">,</span>
-</span><span class='line'>      <span class="p">}</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>  # The main service definition
+</span><span class='line'>  sc_services::service { $some_service:
+</span><span class='line'>    deploy_stage        =&gt; 'qa',
+</span><span class='line'>    version             =&gt; $version,
+</span><span class='line'>    enable_newrelic_apm =&gt; true,
+</span><span class='line'>    loadbalancer_role   =&gt; 'qa_internal',
+</span><span class='line'>    xmx_setting         =&gt; '512',
+</span><span class='line'>    xms_setting         =&gt; '512',
+</span><span class='line'>    proc_opts           =&gt; {
+</span><span class='line'>      '1'  =&gt; {
+</span><span class='line'>        'env_profile' =&gt; 'qa',
+</span><span class='line'>        'port'        =&gt; '55000',
+</span><span class='line'>        'mgmt_port'   =&gt; '55010',
+</span><span class='line'>        'override'    =&gt; $properties_file,
+</span><span class='line'>      },
+</span><span class='line'>      '2'  =&gt; {
+</span><span class='line'>        'env_profile' =&gt; 'qa',
+</span><span class='line'>        'port'        =&gt; '55001',
+</span><span class='line'>        'mgmt_port'   =&gt; '55011',
+</span><span class='line'>        'override'    =&gt; $properties_file,
+</span><span class='line'>      }
+</span><span class='line'>    }
+</span><span class='line'>  }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <p>This configuration will boot a node with an init script managing 2 Java processes for $service. Each prcess gets it&rsquo;s own exported balancermember resource for our internal haproxy in the environment &lsquo;qa&rsquo; as well as New Relic APM monitoring, and most importantly an externalized configuration built from data in git that is encrypted.</p>
@@ -187,7 +186,7 @@
 
 <p>Since Sping allows you to also override any configuration as ENV variables it makes it incredibly easy to roll this service into a docker container:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -204,24 +203,23 @@
 <span class='line-number'>15</span>
 <span class='line-number'>16</span>
 <span class='line-number'>17</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'>  <span class="vg">$rabbitmq_password</span>  <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;rabbitmq_password&#39;</span><span class="p">)</span>
-</span><span class='line'>  <span class="vg">$mandrill_api_key</span>   <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;mandrill_api_key&#39;</span><span class="p">)</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>  $rabbitmq_password  = hiera('rabbitmq_password')
+</span><span class='line'>  $mandrill_api_key   = hiera('mandrill_api_key')
 </span><span class='line'>
-</span><span class='line'>  <span class="vg">$env_variables</span> <span class="o">=</span> <span class="o">[</span>
-</span><span class='line'>    <span class="s2">&quot;rabbitmq.password=${rabbitmq_password}&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="s2">&quot;mandrill.api.key=${mandrill_api_key}&quot;</span><span class="p">,</span>
-</span><span class='line'>  <span class="o">]</span>
+</span><span class='line'>  $env_variables = [
+</span><span class='line'>    "rabbitmq.password=${rabbitmq_password}",
+</span><span class='line'>    "mandrill.api.key=${mandrill_api_key}",
+</span><span class='line'>  ]
 </span><span class='line'>
-</span><span class='line'>  <span class="n">docker</span><span class="o">::</span><span class="n">run</span> <span class="p">{</span> <span class="s1">&#39;some_service&#39;</span><span class="p">:</span>
-</span><span class='line'>    <span class="n">image</span>           <span class="o">=&gt;</span> <span class="s2">&quot;our_priv_registry:5000/some_service-${version}&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">ports</span>           <span class="o">=&gt;</span> <span class="o">[</span><span class="s1">&#39;55010&#39;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">expose</span>          <span class="o">=&gt;</span> <span class="o">[</span><span class="s1">&#39;55010&#39;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">env</span>             <span class="o">=&gt;</span> <span class="vg">$env_variables</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">restart_service</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">privileged</span>      <span class="o">=&gt;</span> <span class="kp">false</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">pull_on_start</span>   <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span>
-</span><span class='line'>  <span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>  docker::run { 'some_service':
+</span><span class='line'>    image           =&gt; "our_priv_registry:5000/some_service-${version}",
+</span><span class='line'>    ports           =&gt; ['55010'],
+</span><span class='line'>    expose          =&gt; ['55010'],
+</span><span class='line'>    env             =&gt; $env_variables,
+</span><span class='line'>    restart_service =&gt; true,
+</span><span class='line'>    privileged      =&gt; false,
+</span><span class='line'>    pull_on_start   =&gt; true,
+</span><span class='line'>  }</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Now we can toss out an on-system properties file and keep the secure passwords purely in the context of the shell which they are executed. This furthers security as the passwords are never actually written to the system, they can not be copied or read from disk as it were.</p>
@@ -279,7 +277,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/09/19/day2-logging/">DC/OS Day 2 Operations</a>
       </li>
     
       <li class="post">

@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Agile Dev Environment for Puppet Code - Technoblogic</title>
+  <title>Agile Dev Environment for Puppet Code - Technoblogic(.io)</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://technoblogic.io/blog/2014/07/21/agile-dev-environment-for-puppet-code/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic(.io)" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,9 +36,9 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Technoblogic</a></h1>
+  <h1><a href="/">Technoblogic(.io)</a></h1>
   
-    <h2>A Technology Blog.</h2>
+    <h2>Shameful Self Promotion</h2>
   
 </hgroup>
 
@@ -140,18 +140,17 @@
 <span class='line-number'>9</span>
 <span class='line-number'>10</span>
 <span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">desc</span> <span class="s1">&#39;Pull down modules in Puppetfile&#39;</span>
-</span><span class='line'><span class="n">task</span> <span class="ss">:pull</span> <span class="k">do</span>
-</span><span class='line'>  <span class="n">confdir</span> <span class="o">=</span> <span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span>
-</span><span class='line'>  <span class="n">moduledir</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/modules&quot;</span>
-</span><span class='line'>  <span class="n">puppetfile</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/Puppetfile&quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Pulling down new modules in </span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2"> to </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;PUPPETFILE=</span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2"> PUPPETFILE_DIR=</span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2"> /usr/bin/r10k puppetfile install&quot;</span><span class="p">)</span>
-</span><span class='line'>      <span class="nb">abort</span> <span class="s1">&#39;Failed to build out Puppet module directory. Exiting...&#39;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;New modules successfully pulled down&quot;</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>desc 'Pull down modules in Puppetfile'
+</span><span class='line'>task :pull do
+</span><span class='line'>  confdir = Dir.pwd
+</span><span class='line'>  moduledir = "#{confdir}/puppet/modules"
+</span><span class='line'>  puppetfile = "#{confdir}/puppet/Puppetfile"
+</span><span class='line'>  puts "Pulling down new modules in #{puppetfile} to #{moduledir}"
+</span><span class='line'>  unless system("PUPPETFILE=#{puppetfile} PUPPETFILE_DIR=#{moduledir} /usr/bin/r10k puppetfile install")
+</span><span class='line'>      abort 'Failed to build out Puppet module directory. Exiting...'
+</span><span class='line'>  end
+</span><span class='line'>  puts "New modules successfully pulled down"
+</span><span class='line'>end</span></code></pre></td></tr></table></div></figure>
 
 
 <p>This first rake task uses r10k to read the Puppetfile and pull down the modules listed in it to the module directory.</p>
@@ -171,20 +170,19 @@
 <span class='line-number'>11</span>
 <span class='line-number'>12</span>
 <span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:master</span> <span class="k">do</span> <span class="o">|</span><span class="n">master</span><span class="o">|</span>
-</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.100&quot;</span>
-</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
-</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
-</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
-</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="ss">:master</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;puppet/modules&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/modules&quot;</span>
-</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;puppet/manifests&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/manifests&quot;</span>
-</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;service iptables stop&quot;</span>
-</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;rm -rf /etc/puppetlabs/puppet/modules/ &amp;&amp; ln -s /tmp/modules/ /etc/puppetlabs/puppet/&quot;</span>
-</span><span class='line'>  <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;rm -rf /etc/puppetlabs/puppet/manifests/ &amp;&amp; ln -s /tmp/manifests/ /etc/puppetlabs/puppet/&quot;</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>config.vm.define :master do |master|
+</span><span class='line'>  master.vm.network :private_network, ip: "10.10.100.100"
+</span><span class='line'>  master.vm.hostname = 'master.puppetlabs.vm'
+</span><span class='line'>  master.vm.provision :hosts
+</span><span class='line'>  master.vm.provision :pe_bootstrap do |pe|
+</span><span class='line'>      pe.role = :master
+</span><span class='line'>  end
+</span><span class='line'>  master.vm.synced_folder "puppet/modules", "/tmp/modules"
+</span><span class='line'>  master.vm.synced_folder "puppet/manifests", "/tmp/manifests"
+</span><span class='line'>  master.vm.provision "shell", inline: "service iptables stop"
+</span><span class='line'>  master.vm.provision "shell", inline: "rm -rf /etc/puppetlabs/puppet/modules/ && ln -s /tmp/modules/ /etc/puppetlabs/puppet/"
+</span><span class='line'>  master.vm.provision "shell", inline: "rm -rf /etc/puppetlabs/puppet/manifests/ && ln -s /tmp/manifests/ /etc/puppetlabs/puppet/"
+</span><span class='line'>end</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Why did I use the shell provisioner to sym link /tmp/modules and /tmp/manifests to <code>$confdir/modules</code> and <code>$confdir/manifests</code>?</p>
@@ -232,43 +230,42 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
 <span class='line-number'>34</span>
 <span class='line-number'>35</span>
 <span class='line-number'>36</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Now</span> <span class="n">we</span> <span class="n">have</span> <span class="n">a</span> <span class="no">Rakefile</span> <span class="n">that</span> <span class="n">wraps</span> <span class="n">up</span> <span class="n">some</span> <span class="n">deploy</span> <span class="n">commands</span> <span class="ow">and</span> <span class="n">a</span>
-</span><span class='line'><span class="c1"># -*- mode: ruby -*-</span>
-</span><span class='line'><span class="c1"># vi: set ft=ruby :</span>
-</span><span class='line'><span class="c1"># Vagrantfile API/syntax version. Don&#39;t touch unless you know what you&#39;re doing!</span>
-</span><span class='line'><span class="no">VAGRANTFILE_API_VERSION</span> <span class="o">=</span> <span class="s2">&quot;2&quot;</span>
-</span><span class='line'><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="no">VAGRANTFILE_API_VERSION</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="s2">&quot;centos-64-x64-vbox4210.box&quot;</span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">box_url</span> <span class="o">=</span> <span class="s2">&quot;http://puppet-vagrant-boxes.puppetlabs.com/centos-64-x64-vbox4210.box&quot;</span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">pe_build</span><span class="o">.</span><span class="n">download_root</span> <span class="o">=</span> <span class="s1">&#39;https://s3.amazonaws.com/pe-builds/released/:version&#39;</span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">pe_build</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;3.2.3&quot;</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Now we have a Rakefile that wraps up some deploy commands and a
+</span><span class='line'># -*- mode: ruby -*-
+</span><span class='line'># vi: set ft=ruby :
+</span><span class='line'># Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+</span><span class='line'>VAGRANTFILE_API_VERSION = "2"
+</span><span class='line'>Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+</span><span class='line'>  config.vm.box = "centos-64-x64-vbox4210.box"
+</span><span class='line'>  config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/centos-64-x64-vbox4210.box" 
+</span><span class='line'>  config.pe_build.download_root = 'https://s3.amazonaws.com/pe-builds/released/:version'
+</span><span class='line'>  config.pe_build.version = "3.2.3"
 </span><span class='line'>
-</span><span class='line'><span class="c1">## Master</span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:master</span> <span class="k">do</span> <span class="o">|</span><span class="n">master</span><span class="o">|</span>
-</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.100&quot;</span>
-</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
-</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
-</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
-</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="ss">:master</span>
-</span><span class='line'>    <span class="k">end</span>
-</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;puppet/modules&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/modules&quot;</span>
-</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;puppet/manifests&quot;</span><span class="p">,</span> <span class="s2">&quot;/tmp/manifests&quot;</span>
-</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;service iptables stop&quot;</span>
-</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;rm -rf /etc/puppetlabs/puppet/modules/ &amp;&amp; ln -s /tmp/modules/ /etc/puppetlabs/puppet/&quot;</span>
-</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span> <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;rm -rf /etc/puppetlabs/puppet/manifests/ &amp;&amp; ln -s /tmp/manifests/ /etc/puppetlabs/puppet/&quot;</span>
-</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>## Master
+</span><span class='line'>  config.vm.define :master do |master|
+</span><span class='line'>    master.vm.network :private_network, ip: "10.10.100.100"
+</span><span class='line'>    master.vm.hostname = 'master.puppetlabs.vm'
+</span><span class='line'>    master.vm.provision :hosts
+</span><span class='line'>    master.vm.provision :pe_bootstrap do |pe|
+</span><span class='line'>      pe.role = :master
+</span><span class='line'>    end
+</span><span class='line'>    master.vm.synced_folder "puppet/modules", "/tmp/modules"
+</span><span class='line'>    master.vm.synced_folder "puppet/manifests", "/tmp/manifests"
+</span><span class='line'>    master.vm.provision "shell", inline: "service iptables stop"
+</span><span class='line'>    master.vm.provision "shell", inline: "rm -rf /etc/puppetlabs/puppet/modules/ && ln -s /tmp/modules/ /etc/puppetlabs/puppet/"
+</span><span class='line'>    master.vm.provision "shell", inline: "rm -rf /etc/puppetlabs/puppet/manifests/ && ln -s /tmp/manifests/ /etc/puppetlabs/puppet/"
+</span><span class='line'>  end
 </span><span class='line'>
-</span><span class='line'><span class="c1">## Agent </span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:agent1</span> <span class="k">do</span> <span class="o">|</span><span class="n">agent</span><span class="o">|</span>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.111&quot;</span>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;agent1.puppetlabs.vm&#39;</span>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
-</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span>   <span class="o">=</span>  <span class="ss">:agent</span>
-</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
-</span><span class='line'>    <span class="k">end</span>
-</span><span class='line'>  <span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>## Agent 
+</span><span class='line'>  config.vm.define :agent1 do |agent|
+</span><span class='line'>    agent.vm.network :private_network, ip: "10.10.100.111"
+</span><span class='line'>    agent.vm.hostname = 'agent1.puppetlabs.vm'
+</span><span class='line'>    agent.vm.provision :hosts
+</span><span class='line'>    agent.vm.provision :pe_bootstrap do |pe|
+</span><span class='line'>      pe.role   =  :agent
+</span><span class='line'>      pe.master = 'master.puppetlabs.vm'
+</span><span class='line'>    end
+</span><span class='line'>  end</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Now I have an easy to use Vagrantfile that can boot my master with sym linked module and manifests dirs and an agent to test on.</p>
@@ -406,138 +403,137 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
 <span class='line-number'>129</span>
 <span class='line-number'>130</span>
 <span class='line-number'>131</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">begin</span>
-</span><span class='line'>  <span class="nb">require</span> <span class="s1">&#39;os&#39;</span>
-</span><span class='line'>  <span class="nb">require</span> <span class="s1">&#39;ptools&#39;</span>
-</span><span class='line'><span class="k">rescue</span> <span class="no">LoadError</span> <span class="o">=&gt;</span> <span class="n">e</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Error during requires: </span><span class="se">\t</span><span class="si">#{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="nb">abort</span> <span class="s2">&quot;You may be able to fix this problem by running &#39;bundle&#39;.&quot;</span>
-</span><span class='line'><span class="k">end</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>begin
+</span><span class='line'>  require 'os'
+</span><span class='line'>  require 'ptools'
+</span><span class='line'>rescue LoadError => e
+</span><span class='line'>  puts "Error during requires: \t#{e.message}"
+</span><span class='line'>  abort "You may be able to fix this problem by running 'bundle'."
+</span><span class='line'>end
 </span><span class='line'>
-</span><span class='line'><span class="n">task</span> <span class="ss">:default</span> <span class="o">=&gt;</span> <span class="s1">&#39;deps&#39;</span>
+</span><span class='line'>task :default => 'deps'
 </span><span class='line'>
-</span><span class='line'><span class="n">necessary_programs</span> <span class="o">=</span> <span class="sx">%w(VirtualBox vagrant)</span>
-</span><span class='line'><span class="n">necessary_plugins</span> <span class="o">=</span> <span class="sx">%w(vagrant-auto_network vagrant-pe_build vagrant-vmware-fusion)</span>
-</span><span class='line'><span class="n">necessary_gems</span> <span class="o">=</span> <span class="sx">%w(bundle r10k)</span>
+</span><span class='line'>necessary_programs = %w(VirtualBox vagrant)
+</span><span class='line'>necessary_plugins = %w(vagrant-auto_network vagrant-pe_build vagrant-vmware-fusion)
+</span><span class='line'>necessary_gems = %w(bundle r10k)
 </span><span class='line'>
-</span><span class='line'><span class="n">desc</span> <span class="s1">&#39;Check for the environment dependencies&#39;</span>
-</span><span class='line'><span class="n">task</span> <span class="ss">:deps</span> <span class="k">do</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s1">&#39;Checking environment dependencies...&#39;</span>
+</span><span class='line'>desc 'Check for the environment dependencies'
+</span><span class='line'>task :deps do
+</span><span class='line'>  puts 'Checking environment dependencies...'
 </span><span class='line'>
-</span><span class='line'>  <span class="nb">printf</span> <span class="s2">&quot;Is this a POSIX OS?...&quot;</span>
-</span><span class='line'>  <span class="k">unless</span> <span class="no">OS</span><span class="o">.</span><span class="n">posix?</span>
-</span><span class='line'>    <span class="nb">abort</span> <span class="s1">&#39;Sorry, you need to be running Linux or OSX to use this Vagrant environment!&#39;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;OK&quot;</span>
+</span><span class='line'>  printf "Is this a POSIX OS?..."
+</span><span class='line'>  unless OS.posix?
+</span><span class='line'>    abort 'Sorry, you need to be running Linux or OSX to use this Vagrant environment!'
+</span><span class='line'>  end
+</span><span class='line'>  puts "OK"
+</span><span class='line'> 
+</span><span class='line'>  necessary_programs.each do |prog| 
+</span><span class='line'>    printf "Checking for %s...", prog
+</span><span class='line'>    unless File.which(prog)
+</span><span class='line'>      abort "\nSorry but I didn't find require program \'#{prog}\' in your PATH.\n"
+</span><span class='line'>    end
+</span><span class='line'>    puts "OK"
+</span><span class='line'>  end
 </span><span class='line'>
-</span><span class='line'>  <span class="n">necessary_programs</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">prog</span><span class="o">|</span>
-</span><span class='line'>    <span class="nb">printf</span> <span class="s2">&quot;Checking for %s...&quot;</span><span class="p">,</span> <span class="n">prog</span>
-</span><span class='line'>    <span class="k">unless</span> <span class="no">File</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">prog</span><span class="p">)</span>
-</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Sorry but I didn&#39;t find require program </span><span class="se">\&#39;</span><span class="si">#{</span><span class="n">prog</span><span class="si">}</span><span class="se">\&#39;</span><span class="s2"> in your PATH.</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span class='line'>    <span class="k">end</span>
-</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;OK&quot;</span>
-</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  necessary_plugins.each do |plugin|
+</span><span class='line'>    printf "Checking for vagrant plugin %s...", plugin
+</span><span class='line'>    unless %x{vagrant plugin list}.include? plugin
+</span><span class='line'>      puts "\nSorry, I wasn't able to find the Vagrant plugin \'#{plugin}\' on your system."
+</span><span class='line'>      abort "You may be able to fix this by running 'rake setup\'.\n"
+</span><span class='line'>    end
+</span><span class='line'>    puts "OK"
+</span><span class='line'>  end
 </span><span class='line'>
-</span><span class='line'>  <span class="n">necessary_plugins</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">plugin</span><span class="o">|</span>
-</span><span class='line'>    <span class="nb">printf</span> <span class="s2">&quot;Checking for vagrant plugin %s...&quot;</span><span class="p">,</span> <span class="n">plugin</span>
-</span><span class='line'>    <span class="k">unless</span> <span class="sx">%x{vagrant plugin list}</span><span class="o">.</span><span class="n">include?</span> <span class="n">plugin</span>
-</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Sorry, I wasn&#39;t able to find the Vagrant plugin </span><span class="se">\&#39;</span><span class="si">#{</span><span class="n">plugin</span><span class="si">}</span><span class="se">\&#39;</span><span class="s2"> on your system.&quot;</span>
-</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;You may be able to fix this by running &#39;rake setup</span><span class="se">\&#39;</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span class='line'>    <span class="k">end</span>
-</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;OK&quot;</span>
-</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  necessary_gems.each do |gem|
+</span><span class='line'>    printf "Checking for Ruby gem %s...", gem
+</span><span class='line'>    unless system("gem list --local -q --no-versions --no-details #{gem} | egrep '^#{gem}$' > /dev/null 2>&1")
+</span><span class='line'>      puts "\nSorry, I wasn't able to find the \'#{gem}\' gem on your system."
+</span><span class='line'>      abort "You may be able to fix this by running \'gem install #{gem}\'.\n"
+</span><span class='line'>    end
+</span><span class='line'>    puts "OK"
+</span><span class='line'>  end
 </span><span class='line'>
-</span><span class='line'>  <span class="n">necessary_gems</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">gem</span><span class="o">|</span>
-</span><span class='line'>    <span class="nb">printf</span> <span class="s2">&quot;Checking for Ruby gem %s...&quot;</span><span class="p">,</span> <span class="n">gem</span>
-</span><span class='line'>    <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;gem list --local -q --no-versions --no-details </span><span class="si">#{</span><span class="n">gem</span><span class="si">}</span><span class="s2"> | egrep &#39;^</span><span class="si">#{</span><span class="n">gem</span><span class="si">}</span><span class="s2">$&#39; &gt; /dev/null 2&gt;&amp;1&quot;</span><span class="p">)</span>
-</span><span class='line'>      <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Sorry, I wasn&#39;t able to find the </span><span class="se">\&#39;</span><span class="si">#{</span><span class="n">gem</span><span class="si">}</span><span class="se">\&#39;</span><span class="s2"> gem on your system.&quot;</span>
-</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;You may be able to fix this by running </span><span class="se">\&#39;</span><span class="s2">gem install </span><span class="si">#{</span><span class="n">gem</span><span class="si">}</span><span class="se">\&#39;</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span class='line'>    <span class="k">end</span>
-</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;OK&quot;</span>
-</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  printf "Checking for additional gems via 'bundle check'..."
+</span><span class='line'>  unless %x{bundle check}
+</span><span class='line'>    abort ''
+</span><span class='line'>  end
+</span><span class='line'>  puts "OK"
 </span><span class='line'>
-</span><span class='line'>  <span class="nb">printf</span> <span class="s2">&quot;Checking for additional gems via &#39;bundle check&#39;...&quot;</span>
-</span><span class='line'>  <span class="k">unless</span> <span class="sx">%x{bundle check}</span>
-</span><span class='line'>    <span class="nb">abort</span> <span class="s1">&#39;&#39;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;OK&quot;</span>
+</span><span class='line'>  puts "\n" 
+</span><span class='line'>  puts '*' * 80
+</span><span class='line'>  puts "Congratulations! Everything looks a-ok."
+</span><span class='line'>  puts '*' * 80
+</span><span class='line'>  puts "\n"
+</span><span class='line'>end
 </span><span class='line'>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">80</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Congratulations! Everything looks a-ok.&quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">80</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span class='line'><span class="k">end</span>
+</span><span class='line'>desc 'Install the necessary Vagrant plugins'
+</span><span class='line'>task :setup do
+</span><span class='line'>  necessary_plugins.each do |plugin|
+</span><span class='line'>    unless system("vagrant plugin install #{plugin} --verbose")
+</span><span class='line'>      abort "Install of #{plugin} failed. Exiting..."
+</span><span class='line'>    end
+</span><span class='line'>  end
 </span><span class='line'>
-</span><span class='line'><span class="n">desc</span> <span class="s1">&#39;Install the necessary Vagrant plugins&#39;</span>
-</span><span class='line'><span class="n">task</span> <span class="ss">:setup</span> <span class="k">do</span>
-</span><span class='line'>  <span class="n">necessary_plugins</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">plugin</span><span class="o">|</span>
-</span><span class='line'>    <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vagrant plugin install </span><span class="si">#{</span><span class="n">plugin</span><span class="si">}</span><span class="s2"> --verbose&quot;</span><span class="p">)</span>
-</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;Install of </span><span class="si">#{</span><span class="n">plugin</span><span class="si">}</span><span class="s2"> failed. Exiting...&quot;</span>
-</span><span class='line'>    <span class="k">end</span>
-</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  necessary_gems.each do |gem|
+</span><span class='line'>    unless system("gem install #{gem}")
+</span><span class='line'>      abort "Install of #{gem} failed. Exiting..."
+</span><span class='line'>    end
+</span><span class='line'>  end
 </span><span class='line'>
-</span><span class='line'>  <span class="n">necessary_gems</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">gem</span><span class="o">|</span>
-</span><span class='line'>    <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;gem install </span><span class="si">#{</span><span class="n">gem</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span class='line'>      <span class="nb">abort</span> <span class="s2">&quot;Install of </span><span class="si">#{</span><span class="n">gem</span><span class="si">}</span><span class="s2"> failed. Exiting...&quot;</span>
-</span><span class='line'>    <span class="k">end</span>
-</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  unless %x{bundle check} 
+</span><span class='line'>    system('bundle install')
+</span><span class='line'>  end
 </span><span class='line'>
-</span><span class='line'>  <span class="k">unless</span> <span class="sx">%x{bundle check}</span>
-</span><span class='line'>    <span class="nb">system</span><span class="p">(</span><span class="s1">&#39;bundle install&#39;</span><span class="p">)</span>
-</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>end
 </span><span class='line'>
-</span><span class='line'><span class="k">end</span>
+</span><span class='line'>desc 'Deploying modules form Puppetfile and booting master and agent VMs' 
+</span><span class='line'>task :deploy do
+</span><span class='line'>  puts "Building out Puppet module directory..."
+</span><span class='line'>  confdir = Dir.pwd
+</span><span class='line'>  moduledir = "#{confdir}/puppet/modules"
+</span><span class='line'>  puppetfile = "#{confdir}/puppet/Puppetfile"
+</span><span class='line'>  puts "Placing modules in #{moduledir}"
+</span><span class='line'>  puts "Using Puppetfile at #{puppetfile}"
+</span><span class='line'>  unless system("PUPPETFILE=#{puppetfile} PUPPETFILE_DIR=#{moduledir} /usr/bin/r10k puppetfile install")
+</span><span class='line'>    abort 'Failed to build out Puppet module directory. Exiting...'
+</span><span class='line'>  end
+</span><span class='line'>  puts "Bringing up vagrant machines"
+</span><span class='line'>  unless system("vagrant up master agent1") 
+</span><span class='line'>    abort 'Vagrant up failed. Exiting...'
+</span><span class='line'>  end
+</span><span class='line'>  puts "Vagrant Machines Up Successfully\n"
+</span><span class='line'>  puts "Access master at 'vagrant ssh master' or 'ssh vagrant@10.10.100.100'\n"
+</span><span class='line'>  puts "Password = vagrant"
+</span><span class='line'>  puts "-----"
+</span><span class='line'>  puts "Puppet modules brought in via puppet/Puppetfile are available on the Vagrant master VM at /etc/puppetlabs/puppet/modules"
+</span><span class='line'>  puts "-----"
+</span><span class='line'>  puts "Contact git owner for PR's & bug fixes"
+</span><span class='line'>  puts "-----"
+</span><span class='line'>  puts "Done."
+</span><span class='line'>end
 </span><span class='line'>
-</span><span class='line'><span class="n">desc</span> <span class="s1">&#39;Deploying modules form Puppetfile and booting master and agent VMs&#39;</span>
-</span><span class='line'><span class="n">task</span> <span class="ss">:deploy</span> <span class="k">do</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Building out Puppet module directory...&quot;</span>
-</span><span class='line'>  <span class="n">confdir</span> <span class="o">=</span> <span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span>
-</span><span class='line'>  <span class="n">moduledir</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/modules&quot;</span>
-</span><span class='line'>  <span class="n">puppetfile</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/Puppetfile&quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Placing modules in </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Using Puppetfile at </span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;PUPPETFILE=</span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2"> PUPPETFILE_DIR=</span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2"> /usr/bin/r10k puppetfile install&quot;</span><span class="p">)</span>
-</span><span class='line'>    <span class="nb">abort</span> <span class="s1">&#39;Failed to build out Puppet module directory. Exiting...&#39;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Bringing up vagrant machines&quot;</span>
-</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vagrant up master agent1&quot;</span><span class="p">)</span>
-</span><span class='line'>    <span class="nb">abort</span> <span class="s1">&#39;Vagrant up failed. Exiting...&#39;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Vagrant Machines Up Successfully</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Access master at &#39;vagrant ssh master&#39; or &#39;ssh vagrant@10.10.100.100&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Password = vagrant&quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;-----&quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Puppet modules brought in via puppet/Puppetfile are available on the Vagrant master VM at /etc/puppetlabs/puppet/modules&quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;-----&quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Contact git owner for PR&#39;s &amp; bug fixes&quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;-----&quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Done.&quot;</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">desc</span> <span class="s1">&#39;Pull down modules in Puppetfile&#39;</span>
-</span><span class='line'><span class="n">task</span> <span class="ss">:pull</span> <span class="k">do</span>
-</span><span class='line'>  <span class="n">confdir</span> <span class="o">=</span> <span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span>
-</span><span class='line'>  <span class="n">moduledir</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/modules&quot;</span>
-</span><span class='line'>  <span class="n">puppetfile</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">confdir</span><span class="si">}</span><span class="s2">/puppet/Puppetfile&quot;</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Pulling down new modules in </span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2"> to </span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="k">unless</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;PUPPETFILE=</span><span class="si">#{</span><span class="n">puppetfile</span><span class="si">}</span><span class="s2"> PUPPETFILE_DIR=</span><span class="si">#{</span><span class="n">moduledir</span><span class="si">}</span><span class="s2"> /usr/bin/r10k puppetfile install&quot;</span><span class="p">)</span>
-</span><span class='line'>      <span class="nb">abort</span> <span class="s1">&#39;Failed to build out Puppet module directory. Exiting...&#39;</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;New modules successfully pulled down&quot;</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'><span class="n">desc</span> <span class="s1">&#39;Destroy Vagrant Machines&#39;</span>
-</span><span class='line'><span class="n">task</span> <span class="ss">:destroy</span> <span class="k">do</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Are you sure you want to destroy the environment? [y/n]&quot;</span>
-</span><span class='line'>  <span class="no">STDOUT</span><span class="o">.</span><span class="n">flush</span>
-</span><span class='line'>  <span class="n">ans</span> <span class="o">=</span> <span class="no">STDIN</span><span class="o">.</span><span class="n">gets</span><span class="o">.</span><span class="n">chomp</span>
-</span><span class='line'>  <span class="k">if</span> <span class="n">ans</span> <span class="o">=~</span> <span class="sr">/^y/</span>
-</span><span class='line'>      <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;vagrant destroy -f&quot;</span><span class="p">)</span>
-</span><span class='line'>  <span class="k">else</span>
-</span><span class='line'>      <span class="nb">abort</span> <span class="s1">&#39;Aborting vagrant destroy, exiting...&#39;</span>
-</span><span class='line'>  <span class="k">end</span>      
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>desc 'Pull down modules in Puppetfile'
+</span><span class='line'>task :pull do
+</span><span class='line'>  confdir = Dir.pwd
+</span><span class='line'>  moduledir = "#{confdir}/puppet/modules"
+</span><span class='line'>  puppetfile = "#{confdir}/puppet/Puppetfile"
+</span><span class='line'>  puts "Pulling down new modules in #{puppetfile} to #{moduledir}"
+</span><span class='line'>  unless system("PUPPETFILE=#{puppetfile} PUPPETFILE_DIR=#{moduledir} /usr/bin/r10k puppetfile install")
+</span><span class='line'>      abort 'Failed to build out Puppet module directory. Exiting...'
+</span><span class='line'>  end
+</span><span class='line'>  puts "New modules successfully pulled down" 
+</span><span class='line'>end
+</span><span class='line'>desc 'Destroy Vagrant Machines'
+</span><span class='line'>task :destroy do
+</span><span class='line'>  puts "Are you sure you want to destroy the environment? [y/n]"
+</span><span class='line'>  STDOUT.flush
+</span><span class='line'>  ans = STDIN.gets.chomp
+</span><span class='line'>  if ans =~ /^y/
+</span><span class='line'>      system("vagrant destroy -f")
+</span><span class='line'>  else
+</span><span class='line'>      abort 'Aborting vagrant destroy, exiting...'
+</span><span class='line'>  end     
+</span><span class='line'>end</span></code></pre></td></tr></table></div></figure>
 
 
 <p><a href="https://github.com/malnick/puppet-module-devtest-skeleton/tree/malnick">Entire project</a> is available on git.</p>
@@ -593,7 +589,7 @@ To get around this, and still have live dir&rsquo;s provisioned on the VM I coul
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/09/19/day2-logging/">DC/OS Day 2 Operations</a>
       </li>
     
       <li class="post">

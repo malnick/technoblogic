@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Mantle: Encrypted JSON for the Marathon API - Technoblogic</title>
+  <title>Mantle: Encrypted JSON for the Marathon API - Technoblogic(.io)</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://technoblogic.io/blog/2015/09/05/mantle-encrypted-json-for-the-marathon-api/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic(.io)" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,9 +36,9 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Technoblogic</a></h1>
+  <h1><a href="/">Technoblogic(.io)</a></h1>
   
-    <h2>A Technology Blog.</h2>
+    <h2>Shameful Self Promotion</h2>
   
 </hgroup>
 
@@ -104,7 +104,7 @@
 </ol>
 
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -130,33 +130,32 @@
 <span class='line-number'>24</span>
 <span class='line-number'>25</span>
 <span class='line-number'>26</span>
-</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="nt">&quot;container&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span class='line'>    <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;DOCKER&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="nt">&quot;docker&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span class='line'>      <span class="nt">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;some_repo/some_container_image&quot;</span><span class="p">,</span>
-</span><span class='line'>      <span class="nt">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;BRIDGE&quot;</span><span class="p">,</span>
-</span><span class='line'>      <span class="nt">&quot;portMappings&quot;</span><span class="p">:</span> <span class="p">[</span>
-</span><span class='line'>        <span class="p">{</span> <span class="nt">&quot;containerPort&quot;</span><span class="p">:</span> <span class="mi">5050</span><span class="p">,</span> <span class="nt">&quot;hostPort&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nt">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;tcp&quot;</span> <span class="p">}</span>
-</span><span class='line'>      <span class="p">]</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>  <span class="p">},</span>
-</span><span class='line'>  <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;my-service&quot;</span><span class="p">,</span>
-</span><span class='line'>  <span class="nt">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span class='line'>    <span class="nt">&quot;MY_LICENSE_KEY&quot;</span><span class="p">:</span> <span class="s2">&quot;ENC[my_license_key:12345]&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="nt">&quot;MONGO_PASSWORD&quot;</span><span class="p">:</span> <span class="s2">&quot;ENC[qa_mongo_pw:$ecretp@$$word]&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="nt">&quot;JEFFS_SECRET&quot;</span><span class="p">:</span> <span class="s2">&quot;ENC[production_secret:13adfafd%^$^$&amp;DFS]&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="nt">&quot;SAFE_DATA&quot;</span><span class="p">:</span> <span class="s2">&quot;This is safe&quot;</span>
-</span><span class='line'>  <span class="p">},</span>
-</span><span class='line'>  <span class="nt">&quot;instances&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span class='line'>  <span class="nt">&quot;cpus&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
-</span><span class='line'>  <span class="nt">&quot;mem&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
-</span><span class='line'>  <span class="nt">&quot;upgradeStrategy&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span class='line'>    <span class="nt">&quot;minimumHealthCapacity&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
-</span><span class='line'>    <span class="nt">&quot;maximumOverCapacity&quot;</span><span class="p">:</span> <span class="mf">0.4</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>{
+</span><span class='line'>  "container": {
+</span><span class='line'>    "type": "DOCKER",
+</span><span class='line'>    "docker": {
+</span><span class='line'>      "image": "some_repo/some_container_image",
+</span><span class='line'>      "network": "BRIDGE",
+</span><span class='line'>      "portMappings": [
+</span><span class='line'>        { "containerPort": 5050, "hostPort": 0, "protocol": "tcp" }
+</span><span class='line'>      ]
+</span><span class='line'>    }
+</span><span class='line'>  },
+</span><span class='line'>  "id": "my-service",
+</span><span class='line'>  "env": {
+</span><span class='line'>    "MY_LICENSE_KEY": "ENC[my_license_key:12345]",
+</span><span class='line'>    "MONGO_PASSWORD": "ENC[qa_mongo_pw:$ecretp@$$word]",
+</span><span class='line'>    "JEFFS_SECRET": "ENC[production_secret:13adfafd%^$^$&DFS]",
+</span><span class='line'>    "SAFE_DATA": "This is safe"
+</span><span class='line'>  },
+</span><span class='line'>  "instances": 1,
+</span><span class='line'>  "cpus": 0.5,
+</span><span class='line'>  "mem": 1024,
+</span><span class='line'>  "upgradeStrategy": {
+</span><span class='line'>    "minimumHealthCapacity": 0.8,
+</span><span class='line'>    "maximumOverCapacity": 0.4
+</span><span class='line'>  }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Add as many <code>ENC[eyaml_key:cleartext_value]</code> as you need.</p>
@@ -168,7 +167,7 @@
 
 <p>Adds those key/values to the eyaml file, and saves the eyaml file to <code>$eyaml_directory/$user.yaml</code> as:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -186,30 +185,29 @@
 <span class='line-number'>16</span>
 <span class='line-number'>17</span>
 <span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
-</span><span class='line'><span class="l-Scalar-Plain">my_license_key</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
-</span><span class='line'>  <span class="no">iFpLHn3wsr6/ZpoolepdT7uhp6hRq/2Tr+LyJXOpJAxkulMsb1pxE8GjKlR9iTTIV9IYnU</span>
-</span><span class='line'>  <span class="no">JeIibAaDqfq0SZF8i8xjN6Tx6Ytx3d8BBu2pCT3nDuqpGEDqnZUZDkjp6eRScAtbsPzB8m</span>
-</span><span class='line'>  <span class="no">taVfEO9j7zEpU/pWTr9x/awsK8gGp/E=</span>
-</span><span class='line'><span class="l-Scalar-Plain">prod_caleb_secret</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
-</span><span class='line'>  <span class="no">IGpl8fRKGol+XHnCIsha0fTVIsTiq1sdbZ/l0PplAzBdPN+vmjn5Cg7fBeHKoT+7+RCyId</span>
-</span><span class='line'>  <span class="no">Yu+7O/gUK1R5zGHJgXA9BV9I3Fh+/dCb3W+c3NFFQNfivHxoad8ggZIX1xk/EyJQAJHTRD</span>
-</span><span class='line'>  <span class="no">WypeeyIswps1o5cv1DXj2rJbjBJ33hA=</span>
-</span><span class='line'><span class="l-Scalar-Plain">production_secret</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
-</span><span class='line'>  <span class="no">Sc2D2DlrXf+rsZ6Yovr2/0AE5ZhwfRgKuHax3c3zxDIRvpCcfjqGvbXQUOpE/NwUAu/hNt</span>
-</span><span class='line'>  <span class="no">km1vHJ3CgQIwr1Y8SD3WVQ1O2KO87bhcQHmB4HTFsLCtW6m0KsqI5okCSUnsR+yAhKYfqt</span>
-</span><span class='line'>  <span class="no">2MBjh38IN3JQz3PbA2psfhrzAg8rt7M=</span>
-</span><span class='line'><span class="l-Scalar-Plain">qa_mongo_pw</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
-</span><span class='line'>  <span class="no">sOOZCr1RsNQT56UZJVxqi39oSC6r5qazGsRncnHP4rdRIAELwW1qME+bBMqhlUh4enqYkM</span>
-</span><span class='line'>  <span class="no">vIk6ebR5Oxt+luxAJR5yCfP4Ol7OZjCHIwOCnW5l50ekOuBnJWxhUEQMZe+4DMsK9G+ml0</span>
-</span><span class='line'>  <span class="no">/W1mX71ogSK7Kxcn32Ttb2vK9jDfY/k=</span>
-</span><span class='line'><span class="l-Scalar-Plain">user</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">some_user</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>---
+</span><span class='line'>my_license_key: !!binary |
+</span><span class='line'>  iFpLHn3wsr6/ZpoolepdT7uhp6hRq/2Tr+LyJXOpJAxkulMsb1pxE8GjKlR9iTTIV9IYnU
+</span><span class='line'>  JeIibAaDqfq0SZF8i8xjN6Tx6Ytx3d8BBu2pCT3nDuqpGEDqnZUZDkjp6eRScAtbsPzB8m
+</span><span class='line'>  taVfEO9j7zEpU/pWTr9x/awsK8gGp/E=
+</span><span class='line'>prod_caleb_secret: !!binary |
+</span><span class='line'>  IGpl8fRKGol+XHnCIsha0fTVIsTiq1sdbZ/l0PplAzBdPN+vmjn5Cg7fBeHKoT+7+RCyId
+</span><span class='line'>  Yu+7O/gUK1R5zGHJgXA9BV9I3Fh+/dCb3W+c3NFFQNfivHxoad8ggZIX1xk/EyJQAJHTRD
+</span><span class='line'>  WypeeyIswps1o5cv1DXj2rJbjBJ33hA=
+</span><span class='line'>production_secret: !!binary |
+</span><span class='line'>  Sc2D2DlrXf+rsZ6Yovr2/0AE5ZhwfRgKuHax3c3zxDIRvpCcfjqGvbXQUOpE/NwUAu/hNt
+</span><span class='line'>  km1vHJ3CgQIwr1Y8SD3WVQ1O2KO87bhcQHmB4HTFsLCtW6m0KsqI5okCSUnsR+yAhKYfqt
+</span><span class='line'>  2MBjh38IN3JQz3PbA2psfhrzAg8rt7M=
+</span><span class='line'>qa_mongo_pw: !!binary |
+</span><span class='line'>  sOOZCr1RsNQT56UZJVxqi39oSC6r5qazGsRncnHP4rdRIAELwW1qME+bBMqhlUh4enqYkM
+</span><span class='line'>  vIk6ebR5Oxt+luxAJR5yCfP4Ol7OZjCHIwOCnW5l50ekOuBnJWxhUEQMZe+4DMsK9G+ml0
+</span><span class='line'>  /W1mX71ogSK7Kxcn32Ttb2vK9jDfY/k=
+</span><span class='line'>user: some_user</span></code></pre></td></tr></table></div></figure>
 
 
 <p> new &ldquo;safe&rdquo; JSON is saved to <code>$safe_dir/marathon_data.json</code> as:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -239,37 +237,36 @@
 <span class='line-number'>28</span>
 <span class='line-number'>29</span>
 <span class='line-number'>30</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="p-Indicator">{</span>
-</span><span class='line'>        <span class="s">&quot;container&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
-</span><span class='line'>                <span class="s">&quot;docker&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
-</span><span class='line'>                        <span class="s">&quot;image&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;some_repo/some_container_image&quot;</span><span class="p-Indicator">,</span>
-</span><span class='line'>                        <span class="s">&quot;network&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;BRIDGE&quot;</span><span class="p-Indicator">,</span>
-</span><span class='line'>                        <span class="s">&quot;portMappings&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span>
-</span><span class='line'>                                <span class="p-Indicator">{</span>
-</span><span class='line'>                                        <span class="s">&quot;containerPort&quot;</span><span class="p-Indicator">:</span> <span class="nv">5050</span><span class="p-Indicator">,</span>
-</span><span class='line'>                                        <span class="s">&quot;hostPort&quot;</span><span class="p-Indicator">:</span> <span class="nv">0</span><span class="p-Indicator">,</span>
-</span><span class='line'>                                        <span class="s">&quot;protocol&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;tcp&quot;</span>
-</span><span class='line'>                                <span class="p-Indicator">}</span>
-</span><span class='line'>                        <span class="p-Indicator">]</span>
-</span><span class='line'>                <span class="p-Indicator">},</span>
-</span><span class='line'>                <span class="s">&quot;type&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;DOCKER&quot;</span>
-</span><span class='line'>        <span class="p-Indicator">},</span>
-</span><span class='line'>        <span class="s">&quot;cpus&quot;</span><span class="p-Indicator">:</span> <span class="nv">0.5</span><span class="p-Indicator">,</span>
-</span><span class='line'>        <span class="s">&quot;env&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
-</span><span class='line'>                <span class="s">&quot;JEFFS_SECRET&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;DEC[production_secret]&quot;</span><span class="p-Indicator">,</span>
-</span><span class='line'>                <span class="s">&quot;MONGO_PASSWORD&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;DEC[qa_mongo_pw]&quot;</span><span class="p-Indicator">,</span>
-</span><span class='line'>                <span class="s">&quot;MY_LICENSE_KEY&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;DEC[my_license_key]&quot;</span><span class="p-Indicator">,</span>
-</span><span class='line'>                <span class="s">&quot;SAFE_DATA&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;This</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">safe&quot;</span>
-</span><span class='line'>        <span class="p-Indicator">},</span>
-</span><span class='line'>        <span class="s">&quot;id&quot;</span><span class="p-Indicator">:</span> <span class="s">&quot;my-service&quot;</span><span class="p-Indicator">,</span>
-</span><span class='line'>        <span class="s">&quot;instances&quot;</span><span class="p-Indicator">:</span> <span class="nv">1</span><span class="p-Indicator">,</span>
-</span><span class='line'>        <span class="s">&quot;mem&quot;</span><span class="p-Indicator">:</span> <span class="nv">1024</span><span class="p-Indicator">,</span>
-</span><span class='line'>        <span class="s">&quot;upgradeStrategy&quot;</span><span class="p-Indicator">:</span> <span class="p-Indicator">{</span>
-</span><span class='line'>                <span class="s">&quot;maximumOverCapacity&quot;</span><span class="p-Indicator">:</span> <span class="nv">0.4</span><span class="p-Indicator">,</span>
-</span><span class='line'>                <span class="s">&quot;minimumHealthCapacity&quot;</span><span class="p-Indicator">:</span> <span class="nv">0.8</span>
-</span><span class='line'>        <span class="p-Indicator">}</span>
-</span><span class='line'><span class="p-Indicator">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>{
+</span><span class='line'>        "container": {
+</span><span class='line'>                "docker": {
+</span><span class='line'>                        "image": "some_repo/some_container_image",
+</span><span class='line'>                        "network": "BRIDGE",
+</span><span class='line'>                        "portMappings": [
+</span><span class='line'>                                {
+</span><span class='line'>                                        "containerPort": 5050,
+</span><span class='line'>                                        "hostPort": 0,
+</span><span class='line'>                                        "protocol": "tcp"
+</span><span class='line'>                                }
+</span><span class='line'>                        ]
+</span><span class='line'>                },
+</span><span class='line'>                "type": "DOCKER"
+</span><span class='line'>        },
+</span><span class='line'>        "cpus": 0.5,
+</span><span class='line'>        "env": {
+</span><span class='line'>                "JEFFS_SECRET": "DEC[production_secret]",
+</span><span class='line'>                "MONGO_PASSWORD": "DEC[qa_mongo_pw]",
+</span><span class='line'>                "MY_LICENSE_KEY": "DEC[my_license_key]",
+</span><span class='line'>                "SAFE_DATA": "This is safe"
+</span><span class='line'>        },
+</span><span class='line'>        "id": "my-service",
+</span><span class='line'>        "instances": 1,
+</span><span class='line'>        "mem": 1024,
+</span><span class='line'>        "upgradeStrategy": {
+</span><span class='line'>                "maximumOverCapacity": 0.4,
+</span><span class='line'>                "minimumHealthCapacity": 0.8
+</span><span class='line'>        }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <ol>
@@ -280,7 +277,7 @@
 <p>The final POST from our example, with decrypted data:
 The final POST from our example, with decrypted data:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -310,37 +307,36 @@ The final POST from our example, with decrypted data:</p>
 <span class='line-number'>28</span>
 <span class='line-number'>29</span>
 <span class='line-number'>30</span>
-</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
-</span><span class='line'>        <span class="nt">&quot;container&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span class='line'>                <span class="nt">&quot;docker&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span class='line'>                        <span class="nt">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;some_repo/some_container_image&quot;</span><span class="p">,</span>
-</span><span class='line'>                        <span class="nt">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;BRIDGE&quot;</span><span class="p">,</span>
-</span><span class='line'>                        <span class="nt">&quot;portMappings&quot;</span><span class="p">:</span> <span class="p">[</span>
-</span><span class='line'>                                <span class="p">{</span>
-</span><span class='line'>                                        <span class="nt">&quot;containerPort&quot;</span><span class="p">:</span> <span class="mi">5050</span><span class="p">,</span>
-</span><span class='line'>                                        <span class="nt">&quot;hostPort&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-</span><span class='line'>                                        <span class="nt">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;tcp&quot;</span>
-</span><span class='line'>                                <span class="p">}</span>
-</span><span class='line'>                        <span class="p">]</span>
-</span><span class='line'>                <span class="p">},</span>
-</span><span class='line'>                <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;DOCKER&quot;</span>
-</span><span class='line'>        <span class="p">},</span>
-</span><span class='line'>        <span class="nt">&quot;cpus&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
-</span><span class='line'>        <span class="nt">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span class='line'>                <span class="nt">&quot;JEFFS_SECRET&quot;</span><span class="p">:</span> <span class="s2">&quot;13adfafd%^$^$\u0026DFS&quot;</span><span class="p">,</span>
-</span><span class='line'>                <span class="nt">&quot;MONGO_PASSWORD&quot;</span><span class="p">:</span> <span class="s2">&quot;$ecretp@$$word&quot;</span><span class="p">,</span>
-</span><span class='line'>                <span class="nt">&quot;MY_LICENSE_KEY&quot;</span><span class="p">:</span> <span class="s2">&quot;12345&quot;</span><span class="p">,</span>
-</span><span class='line'>                <span class="nt">&quot;SAFE_DATA&quot;</span><span class="p">:</span> <span class="s2">&quot;This is safe&quot;</span>
-</span><span class='line'>        <span class="p">},</span>
-</span><span class='line'>        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;my-service&quot;</span><span class="p">,</span>
-</span><span class='line'>        <span class="nt">&quot;instances&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span class='line'>        <span class="nt">&quot;mem&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
-</span><span class='line'>        <span class="nt">&quot;upgradeStrategy&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span class='line'>                <span class="nt">&quot;maximumOverCapacity&quot;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>
-</span><span class='line'>                <span class="nt">&quot;minimumHealthCapacity&quot;</span><span class="p">:</span> <span class="mf">0.8</span>
-</span><span class='line'>        <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>{
+</span><span class='line'>        "container": {
+</span><span class='line'>                "docker": {
+</span><span class='line'>                        "image": "some_repo/some_container_image",
+</span><span class='line'>                        "network": "BRIDGE",
+</span><span class='line'>                        "portMappings": [
+</span><span class='line'>                                {
+</span><span class='line'>                                        "containerPort": 5050,
+</span><span class='line'>                                        "hostPort": 0,
+</span><span class='line'>                                        "protocol": "tcp"
+</span><span class='line'>                                }
+</span><span class='line'>                        ]
+</span><span class='line'>                },
+</span><span class='line'>                "type": "DOCKER"
+</span><span class='line'>        },
+</span><span class='line'>        "cpus": 0.5,
+</span><span class='line'>        "env": {
+</span><span class='line'>                "JEFFS_SECRET": "13adfafd%^$^$\u0026DFS",
+</span><span class='line'>                "MONGO_PASSWORD": "$ecretp@$$word",
+</span><span class='line'>                "MY_LICENSE_KEY": "12345",
+</span><span class='line'>                "SAFE_DATA": "This is safe"
+</span><span class='line'>        },
+</span><span class='line'>        "id": "my-service",
+</span><span class='line'>        "instances": 1,
+</span><span class='line'>        "mem": 1024,
+</span><span class='line'>        "upgradeStrategy": {
+</span><span class='line'>                "maximumOverCapacity": 0.4,
+</span><span class='line'>                "minimumHealthCapacity": 0.8
+</span><span class='line'>        }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <h3>Generate key-pairs for Developers</h3>
@@ -352,7 +348,7 @@ The final POST from our example, with decrypted data:</p>
 </ol>
 
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -377,8 +373,8 @@ The final POST from our example, with decrypted data:</p>
 <span class='line-number'>23</span>
 <span class='line-number'>24</span>
 <span class='line-number'>25</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Generating PKCS keys...
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Private Key: /Users/malnick/.mantle/keys/privatekey_sally.pem
+</pre></td><td class='code'><pre><code class=''><span class='line'>INFO[0000] Generating PKCS keys...
+</span><span class='line'>INFO[0000] Private Key: /Users/malnick/.mantle/keys/privatekey_sally.pem
 </span><span class='line'>-----BEGIN RSA PRIVATE KEY-----
 </span><span class='line'>MIICXAIBAAKBgQDZ8lDifZdR+xcBZG99t541Vt3WFMOiER/qclIWtjQjtkCt8/ij
 </span><span class='line'>dsp/Yn7DHJ3oYB58CbXvXWb9ONMB8Tr1vhCQZVXtJTN2sloUlD7SYne/GrxAJZjT
@@ -392,17 +388,16 @@ The final POST from our example, with decrypted data:</p>
 </span><span class='line'>U9uWzNL50TZ/0CvEqyW7NQNFUncQDJhQ90LS6wjImLnjldcfV+65ULXVqQJAFKaI
 </span><span class='line'>h/ieCy2eIWQ7caR75YuZLTPgqiEiCKsMeY2rZN8f5LfKgEOynfBwLKG+P/PHvNrJ
 </span><span class='line'>dkpwoPahMpRVX4RDwQJBANh7Pp60KVpWrpcCGOPxCCaPAfgY7Hht4BYexBO2HBr1
-</span><span class='line'>bjsDYTotBmMx8HExMNf9vQXJkM135kuZ+fevLOcwiV8<span class="o">=</span>
+</span><span class='line'>bjsDYTotBmMx8HExMNf9vQXJkM135kuZ+fevLOcwiV8=
 </span><span class='line'>-----END RSA PRIVATE KEY-----
 </span><span class='line'>
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Public Key: /Users/malnick/.mantle/keys/publickey_sally.pem
+</span><span class='line'>INFO[0000] Public Key: /Users/malnick/.mantle/keys/publickey_sally.pem
 </span><span class='line'>-----BEGIN RSA PUBLIC KEY-----
 </span><span class='line'>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDZ8lDifZdR+xcBZG99t541Vt3W
 </span><span class='line'>FMOiER/qclIWtjQjtkCt8/ijdsp/Yn7DHJ3oYB58CbXvXWb9ONMB8Tr1vhCQZVXt
 </span><span class='line'>JTN2sloUlD7SYne/GrxAJZjT8vTYoa3ZvvTpWXXYwGiPY8TmnCNqqC0ApqI4o67Z
 </span><span class='line'>cWIx5FPWgqWu+SHBcQIDAQAB
-</span><span class='line'>-----END RSA PUBLIC KEY-----
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>-----END RSA PUBLIC KEY-----</span></code></pre></td></tr></table></div></figure>
 
 
 <ol>
@@ -413,7 +408,7 @@ The final POST from our example, with decrypted data:</p>
 
 <p><code>vi sallys/local/machine/sallys_container.json</code>:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -438,31 +433,31 @@ The final POST from our example, with decrypted data:</p>
 <span class='line-number'>23</span>
 <span class='line-number'>24</span>
 <span class='line-number'>25</span>
-</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="nt">&quot;container&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span class='line'>    <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;DOCKER&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="nt">&quot;docker&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span class='line'>      <span class="nt">&quot;image&quot;</span><span class="p">:</span> <span class="s2">&quot;sallys_org/sallys_container&quot;</span><span class="p">,</span>
-</span><span class='line'>      <span class="nt">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;BRIDGE&quot;</span><span class="p">,</span>
-</span><span class='line'>      <span class="nt">&quot;portMappings&quot;</span><span class="p">:</span> <span class="p">[</span>
-</span><span class='line'>        <span class="p">{</span> <span class="nt">&quot;containerPort&quot;</span><span class="p">:</span> <span class="mi">5050</span><span class="p">,</span> <span class="nt">&quot;hostPort&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nt">&quot;protocol&quot;</span><span class="p">:</span> <span class="s2">&quot;tcp&quot;</span> <span class="p">}</span>
-</span><span class='line'>      <span class="p">]</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>  <span class="p">},</span>
-</span><span class='line'>  <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;my-service&quot;</span><span class="p">,</span>
-</span><span class='line'>  <span class="nt">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span class='line'>    <span class="nt">&quot;SALLYS_SECRET&quot;</span><span class="p">:</span> <span class="s2">&quot;ENC[sallys_qa_secret:superawesomesauce]&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="nt">&quot;MONGO_PASSWORD&quot;</span><span class="p">:</span><span class="s2">&quot;ENC[qa_mongo_password:mongoiswebscale]&quot;</span><span class="p">,</span>
-</span><span class='line'>    <span class="nt">&quot;NEWRELIC_API_KEY&quot;</span><span class="p">:</span><span class="s2">&quot;ENC[newrelic_api_key:7638263546473822299283737]&quot;</span>
-</span><span class='line'>  <span class="p">},</span>
-</span><span class='line'>  <span class="nt">&quot;instances&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span class='line'>  <span class="nt">&quot;cpus&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
-</span><span class='line'>  <span class="nt">&quot;mem&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
-</span><span class='line'>  <span class="nt">&quot;upgradeStrategy&quot;</span><span class="p">:</span> <span class="p">{</span>
-</span><span class='line'>    <span class="nt">&quot;minimumHealthCapacity&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
-</span><span class='line'>    <span class="nt">&quot;maximumOverCapacity&quot;</span><span class="p">:</span> <span class="mf">0.4</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>{
+</span><span class='line'>  "container": {
+</span><span class='line'>    "type": "DOCKER",
+</span><span class='line'>    "docker": {
+</span><span class='line'>      "image": "sallys_org/sallys_container",
+</span><span class='line'>      "network": "BRIDGE",
+</span><span class='line'>      "portMappings": [
+</span><span class='line'>        { "containerPort": 5050, "hostPort": 0, "protocol": "tcp" }
+</span><span class='line'>      ]
+</span><span class='line'>    }
+</span><span class='line'>  },
+</span><span class='line'>  "id": "my-service",
+</span><span class='line'>  "env": {
+</span><span class='line'>    "SALLYS_SECRET": "ENC[sallys_qa_secret:superawesomesauce]",
+</span><span class='line'>    "MONGO_PASSWORD":"ENC[qa_mongo_password:mongoiswebscale]",
+</span><span class='line'>    "NEWRELIC_API_KEY":"ENC[newrelic_api_key:7638263546473822299283737]"
+</span><span class='line'>  },
+</span><span class='line'>  "instances": 1,
+</span><span class='line'>  "cpus": 0.5,
+</span><span class='line'>  "mem": 1024,
+</span><span class='line'>  "upgradeStrategy": {
+</span><span class='line'>    "minimumHealthCapacity": 0.8,
+</span><span class='line'>    "maximumOverCapacity": 0.4
+</span><span class='line'>  }
+</span><span class='line'>}
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -473,7 +468,7 @@ The final POST from our example, with decrypted data:</p>
 </ol>
 
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -507,48 +502,47 @@ The final POST from our example, with decrypted data:</p>
 <span class='line-number'>32</span>
 <span class='line-number'>33</span>
 <span class='line-number'>34</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Encoding sallys_container.json
-</span><span class='line'>WARN<span class="o">[</span>0000<span class="o">]</span> /Users/malnick/.mantle/eyaml/sally.yaml does not exist, creating.
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> eyaml saved: /Users/malnick/.mantle/eyaml/sally.yaml
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Safe JSON:
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>        <span class="s2">&quot;container&quot;</span>: <span class="o">{</span>
-</span><span class='line'>                <span class="s2">&quot;docker&quot;</span>: <span class="o">{</span>
-</span><span class='line'>                        <span class="s2">&quot;image&quot;</span>: <span class="s2">&quot;sallys_org/sallys_container&quot;</span>,
-</span><span class='line'>                        <span class="s2">&quot;network&quot;</span>: <span class="s2">&quot;BRIDGE&quot;</span>,
-</span><span class='line'>                        <span class="s2">&quot;portMappings&quot;</span>: <span class="o">[</span>
-</span><span class='line'>                                <span class="o">{</span>
-</span><span class='line'>                                        <span class="s2">&quot;containerPort&quot;</span>: 5050,
-</span><span class='line'>                                        <span class="s2">&quot;hostPort&quot;</span>: 0,
-</span><span class='line'>                                        <span class="s2">&quot;protocol&quot;</span>: <span class="s2">&quot;tcp&quot;</span>
-</span><span class='line'>                                <span class="o">}</span>
-</span><span class='line'>                        <span class="o">]</span>
-</span><span class='line'>                <span class="o">}</span>,
-</span><span class='line'>                <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;DOCKER&quot;</span>
-</span><span class='line'>        <span class="o">}</span>,
-</span><span class='line'>        <span class="s2">&quot;cpus&quot;</span>: 0.5,
-</span><span class='line'>        <span class="s2">&quot;env&quot;</span>: <span class="o">{</span>
-</span><span class='line'>                <span class="s2">&quot;MONGO_PASSWORD&quot;</span>: <span class="s2">&quot;DEC[qa_mongo_password]&quot;</span>,
-</span><span class='line'>                <span class="s2">&quot;NEWRELIC_API_KEY&quot;</span>: <span class="s2">&quot;DEC[newrelic_api_key]&quot;</span>,
-</span><span class='line'>                <span class="s2">&quot;SALLYS_SECRET&quot;</span>: <span class="s2">&quot;DEC[sallys_qa_secret]&quot;</span>
-</span><span class='line'>        <span class="o">}</span>,
-</span><span class='line'>        <span class="s2">&quot;id&quot;</span>: <span class="s2">&quot;my-service&quot;</span>,
-</span><span class='line'>        <span class="s2">&quot;instances&quot;</span>: 1,
-</span><span class='line'>        <span class="s2">&quot;mem&quot;</span>: 1024,
-</span><span class='line'>        <span class="s2">&quot;upgradeStrategy&quot;</span>: <span class="o">{</span>
-</span><span class='line'>                <span class="s2">&quot;maximumOverCapacity&quot;</span>: 0.4,
-</span><span class='line'>                <span class="s2">&quot;minimumHealthCapacity&quot;</span>: 0.8
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Saving safe JSON <span class="k">for</span> decode: /Users/malnick/.mantle/safe/sallys_container.json
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>INFO[0000] Encoding sallys_container.json
+</span><span class='line'>WARN[0000] /Users/malnick/.mantle/eyaml/sally.yaml does not exist, creating.
+</span><span class='line'>INFO[0000] eyaml saved: /Users/malnick/.mantle/eyaml/sally.yaml
+</span><span class='line'>INFO[0000] Safe JSON:
+</span><span class='line'>{
+</span><span class='line'>        "container": {
+</span><span class='line'>                "docker": {
+</span><span class='line'>                        "image": "sallys_org/sallys_container",
+</span><span class='line'>                        "network": "BRIDGE",
+</span><span class='line'>                        "portMappings": [
+</span><span class='line'>                                {
+</span><span class='line'>                                        "containerPort": 5050,
+</span><span class='line'>                                        "hostPort": 0,
+</span><span class='line'>                                        "protocol": "tcp"
+</span><span class='line'>                                }
+</span><span class='line'>                        ]
+</span><span class='line'>                },
+</span><span class='line'>                "type": "DOCKER"
+</span><span class='line'>        },
+</span><span class='line'>        "cpus": 0.5,
+</span><span class='line'>        "env": {
+</span><span class='line'>                "MONGO_PASSWORD": "DEC[qa_mongo_password]",
+</span><span class='line'>                "NEWRELIC_API_KEY": "DEC[newrelic_api_key]",
+</span><span class='line'>                "SALLYS_SECRET": "DEC[sallys_qa_secret]"
+</span><span class='line'>        },
+</span><span class='line'>        "id": "my-service",
+</span><span class='line'>        "instances": 1,
+</span><span class='line'>        "mem": 1024,
+</span><span class='line'>        "upgradeStrategy": {
+</span><span class='line'>                "maximumOverCapacity": 0.4,
+</span><span class='line'>                "minimumHealthCapacity": 0.8
+</span><span class='line'>        }
+</span><span class='line'>}
+</span><span class='line'>INFO[0000] Saving safe JSON for decode: /Users/malnick/.mantle/safe/sallys_container.json</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Notice the WARN statement. Since Mantle did not find a <code>eyaml_dir/$user.yaml</code> it created a new one for her.</p>
 
 <p>The eyaml looks like this:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -562,20 +556,20 @@ The final POST from our example, with decrypted data:</p>
 <span class='line-number'>12</span>
 <span class='line-number'>13</span>
 <span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='yaml'><span class='line'><span class="nn">---</span>
-</span><span class='line'><span class="l-Scalar-Plain">newrelic_api_key</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
-</span><span class='line'>  <span class="no">N4JpKRvQoRBusI7Yp7BN1L/wTdexGH3NFidxvTM0P3IeGM8OnU9TfGI19j+qDQt/XVOQln</span>
-</span><span class='line'>  <span class="no">q2h6U/2BlHanQksytxjmuIAX5pVh1IqPFHxp0vkuU8lNffL7Z8VzPEurX4aPEyckQe5Y+E</span>
-</span><span class='line'>  <span class="no">OnglwxdWreQnmMuo2Vyu9bhAF+HVWwc=</span>
-</span><span class='line'><span class="l-Scalar-Plain">qa_mongo_password</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
-</span><span class='line'>  <span class="no">UZ1M9L2c/N0AeDlILcP44ACd+niZeaw/BDt1oh78aNf818iTDXAl1c3deUohR12fwEMyCZ</span>
-</span><span class='line'>  <span class="no">FHFhErN8u4do97iGeN8QCRdECULj/KOalPG+N70jTxzW9WIpReuPFlCqCrrT+nu/9v2CjO</span>
-</span><span class='line'>  <span class="no">1IX5zbxN8UThL9ba2LW25QS1jPEPkMc=</span>
-</span><span class='line'><span class="l-Scalar-Plain">sallys_qa_secret</span><span class="p-Indicator">:</span> <span class="kt">!!binary</span> <span class="p-Indicator">|</span>
-</span><span class='line'>  <span class="no">UkbR2x+FftMr0O4K13iG/msEDpI8bi7+Mz2NIFxiRmXdwziQtUMYVrvJkpq3hgavGC2DBl</span>
-</span><span class='line'>  <span class="no">C0gfmdAa6LfX4zS1lXFHIZD0tpY4dDdqWPFuwRPqVKLLNwiDX46olAEu104iOp6wsRPiJV</span>
-</span><span class='line'>  <span class="no">pa92d0uUC4X67BmPF/6LueIVXUTEBYY=</span>
-</span><span class='line'><span class="l-Scalar-Plain">user</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">sally</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>---
+</span><span class='line'>newrelic_api_key: !!binary |
+</span><span class='line'>  N4JpKRvQoRBusI7Yp7BN1L/wTdexGH3NFidxvTM0P3IeGM8OnU9TfGI19j+qDQt/XVOQln
+</span><span class='line'>  q2h6U/2BlHanQksytxjmuIAX5pVh1IqPFHxp0vkuU8lNffL7Z8VzPEurX4aPEyckQe5Y+E
+</span><span class='line'>  OnglwxdWreQnmMuo2Vyu9bhAF+HVWwc=
+</span><span class='line'>qa_mongo_password: !!binary |
+</span><span class='line'>  UZ1M9L2c/N0AeDlILcP44ACd+niZeaw/BDt1oh78aNf818iTDXAl1c3deUohR12fwEMyCZ
+</span><span class='line'>  FHFhErN8u4do97iGeN8QCRdECULj/KOalPG+N70jTxzW9WIpReuPFlCqCrrT+nu/9v2CjO
+</span><span class='line'>  1IX5zbxN8UThL9ba2LW25QS1jPEPkMc=
+</span><span class='line'>sallys_qa_secret: !!binary |
+</span><span class='line'>  UkbR2x+FftMr0O4K13iG/msEDpI8bi7+Mz2NIFxiRmXdwziQtUMYVrvJkpq3hgavGC2DBl
+</span><span class='line'>  C0gfmdAa6LfX4zS1lXFHIZD0tpY4dDdqWPFuwRPqVKLLNwiDX46olAEu104iOp6wsRPiJV
+</span><span class='line'>  pa92d0uUC4X67BmPF/6LueIVXUTEBYY=
+</span><span class='line'>user: sally
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -585,7 +579,7 @@ The final POST from our example, with decrypted data:</p>
 </ol>
 
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -623,45 +617,44 @@ The final POST from our example, with decrypted data:</p>
 <span class='line-number'>36</span>
 <span class='line-number'>37</span>
 <span class='line-number'>38</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>user@localhost: mantle -deploy ~/.mantle/safe/sallys_container.json -u sally
+</pre></td><td class='code'><pre><code class=''><span class='line'>user@localhost: mantle -deploy ~/.mantle/safe/sallys_container.json -u sally
 </span><span class='line'>
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Deploying ~/.mantle/safe/sallys_container.json
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Decrypted qa_mongo_password to mongoiswebscale
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Decrypted newrelic_api_key to 7638263546473822299283737
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Decrypted sallys_qa_secret to superawesomesauce
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> Decoded JSON:
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>        <span class="s2">&quot;container&quot;</span>: <span class="o">{</span>
-</span><span class='line'>                <span class="s2">&quot;docker&quot;</span>: <span class="o">{</span>
-</span><span class='line'>                        <span class="s2">&quot;image&quot;</span>: <span class="s2">&quot;sallys_org/sallys_container&quot;</span>,
-</span><span class='line'>                        <span class="s2">&quot;network&quot;</span>: <span class="s2">&quot;BRIDGE&quot;</span>,
-</span><span class='line'>                        <span class="s2">&quot;portMappings&quot;</span>: <span class="o">[</span>
-</span><span class='line'>                                <span class="o">{</span>
-</span><span class='line'>                                        <span class="s2">&quot;containerPort&quot;</span>: 5050,
-</span><span class='line'>                                        <span class="s2">&quot;hostPort&quot;</span>: 0,
-</span><span class='line'>                                        <span class="s2">&quot;protocol&quot;</span>: <span class="s2">&quot;tcp&quot;</span>
-</span><span class='line'>                                <span class="o">}</span>
-</span><span class='line'>                        <span class="o">]</span>
-</span><span class='line'>                <span class="o">}</span>,
-</span><span class='line'>                <span class="s2">&quot;type&quot;</span>: <span class="s2">&quot;DOCKER&quot;</span>
-</span><span class='line'>        <span class="o">}</span>,
-</span><span class='line'>        <span class="s2">&quot;cpus&quot;</span>: 0.5,
-</span><span class='line'>        <span class="s2">&quot;env&quot;</span>: <span class="o">{</span>
-</span><span class='line'>                <span class="s2">&quot;MONGO_PASSWORD&quot;</span>: <span class="s2">&quot;mongoiswebscale&quot;</span>,
-</span><span class='line'>                <span class="s2">&quot;NEWRELIC_API_KEY&quot;</span>: <span class="s2">&quot;7638263546473822299283737&quot;</span>,
-</span><span class='line'>                <span class="s2">&quot;SALLYS_SECRET&quot;</span>: <span class="s2">&quot;superawesomesauce&quot;</span>
-</span><span class='line'>        <span class="o">}</span>,
-</span><span class='line'>        <span class="s2">&quot;id&quot;</span>: <span class="s2">&quot;my-service&quot;</span>,
-</span><span class='line'>        <span class="s2">&quot;instances&quot;</span>: 1,
-</span><span class='line'>        <span class="s2">&quot;mem&quot;</span>: 1024,
-</span><span class='line'>        <span class="s2">&quot;upgradeStrategy&quot;</span>: <span class="o">{</span>
-</span><span class='line'>                <span class="s2">&quot;maximumOverCapacity&quot;</span>: 0.4,
-</span><span class='line'>                <span class="s2">&quot;minimumHealthCapacity&quot;</span>: 0.8
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>INFO<span class="o">[</span>0000<span class="o">]</span> POSTing to http://my.marathon1.com
-</span><span class='line'>...
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>INFO[0000] Deploying ~/.mantle/safe/sallys_container.json
+</span><span class='line'>INFO[0000] Decrypted qa_mongo_password to mongoiswebscale
+</span><span class='line'>INFO[0000] Decrypted newrelic_api_key to 7638263546473822299283737
+</span><span class='line'>INFO[0000] Decrypted sallys_qa_secret to superawesomesauce
+</span><span class='line'>INFO[0000] Decoded JSON:
+</span><span class='line'>{
+</span><span class='line'>        "container": {
+</span><span class='line'>                "docker": {
+</span><span class='line'>                        "image": "sallys_org/sallys_container",
+</span><span class='line'>                        "network": "BRIDGE",
+</span><span class='line'>                        "portMappings": [
+</span><span class='line'>                                {
+</span><span class='line'>                                        "containerPort": 5050,
+</span><span class='line'>                                        "hostPort": 0,
+</span><span class='line'>                                        "protocol": "tcp"
+</span><span class='line'>                                }
+</span><span class='line'>                        ]
+</span><span class='line'>                },
+</span><span class='line'>                "type": "DOCKER"
+</span><span class='line'>        },
+</span><span class='line'>        "cpus": 0.5,
+</span><span class='line'>        "env": {
+</span><span class='line'>                "MONGO_PASSWORD": "mongoiswebscale",
+</span><span class='line'>                "NEWRELIC_API_KEY": "7638263546473822299283737",
+</span><span class='line'>                "SALLYS_SECRET": "superawesomesauce"
+</span><span class='line'>        },
+</span><span class='line'>        "id": "my-service",
+</span><span class='line'>        "instances": 1,
+</span><span class='line'>        "mem": 1024,
+</span><span class='line'>        "upgradeStrategy": {
+</span><span class='line'>                "maximumOverCapacity": 0.4,
+</span><span class='line'>                "minimumHealthCapacity": 0.8
+</span><span class='line'>        }
+</span><span class='line'>}
+</span><span class='line'>INFO[0000] POSTing to http://my.marathon1.com
+</span><span class='line'>...</span></code></pre></td></tr></table></div></figure>
 
 
 <h4>[Check out the git repo here)[<a href="https://github.com/malnick/mantle.git">https://github.com/malnick/mantle.git</a>]</h4>
@@ -717,7 +710,7 @@ The final POST from our example, with decrypted data:</p>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/09/19/day2-logging/">DC/OS Day 2 Operations</a>
       </li>
     
       <li class="post">

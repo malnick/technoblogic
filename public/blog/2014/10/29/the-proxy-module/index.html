@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>The Proxy Module - Technoblogic</title>
+  <title>The Proxy Module - Technoblogic(.io)</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://technoblogic.io/blog/2014/10/29/the-proxy-module/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic(.io)" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,9 +36,9 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Technoblogic</a></h1>
+  <h1><a href="/">Technoblogic(.io)</a></h1>
   
-    <h2>A Technology Blog.</h2>
+    <h2>Shameful Self Promotion</h2>
   
 </hgroup>
 
@@ -101,7 +101,7 @@
 
 <p>The init.pp for our apt proxy module, named cs_apt (since we&rsquo;re Connect Solutions):</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -160,66 +160,65 @@
 <span class='line-number'>57</span>
 <span class='line-number'>58</span>
 <span class='line-number'>59</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># Class: cs_apt</span>
-</span><span class='line'><span class="c1">#</span>
-</span><span class='line'><span class="c1"># Parameters:</span>
-</span><span class='line'><span class="c1"># [*always_update*]</span>
-</span><span class='line'><span class="c1"># boolean value to determine if apt-get update should be run every time the</span>
-</span><span class='line'><span class="c1"># class is instantiated</span>
-</span><span class='line'><span class="c1">#</span>
-</span><span class='line'><span class="c1"># [*ppas*]</span>
-</span><span class='line'><span class="c1"># Hash of type apt::ppa to add to host</span>
-</span><span class='line'><span class="c1">#</span>
-</span><span class='line'><span class="c1"># [*purge_sources_list*]</span>
-</span><span class='line'><span class="c1"># Boolean value to determine if sources should be purged from host. True for</span>
-</span><span class='line'><span class="c1"># FedRAMP</span>
-</span><span class='line'><span class="c1">#</span>
-</span><span class='line'><span class="c1"># [*purge_sources_list_d*]</span>
-</span><span class='line'><span class="c1"># Boolean value to determin if source.d/* should be purged from host.</span>
-</span><span class='line'><span class="c1">#</span>
-</span><span class='line'><span class="c1"># [*sources*]</span>
-</span><span class='line'><span class="c1"># Hash of type apt::source to add new ppa sources to host</span>
-</span><span class='line'><span class="c1">#</span>
-</span><span class='line'><span class="c1"># Requires:</span>
-</span><span class='line'><span class="c1"># n/a</span>
-</span><span class='line'><span class="c1">#</span>
-</span><span class='line'><span class="c1"># Sample Usage:</span>
-</span><span class='line'><span class="c1"># See README.md</span>
-</span><span class='line'><span class="k">class</span> <span class="n">cs_apt</span> <span class="p">(</span>
-</span><span class='line'>  <span class="vg">$always_update</span>      <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;cs_apt::always_update&#39;</span><span class="p">),</span>
-</span><span class='line'>  <span class="vg">$ppas</span>           <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;cs_apt::ppas&#39;</span><span class="p">),</span>
-</span><span class='line'>  <span class="vg">$purge_sources_list</span>     <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;cs_apt::purge_sources_list&#39;</span><span class="p">),</span>
-</span><span class='line'>  <span class="vg">$purge_sources_list_d</span>   <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;cs_apt::purge_sources_list_d&#39;</span><span class="p">),</span>
-</span><span class='line'>  <span class="vg">$sources</span>        <span class="o">=</span> <span class="n">hiera</span><span class="p">(</span><span class="s1">&#39;cs_apt::sources&#39;</span><span class="p">),</span>
-</span><span class='line'><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'><span class="k">case</span> <span class="vg">$:</span><span class="ss">:osfamily</span> <span class="p">{</span>
-</span><span class='line'><span class="s1">&#39;debian&#39;</span> <span class="p">:</span> <span class="p">{}</span>
-</span><span class='line'><span class="ss">default</span><span class="p">:</span> <span class="p">{</span> <span class="nb">fail</span><span class="p">(</span><span class="s2">&quot;${::osfamily} is not supported with module&quot;</span><span class="p">)</span> <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="n">validate_bool</span><span class="p">(</span><span class="vg">$always_update</span><span class="p">)</span>
-</span><span class='line'><span class="n">validate_bool</span><span class="p">(</span><span class="vg">$purge_sources_list</span><span class="p">)</span>
-</span><span class='line'><span class="n">validate_bool</span><span class="p">(</span><span class="vg">$purge_sources_list_d</span><span class="p">)</span>
-</span><span class='line'><span class="k">if</span> <span class="vg">$ppas</span> <span class="p">{</span>
-</span><span class='line'><span class="n">validate_hash</span><span class="p">(</span><span class="vg">$ppas</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="k">if</span> <span class="vg">$sources</span> <span class="p">{</span>
-</span><span class='line'><span class="n">validate_hash</span><span class="p">(</span><span class="vg">$sources</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="c1"># Update repo cache and purge sources is necessary</span>
-</span><span class='line'><span class="k">class</span> <span class="p">{</span> <span class="s1">&#39;::apt&#39;</span><span class="p">:</span>
-</span><span class='line'><span class="n">always_apt_update</span> <span class="o">=&gt;</span> <span class="vg">$always_update</span><span class="p">,</span>
-</span><span class='line'><span class="n">purge_sources_list</span> <span class="o">=&gt;</span> <span class="vg">$purge_sources_list</span><span class="p">,</span>
-</span><span class='line'><span class="n">purge_sources_list_d</span> <span class="o">=&gt;</span> <span class="vg">$purge_sources_list_d</span><span class="p">,</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="k">if</span> <span class="vg">$ppas</span> <span class="p">{</span>
-</span><span class='line'><span class="n">create_resources</span><span class="p">(</span><span class="s1">&#39;::apt::ppa&#39;</span><span class="p">,</span> <span class="vg">$ppas</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="k">if</span> <span class="vg">$sources</span> <span class="p">{</span>
-</span><span class='line'><span class="n">create_resources</span><span class="p">(</span><span class="s1">&#39;::cs_apt::source&#39;</span><span class="p">,</span> <span class="vg">$sources</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="c1"># vim: ts=2 sw=2</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'># Class: cs_apt
+</span><span class='line'>#
+</span><span class='line'># Parameters:
+</span><span class='line'># [*always_update*]
+</span><span class='line'># boolean value to determine if apt-get update should be run every time the
+</span><span class='line'># class is instantiated
+</span><span class='line'>#
+</span><span class='line'># [*ppas*]
+</span><span class='line'># Hash of type apt::ppa to add to host
+</span><span class='line'>#
+</span><span class='line'># [*purge_sources_list*]
+</span><span class='line'># Boolean value to determine if sources should be purged from host. True for
+</span><span class='line'># FedRAMP
+</span><span class='line'>#
+</span><span class='line'># [*purge_sources_list_d*]
+</span><span class='line'># Boolean value to determin if source.d/* should be purged from host.
+</span><span class='line'>#
+</span><span class='line'># [*sources*]
+</span><span class='line'># Hash of type apt::source to add new ppa sources to host
+</span><span class='line'>#
+</span><span class='line'># Requires:
+</span><span class='line'># n/a
+</span><span class='line'>#
+</span><span class='line'># Sample Usage:
+</span><span class='line'># See README.md
+</span><span class='line'>class cs_apt (
+</span><span class='line'>  $always_update      = hiera('cs_apt::always_update'),
+</span><span class='line'>  $ppas           = hiera('cs_apt::ppas'),
+</span><span class='line'>  $purge_sources_list     = hiera('cs_apt::purge_sources_list'),
+</span><span class='line'>  $purge_sources_list_d   = hiera('cs_apt::purge_sources_list_d'),
+</span><span class='line'>  $sources        = hiera('cs_apt::sources'),
+</span><span class='line'>) {
+</span><span class='line'>case $::osfamily {
+</span><span class='line'>'debian' : {}
+</span><span class='line'>default: { fail("${::osfamily} is not supported with module") }
+</span><span class='line'>}
+</span><span class='line'>validate_bool($always_update)
+</span><span class='line'>validate_bool($purge_sources_list)
+</span><span class='line'>validate_bool($purge_sources_list_d)
+</span><span class='line'>if $ppas {
+</span><span class='line'>validate_hash($ppas)
+</span><span class='line'>}
+</span><span class='line'>if $sources {
+</span><span class='line'>validate_hash($sources)
+</span><span class='line'>}
+</span><span class='line'># Update repo cache and purge sources is necessary
+</span><span class='line'>class { '::apt':
+</span><span class='line'>always_apt_update =&gt; $always_update,
+</span><span class='line'>purge_sources_list =&gt; $purge_sources_list,
+</span><span class='line'>purge_sources_list_d =&gt; $purge_sources_list_d,
+</span><span class='line'>}
+</span><span class='line'>if $ppas {
+</span><span class='line'>create_resources('::apt::ppa', $ppas)
+</span><span class='line'>}
+</span><span class='line'>if $sources {
+</span><span class='line'>create_resources('::cs_apt::source', $sources)
+</span><span class='line'>}
+</span><span class='line'>}
+</span><span class='line'># vim: ts=2 sw=2</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Then in our profiles, to configure an apt source, we simply</p>
@@ -275,7 +274,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/09/19/day2-logging/">DC/OS Day 2 Operations</a>
       </li>
     
       <li class="post">

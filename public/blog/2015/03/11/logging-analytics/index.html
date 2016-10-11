@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Logging Analytics - Technoblogic</title>
+  <title>Logging Analytics - Technoblogic(.io)</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://technoblogic.io/blog/2015/03/11/logging-analytics/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic(.io)" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,9 +36,9 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Technoblogic</a></h1>
+  <h1><a href="/">Technoblogic(.io)</a></h1>
   
-    <h2>A Technology Blog.</h2>
+    <h2>Shameful Self Promotion</h2>
   
 </hgroup>
 
@@ -117,7 +117,7 @@
 
 <p>In our role for a given node, lets say a backend node that would be running our micro services, I can simply add some logstash configuration:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -125,20 +125,19 @@
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
 <span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="n">roles</span><span class="o">::</span><span class="n">backend_services</span> <span class="p">{</span>
-</span><span class='line'><span class="err">…</span>
-</span><span class='line'>  <span class="c1"># Logstash for services</span>
-</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="o">::</span><span class="n">profiles</span><span class="o">::</span><span class="n">logstash</span><span class="o">::</span><span class="ss">backend_services</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">redis_logstash_host</span> <span class="o">=&gt;</span> <span class="err">‘</span><span class="n">our</span><span class="o">-</span><span class="n">redis</span><span class="o">-</span><span class="n">aggregator</span><span class="o">.</span><span class="n">ourdomain</span><span class="o">.</span><span class="n">com</span><span class="err">’</span><span class="p">,</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="err">…</span>
-</span><span class='line'><span class="c1"># More configuration</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>class roles::backend_services {
+</span><span class='line'>…
+</span><span class='line'>  # Logstash for services
+</span><span class='line'>    class { ::profiles::logstash::backend_services:
+</span><span class='line'>        redis_logstash_host =&gt; ‘our-redis-aggregator.ourdomain.com’,    
+</span><span class='line'>    }
+</span><span class='line'>…
+</span><span class='line'># More configuration</span></code></pre></td></tr></table></div></figure>
 
 
 <p>And then our backend services profile for logstash, we do something like:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -157,26 +156,25 @@
 <span class='line-number'>17</span>
 <span class='line-number'>18</span>
 <span class='line-number'>19</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="n">profiles</span><span class="o">::</span><span class="n">logstash</span><span class="o">::</span><span class="n">backend_services</span> <span class="p">(</span><span class="vg">$redis_logstash_host</span><span class="p">)</span> <span class="p">{</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>class profiles::logstash::backend_services ($redis_logstash_host) { 
 </span><span class='line'>
-</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="s1">&#39;logstash&#39;</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">package_url</span> <span class="o">=&gt;</span> <span class="s1">&#39;https://download.elasticsearch.org/logstash/logstash/packages/debian/logstash_1.4.2-1-2c0f5a1_all.deb&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    class { 'logstash':
+</span><span class='line'>        package_url =&gt; 'https://download.elasticsearch.org/logstash/logstash/packages/debian/logstash_1.4.2-1-2c0f5a1_all.deb',
+</span><span class='line'>    }
 </span><span class='line'>
-</span><span class='line'>    <span class="n">logstash</span><span class="o">::</span><span class="n">configfile</span> <span class="p">{</span> <span class="s1">&#39;output_redis&#39;</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">content</span> <span class="o">=&gt;</span> <span class="n">template</span><span class="p">(</span><span class="s1">&#39;profiles/logstash/output_redis.erb&#39;</span><span class="p">),</span>
-</span><span class='line'>        <span class="n">order</span>   <span class="o">=&gt;</span> <span class="mi">20</span><span class="p">,</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="n">logstash</span><span class="o">::</span><span class="n">configfile</span> <span class="p">{</span> <span class="err">‘</span><span class="n">micro_service_one_input</span><span class="err">’</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">content</span> <span class="o">=&gt;</span> <span class="n">template</span><span class="p">(</span><span class="err">‘</span><span class="n">profiles</span><span class="o">/</span><span class="n">logstash</span><span class="o">/</span><span class="n">input_micro_service_one</span><span class="o">.</span><span class="n">erb</span><span class="err">’</span><span class="p">),</span>
-</span><span class='line'>        <span class="n">order</span>   <span class="o">=&gt;</span> <span class="mi">10</span><span class="p">,</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="n">logstash</span><span class="o">::</span><span class="n">configfile</span> <span class="p">{</span> <span class="err">‘</span><span class="n">micro_service_two_input</span><span class="err">’</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">content</span> <span class="o">=&gt;</span> <span class="n">template</span><span class="p">(</span><span class="err">‘</span><span class="n">profiles</span><span class="o">/</span><span class="n">logstash</span><span class="o">/</span><span class="n">input_micro_service_two</span><span class="o">.</span><span class="n">erb</span><span class="err">’</span><span class="p">),</span>
-</span><span class='line'>        <span class="n">order</span>   <span class="o">=&gt;</span> <span class="mi">11</span><span class="p">,</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="err">…</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>    logstash::configfile { 'output_redis':
+</span><span class='line'>        content =&gt; template('profiles/logstash/output_redis.erb'),
+</span><span class='line'>        order   =&gt; 20,
+</span><span class='line'>    }
+</span><span class='line'>    logstash::configfile { ‘micro_service_one_input’:
+</span><span class='line'>        content =&gt; template(‘profiles/logstash/input_micro_service_one.erb’),
+</span><span class='line'>        order   =&gt; 10,
+</span><span class='line'>    }
+</span><span class='line'>    logstash::configfile { ‘micro_service_two_input’:
+</span><span class='line'>        content =&gt; template(‘profiles/logstash/input_micro_service_two.erb’),
+</span><span class='line'>        order   =&gt; 11,
+</span><span class='line'>    }
+</span><span class='line'>…</span></code></pre></td></tr></table></div></figure>
 
 
 <p><code>$redis_logstash_host</code> simply needs to be available in the variable namespace for the redis output template.</p>
@@ -185,58 +183,55 @@
 
 <h4>Log Path Input</h4>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># input_micro_service_one.erb</span>
-</span><span class='line'><span class="n">input</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">file</span> <span class="p">{</span>
-</span><span class='line'>        <span class="n">path</span> <span class="o">=&gt;</span> <span class="err">“</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">service_name</span><span class="o">/</span><span class="n">service_name</span><span class="o">*.</span><span class="n">log</span><span class="err">”</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'># input_micro_service_one.erb
+</span><span class='line'>input {
+</span><span class='line'>    file {
+</span><span class='line'>        path =&gt; “/var/log/service_name/service_name*.log”
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <h4>Redis Output</h4>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">output</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">redis</span> <span class="p">{</span>
-</span><span class='line'>        <span class="n">host</span> <span class="o">=&gt;</span> <span class="s2">&quot;&lt;%= @redis_logstash_host %&gt;&quot;</span>
-</span><span class='line'>        <span class="n">data_type</span> <span class="o">=&gt;</span> <span class="s2">&quot;list&quot;</span>
-</span><span class='line'>        <span class="n">key</span> <span class="o">=&gt;</span> <span class="s2">&quot;logstash&quot;</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>output { 
+</span><span class='line'>    redis { 
+</span><span class='line'>        host =&gt; "&lt;%= @redis_logstash_host %&gt;" 
+</span><span class='line'>        data_type =&gt; "list" 
+</span><span class='line'>        key =&gt; "logstash" 
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <h4>ElasticSearch Output</h4>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">output</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">elasticsearch</span> <span class="p">{</span>
-</span><span class='line'>        <span class="n">cluster</span> <span class="o">=&gt;</span> <span class="s1">&#39;logstash&#39;</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>output {
+</span><span class='line'>    elasticsearch {
+</span><span class='line'>        cluster =&gt; 'logstash' 
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <h4>The Final <code>logstash/conf.d/logstash.conf</code> File</h4>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -255,33 +250,32 @@
 <span class='line-number'>17</span>
 <span class='line-number'>18</span>
 <span class='line-number'>19</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">input</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">file</span> <span class="p">{</span>
-</span><span class='line'>        <span class="n">path</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="err">“</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">service_name</span><span class="o">/</span><span class="n">service_name</span><span class="o">*.</span><span class="n">log</span><span class="err">”</span><span class="o">]</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>input {
+</span><span class='line'>    file {
+</span><span class='line'>        path =&gt; [“/var/log/service_name/service_name*.log”]
+</span><span class='line'>    }
+</span><span class='line'>}
 </span><span class='line'>
-</span><span class='line'><span class="n">input</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">file</span> <span class="p">{</span>
-</span><span class='line'>        <span class="n">path</span> <span class="o">=&gt;</span> <span class="err">“</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">service_name</span><span class="o">/</span><span class="n">service_name</span><span class="o">*.</span><span class="n">log</span><span class="err">”</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
+</span><span class='line'>input {
+</span><span class='line'>    file {
+</span><span class='line'>        path =&gt; “/var/log/service_name/service_name*.log”
+</span><span class='line'>    }
+</span><span class='line'>}
 </span><span class='line'>
-</span><span class='line'><span class="n">output</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">redis</span> <span class="p">{</span>
-</span><span class='line'>        <span class="n">host</span> <span class="o">=&gt;</span> <span class="err">“</span><span class="n">our</span><span class="o">-</span><span class="n">redis</span><span class="o">-</span><span class="n">aggregator</span><span class="o">.</span><span class="n">ourdomain</span><span class="o">.</span><span class="n">com</span><span class="s2">&quot;</span>
-</span><span class='line'><span class="s2">        data_type =&gt; &quot;</span><span class="n">list</span><span class="s2">&quot;</span>
-</span><span class='line'><span class="s2">        key =&gt; &quot;</span><span class="n">logstash</span><span class="s2">&quot;</span>
-</span><span class='line'><span class="s2">    }</span>
-</span><span class='line'><span class="s2">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>output {
+</span><span class='line'>    redis {
+</span><span class='line'>        host =&gt; “our-redis-aggregator.ourdomain.com"
+</span><span class='line'>        data_type =&gt; "list"
+</span><span class='line'>        key =&gt; "logstash"
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <p>So far, we’ve covered our log pipeline from <code>micro_services_node -&gt; redis_output</code>. What does the configuration for our redis aggregator look like?</p>
 
 <p>It starts, as usual, with the role:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -293,19 +287,18 @@
 <span class='line-number'>10</span>
 <span class='line-number'>11</span>
 <span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="n">roles</span><span class="o">::</span><span class="n">logging_aggregator</span>  <span class="p">{</span>
-</span><span class='line'>    <span class="c1"># First, provision our ELK Stack</span>
-</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="o">::</span><span class="n">profiles</span><span class="o">::</span><span class="n">elasticsearch</span><span class="o">::</span><span class="ss">log_aggregator</span><span class="p">:}</span>
-</span><span class='line'>    <span class="o">-&gt;</span>
-</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="o">::</span><span class="n">profiles</span><span class="o">::</span><span class="n">kibana</span><span class="o">::</span><span class="ss">basic</span><span class="p">:}</span>
-</span><span class='line'>    <span class="o">-&gt;</span>
-</span><span class='line'>    <span class="c1"># The logstash node needs to be an indexer reading from redis, dumping into elasticsearch</span>
-</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="o">::</span><span class="n">profiles</span><span class="o">::</span><span class="n">logstash</span><span class="o">::</span><span class="ss">redis_indexer</span><span class="p">:}</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>class roles::logging_aggregator  {
+</span><span class='line'>    # First, provision our ELK Stack
+</span><span class='line'>    class { ::profiles::elasticsearch::log_aggregator:}
+</span><span class='line'>    -&gt;
+</span><span class='line'>    class { ::profiles::kibana::basic:}
+</span><span class='line'>    -&gt;
+</span><span class='line'>    # The logstash node needs to be an indexer reading from redis, dumping into elasticsearch
+</span><span class='line'>    class { ::profiles::logstash::redis_indexer:}
 </span><span class='line'>
-</span><span class='line'>    <span class="c1"># Also, a basic redis instance</span>
-</span><span class='line'>    <span class="kp">include</span> <span class="o">::</span><span class="n">profiles</span><span class="o">::</span><span class="n">redis</span><span class="o">::</span><span class="n">basic</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>    # Also, a basic redis instance
+</span><span class='line'>    include ::profiles::redis::basic   
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <p>As you can probably tell, we’re rolling the entire ELK stack and redis queue on a single node. We can do this because it’s on a c3.3xlarge AWS instance type with it’s own EBS attached volume of 100GB and the logging data is coming from a small-ish stack.</p>
@@ -326,7 +319,7 @@
 
 <p>From the role profile given above, lets take a look at <code>::profiles::logstash::redis_indexer</code>:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -338,24 +331,23 @@
 <span class='line-number'>10</span>
 <span class='line-number'>11</span>
 <span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="n">profiles</span><span class="o">::</span><span class="n">logstash</span><span class="o">::</span><span class="n">redis_indexer</span> <span class="p">{</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>class profiles::logstash::redis_indexer { 
 </span><span class='line'>
-</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="s1">&#39;logstash&#39;</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">package_url</span> <span class="o">=&gt;</span> <span class="s1">&#39;https://download.elasticsearch.org/logstash/logstash/packages/debian/logstash_1.4.2-1-2c0f5a1_all.deb&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    class { 'logstash':
+</span><span class='line'>        package_url =&gt; 'https://download.elasticsearch.org/logstash/logstash/packages/debian/logstash_1.4.2-1-2c0f5a1_all.deb',
+</span><span class='line'>    }
 </span><span class='line'>
-</span><span class='line'>    <span class="c1"># This template contains everything we need to run the indexer on a single host</span>
-</span><span class='line'>    <span class="n">logstash</span><span class="o">::</span><span class="n">configfile</span> <span class="p">{</span> <span class="s1">&#39;redis_indexer&#39;</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">content</span> <span class="o">=&gt;</span> <span class="n">template</span><span class="p">(</span><span class="s1">&#39;profiles/logstash/redis_indexer.erb&#39;</span><span class="p">),</span>
-</span><span class='line'>        <span class="n">order</span> <span class="o">=&gt;</span> <span class="mi">10</span><span class="p">,</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>    # This template contains everything we need to run the indexer on a single host
+</span><span class='line'>    logstash::configfile { 'redis_indexer':
+</span><span class='line'>        content =&gt; template('profiles/logstash/redis_indexer.erb'),
+</span><span class='line'>        order =&gt; 10,
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Where the redis_indexer.erb looks like this:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -372,33 +364,31 @@
 <span class='line-number'>15</span>
 <span class='line-number'>16</span>
 <span class='line-number'>17</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">input</span> <span class="p">{</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>input {
 </span><span class='line'>
-</span><span class='line'>    <span class="n">redis</span> <span class="p">{</span>
-</span><span class='line'>        <span class="n">host</span> <span class="o">=&gt;</span> <span class="s2">&quot;127.0.0.1&quot;</span>
-</span><span class='line'>        <span class="n">data_type</span> <span class="o">=&gt;</span> <span class="s2">&quot;list&quot;</span>
-</span><span class='line'>        <span class="n">key</span> <span class="o">=&gt;</span> <span class="s2">&quot;logstash&quot;</span>
-</span><span class='line'>        <span class="n">codec</span> <span class="o">=&gt;</span> <span class="n">json</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="n">output</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">elasticsearch</span> <span class="p">{</span>
-</span><span class='line'>        <span class="n">host</span> <span class="o">=&gt;</span> <span class="s2">&quot;localhost&quot;</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="n">stdout</span> <span class="p">{</span>
-</span><span class='line'>        <span class="n">codec</span> <span class="o">=&gt;</span> <span class="n">rubydebug</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>    redis {
+</span><span class='line'>        host =&gt; "127.0.0.1"
+</span><span class='line'>        data_type =&gt; "list"
+</span><span class='line'>        key =&gt; "logstash"
+</span><span class='line'>        codec =&gt; json
+</span><span class='line'>    }
+</span><span class='line'>}
+</span><span class='line'>output {
+</span><span class='line'>    elasticsearch { 
+</span><span class='line'>        host =&gt; "localhost" 
+</span><span class='line'>    }
+</span><span class='line'>    stdout { 
+</span><span class='line'>        codec =&gt; rubydebug 
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <p>You might notice the stdout output in that. The stdout is great for debugging stuff. When you run <code>logstash service start</code> it’ll startup as a daemon and you can <code>tail -f /var/log/logstash.log</code> but I prefer to run it in the foreground when I’m hooking everything up to see all the pretty colors and to drop it into debug mode.</p>
 
 <p>To do this I execute on both the nodes I’m pulling logs from and the log aggregator:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="sr">/opt/</span><span class="n">logstash</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">logstash</span> <span class="o">-</span><span class="n">f</span> <span class="sr">/etc/</span><span class="n">logstash</span><span class="o">/</span><span class="n">conf</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="n">logstash</span><span class="o">.</span><span class="n">conf</span> <span class="err">—</span><span class="n">debug</span>
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/opt/logstash/bin/logstash -f /etc/logstash/conf.d/logstash.conf —debug</span></code></pre></td></tr></table></div></figure>
 
 
 <h3>Redis Data Persistance</h3>
@@ -407,19 +397,18 @@
 
 <p>My redis configuration for this now looks like this:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="n">profiles</span><span class="o">::</span><span class="n">redis</span><span class="o">::</span><span class="n">log_aggregator</span> <span class="p">{</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>class profiles::redis::log_aggregator {
 </span><span class='line'>
-</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="o">::</span><span class="ss">redis</span><span class="p">:</span>
-</span><span class='line'>      <span class="n">redis_saves</span> <span class="o">=&gt;</span> <span class="kp">false</span><span class="p">,</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>    class { ::redis:
+</span><span class='line'>      redis_saves =&gt; false,
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Note: using this <a href="https://github.com/thomasvandoren/puppet-redis">Redis</a> module.</p>
@@ -482,7 +471,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/09/19/day2-logging/">DC/OS Day 2 Operations</a>
       </li>
     
       <li class="post">

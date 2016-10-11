@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>A Simple Nagios Docker Plugin - Technoblogic</title>
+  <title>A Simple Nagios Docker Plugin - Technoblogic(.io)</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://technoblogic.io/blog/2014/06/24/a-simple-nagios-docker-plugin/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic(.io)" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,9 +36,9 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Technoblogic</a></h1>
+  <h1><a href="/">Technoblogic(.io)</a></h1>
   
-    <h2>A Technology Blog.</h2>
+    <h2>Shameful Self Promotion</h2>
   
 </hgroup>
 
@@ -138,22 +138,21 @@
 <span class='line-number'>13</span>
 <span class='line-number'>14</span>
 <span class='line-number'>15</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="s2">&quot;2&quot;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
-</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provider</span> <span class="s2">&quot;virtualbox&quot;</span> <span class="k">do</span> <span class="o">|</span><span class="n">v</span><span class="o">|</span>
-</span><span class='line'>  <span class="n">v</span><span class="o">.</span><span class="n">customize</span> <span class="o">[</span><span class="s2">&quot;modifyvm&quot;</span><span class="p">,</span> <span class="ss">:id</span><span class="p">,</span> <span class="s2">&quot;--memory&quot;</span><span class="p">,</span> <span class="mi">1024</span><span class="o">]</span>
-</span><span class='line'><span class="k">end</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Vagrant.configure("2") do |config|
+</span><span class='line'>config.vm.provider "virtualbox" do |v|
+</span><span class='line'>  v.customize ["modifyvm", :id, "--memory", 1024]
+</span><span class='line'>end
 </span><span class='line'>
-</span><span class='line'><span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:nagios</span> <span class="k">do</span> <span class="o">|</span><span class="n">deploy</span><span class="o">|</span>
-</span><span class='line'>  <span class="n">deploy</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="s2">&quot;precise64&quot;</span>
-</span><span class='line'>  <span class="n">deploy</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s2">&quot;nagios.server.dev&quot;</span>
-</span><span class='line'>  <span class="n">deploy</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">box_url</span> <span class="o">=</span> <span class="s2">&quot;http://files.vagrantup.com/precise64.box&quot;</span>
-</span><span class='line'>  <span class="n">deploy</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;modules&quot;</span><span class="p">,</span> <span class="s2">&quot;/etc/puppet/modules&quot;</span>
-</span><span class='line'>  <span class="n">deploy</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">synced_folder</span> <span class="s2">&quot;manifests&quot;</span><span class="p">,</span> <span class="s2">&quot;/etc/puppet/manifests&quot;</span>
-</span><span class='line'>  <span class="n">deploy</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.33.2&quot;</span> <span class="c1"># Define static IP once dev completes</span>
-</span><span class='line'>  <span class="n">deploy</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:puppet</span><span class="p">,</span> <span class="ss">:module_path</span> <span class="o">=&gt;</span> <span class="s2">&quot;modules&quot;</span><span class="p">,</span> <span class="ss">:manifests_path</span> <span class="o">=&gt;</span> <span class="s2">&quot;manifests&quot;</span><span class="p">,</span> <span class="ss">:manifest_file</span> <span class="o">=&gt;</span> <span class="s2">&quot;deploy_nagios.pp&quot;</span>
-</span><span class='line'>   <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>config.vm.define :nagios do |deploy|
+</span><span class='line'>  deploy.vm.box = "precise64"
+</span><span class='line'>  deploy.vm.hostname = "nagios.server.dev"
+</span><span class='line'>  deploy.vm.box_url = "http://files.vagrantup.com/precise64.box"
+</span><span class='line'>  deploy.vm.synced_folder "modules", "/etc/puppet/modules"
+</span><span class='line'>  deploy.vm.synced_folder "manifests", "/etc/puppet/manifests"
+</span><span class='line'>  deploy.vm.network :private_network, ip: "10.10.33.2" # Define static IP once dev completes
+</span><span class='line'>  deploy.vm.provision :puppet, :module_path => "modules", :manifests_path => "manifests", :manifest_file => "deploy_nagios.pp"
+</span><span class='line'>   end
+</span><span class='line'>end</span></code></pre></td></tr></table></div></figure>
 
 
 <h2>Puppet Provisioner</h2>
@@ -217,62 +216,61 @@
 <span class='line-number'>53</span>
 <span class='line-number'>54</span>
 <span class='line-number'>55</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># Deploy docker and an Ubuntu image to play with</span>
-</span><span class='line'><span class="k">class</span> <span class="p">{</span><span class="s1">&#39;docker&#39;</span><span class="p">:}</span>
-</span><span class='line'><span class="n">docker</span><span class="o">::</span><span class="n">image</span> <span class="p">{</span> <span class="s1">&#39;training/webapp&#39;</span><span class="p">:</span>
-</span><span class='line'>  <span class="nb">require</span> <span class="o">=&gt;</span> <span class="no">Class</span><span class="o">[</span><span class="s1">&#39;docker&#39;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="c1"># Super hero hack to run the docker image... see readme for why.</span>
-</span><span class='line'><span class="c1"># Also, in no way is this idempotent, if it&#39;s running it&#39;ll fail.</span>
-</span><span class='line'><span class="nb">exec</span> <span class="p">{</span> <span class="s1">&#39;/usr/bin/docker run -d -p 5000:5000 training/webapp python app.py&#39;</span><span class="p">:</span>
-</span><span class='line'>  <span class="nb">require</span> <span class="o">=&gt;</span> <span class="no">Docker</span><span class="o">::</span><span class="no">Image</span><span class="o">[</span><span class="s1">&#39;training/webapp&#39;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="c1">#docker::run { &#39;webapp&#39;:</span>
-</span><span class='line'><span class="c1">#  image   =&gt; &#39;ubuntu&#39;,</span>
-</span><span class='line'><span class="c1">#  command =&gt; &#39;/bin/echo test&#39;,</span>
-</span><span class='line'><span class="c1">#  require =&gt; Docker::Image[&#39;training/webapp&#39;],</span>
-</span><span class='line'><span class="c1">#}</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># Deploy docker and an Ubuntu image to play with
+</span><span class='line'>class {'docker':}
+</span><span class='line'>docker::image { 'training/webapp':
+</span><span class='line'>  require => Class['docker'],
+</span><span class='line'>}
+</span><span class='line'># Super hero hack to run the docker image... see readme for why.
+</span><span class='line'># Also, in no way is this idempotent, if it's running it'll fail.
+</span><span class='line'>exec { '/usr/bin/docker run -d -p 5000:5000 training/webapp python app.py':
+</span><span class='line'>  require => Docker::Image['training/webapp'],
+</span><span class='line'>}
+</span><span class='line'>#docker::run { 'webapp':
+</span><span class='line'>#  image   => 'ubuntu',
+</span><span class='line'>#  command => '/bin/echo test',
+</span><span class='line'>#  require => Docker::Image['training/webapp'],
+</span><span class='line'>#}
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Update this thing</span>
-</span><span class='line'><span class="nb">exec</span> <span class="p">{</span> <span class="s1">&#39;/usr/bin/apt-get update&#39;</span><span class="p">:}</span>
+</span><span class='line'># Update this thing
+</span><span class='line'>exec { '/usr/bin/apt-get update':}
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Install nagios </span>
-</span><span class='line'><span class="k">class</span> <span class="p">{</span> <span class="s1">&#39;nagios&#39;</span><span class="p">:</span>
-</span><span class='line'>  <span class="nb">require</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="no">Exec</span><span class="o">[</span><span class="s1">&#39;/usr/bin/apt-get update&#39;</span><span class="o">]</span><span class="p">,</span><span class="no">Class</span><span class="o">[</span><span class="s1">&#39;docker&#39;</span><span class="o">]]</span>
-</span><span class='line'><span class="p">}</span>
+</span><span class='line'># Install nagios 
+</span><span class='line'>class { 'nagios': 
+</span><span class='line'>  require => [Exec['/usr/bin/apt-get update'],Class['docker']]
+</span><span class='line'>}
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Get my plugin on the system correctly</span>
-</span><span class='line'><span class="n">nagios</span><span class="o">::</span><span class="n">plugin</span> <span class="p">{</span> <span class="s1">&#39;docker_status&#39;</span><span class="p">:</span>
-</span><span class='line'>   <span class="n">source</span> <span class="o">=&gt;</span> <span class="s1">&#39;nagios/nagios-plugins/docker_status.rb&#39;</span>
-</span><span class='line'><span class="p">}</span>
+</span><span class='line'># Get my plugin on the system correctly
+</span><span class='line'>nagios::plugin { 'docker_status':
+</span><span class='line'>   source => 'nagios/nagios-plugins/docker_status.rb'
+</span><span class='line'>}
 </span><span class='line'>
-</span><span class='line'><span class="c1"># WARNING: TOTAL HACK PLEASE DON&#39;T JUDGE ME</span>
-</span><span class='line'><span class="nb">exec</span> <span class="p">{</span> <span class="s1">&#39;/bin/echo &quot;command[docker_status]=/usr/lib/nagios/plugins/docker_status&quot; &gt;&gt; /etc/nagios/nrpe.cfg&#39;</span><span class="p">:</span>
-</span><span class='line'>  <span class="nb">require</span> <span class="o">=&gt;</span> <span class="no">File</span><span class="o">[</span><span class="s1">&#39;/etc/nagios/nrpe.cfg&#39;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>  <span class="n">notify</span> <span class="o">=&gt;</span> <span class="no">Service</span><span class="o">[</span><span class="s1">&#39;nrpe&#39;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'><span class="p">}</span>
+</span><span class='line'># WARNING: TOTAL HACK PLEASE DON'T JUDGE ME
+</span><span class='line'>exec { '/bin/echo "command[docker_status]=/usr/lib/nagios/plugins/docker_status" >> /etc/nagios/nrpe.cfg':
+</span><span class='line'>  require => File['/etc/nagios/nrpe.cfg'],
+</span><span class='line'>  notify => Service['nrpe'],
+</span><span class='line'>}
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Ensure docker and nagios are in the same group</span>
-</span><span class='line'><span class="nb">exec</span> <span class="p">{</span><span class="s1">&#39;/usr/sbin/usermod -a -G docker nagios&#39;</span><span class="p">:</span>
-</span><span class='line'>  <span class="nb">require</span> <span class="o">=&gt;</span> <span class="no">Class</span><span class="o">[</span><span class="s1">&#39;nagios&#39;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>  <span class="n">notify</span>  <span class="o">=&gt;</span> <span class="no">Service</span><span class="o">[</span><span class="s1">&#39;nrpe&#39;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'><span class="p">}</span>
+</span><span class='line'># Ensure docker and nagios are in the same group
+</span><span class='line'>exec {'/usr/sbin/usermod -a -G docker nagios':
+</span><span class='line'>  require => Class['nagios'],
+</span><span class='line'>  notify  => Service['nrpe'],
+</span><span class='line'>}
 </span><span class='line'>
-</span><span class='line'><span class="n">nagios</span><span class="o">::</span><span class="n">command</span> <span class="p">{</span> <span class="s1">&#39;docker_status&#39;</span><span class="p">:</span>
-</span><span class='line'>  <span class="n">command_line</span> <span class="o">=&gt;</span> <span class="s1">&#39;$USER1$/check_nrpe -H $HOSTADDRESS$ -c docker_status&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="p">}</span>
+</span><span class='line'>nagios::command { 'docker_status':
+</span><span class='line'>  command_line => '$USER1$/check_nrpe -H $HOSTADDRESS$ -c docker_status',
+</span><span class='line'>}
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Set the nagiosadmin password </span>
-</span><span class='line'><span class="nb">exec</span> <span class="p">{</span> <span class="s1">&#39;/usr/bin/htpasswd -cb /etc/nagios3/htpasswd.users nagiosadmin nagiosadmin&#39;</span><span class="p">:</span>
-</span><span class='line'>  <span class="nb">require</span> <span class="o">=&gt;</span> <span class="no">Class</span><span class="o">[</span><span class="s1">&#39;nagios&#39;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'><span class="p">}</span>
+</span><span class='line'># Set the nagiosadmin password 
+</span><span class='line'>exec { '/usr/bin/htpasswd -cb /etc/nagios3/htpasswd.users nagiosadmin nagiosadmin': 
+</span><span class='line'>  require => Class['nagios'],
+</span><span class='line'>}
 </span><span class='line'>
-</span><span class='line'><span class="c1"># I wrote my plugin in Ruby so lets make sure the VM has it. </span>
-</span><span class='line'><span class="n">package</span> <span class="p">{</span> <span class="s1">&#39;ruby1.9.1&#39;</span><span class="p">:</span>
-</span><span class='line'>  <span class="k">ensure</span> <span class="o">=&gt;</span> <span class="n">present</span><span class="p">,</span>
-</span><span class='line'>  <span class="nb">require</span> <span class="o">=&gt;</span> <span class="no">Class</span><span class="o">[</span><span class="s1">&#39;nagios&#39;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'># I wrote my plugin in Ruby so lets make sure the VM has it. 
+</span><span class='line'>package { 'ruby1.9.1':
+</span><span class='line'>  ensure => present,
+</span><span class='line'>  require => Class['nagios'],
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Yup, I had a couple of hero hacks in there to get around some issues with the <code>docker::run</code> define. That define should work, but  kept failing with a very odd &lsquo;&lt;&lt; is not a {}:hash&rsquo; error. I grep'ed through the module to try and find where this was coming from and I think it&rsquo;s a heredoc within a function for the define. I still need to look into it. I ran an exec after the image is downloaded to get around this problem.</p>
@@ -338,32 +336,31 @@
 <span class='line-number'>23</span>
 <span class='line-number'>24</span>
 <span class='line-number'>25</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1">#!/usr/bin/ruby</span>
-</span><span class='line'><span class="c1"># Checks the docker status command for number of running containers</span>
-</span><span class='line'><span class="c1"># Ensures the docker container is running by checking that the socket exists</span>
-</span><span class='line'><span class="c1"># </span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#!/usr/bin/ruby
+</span><span class='line'># Checks the docker status command for number of running containers
+</span><span class='line'># Ensures the docker container is running by checking that the socket exists
+</span><span class='line'># 
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Define some helper methods for Nagios with appropriate exit codes</span>
-</span><span class='line'><span class="k">def</span> <span class="nf">ok</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;OK - </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="nb">exit</span> <span class="mi">0</span>
-</span><span class='line'><span class="k">end</span>
+</span><span class='line'># Define some helper methods for Nagios with appropriate exit codes
+</span><span class='line'>def ok(message)
+</span><span class='line'>  puts "OK - #{message}"
+</span><span class='line'>  exit 0
+</span><span class='line'>end
 </span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">critical</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Critical - </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="nb">exit</span> <span class="mi">2</span>
-</span><span class='line'><span class="k">end</span>
+</span><span class='line'>def critical(message)
+</span><span class='line'>  puts "Critical - #{message}"
+</span><span class='line'>  exit 2
+</span><span class='line'>end
 </span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Warning - </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="nb">exit</span> <span class="mi">1</span>
-</span><span class='line'><span class="k">end</span>
+</span><span class='line'>def warning(message)
+</span><span class='line'>  puts "Warning - #{message}"
+</span><span class='line'>  exit 1
+</span><span class='line'>end
 </span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">unknown</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Unknown - </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="nb">exit</span> <span class="mi">3</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>def unknown(message)
+</span><span class='line'>  puts "Unknown - #{message}"
+</span><span class='line'>  exit 3
+</span><span class='line'>end</span></code></pre></td></tr></table></div></figure>
 
 
 <h4>Check to ensure docker is installed</h4>
@@ -377,14 +374,13 @@
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">docker_installed</span><span class="p">()</span>
-</span><span class='line'>  <span class="k">if</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;which docker &gt; /dev/null&quot;</span><span class="p">)</span>
-</span><span class='line'>      <span class="n">webapp_status</span><span class="p">()</span>
-</span><span class='line'>  <span class="k">else</span>
-</span><span class='line'>      <span class="n">critical</span><span class="p">(</span><span class="s2">&quot;Docker isn&#39;t installed&quot;</span><span class="p">)</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>def docker_installed()
+</span><span class='line'>  if system("which docker > /dev/null")
+</span><span class='line'>      webapp_status()
+</span><span class='line'>  else
+</span><span class='line'>      critical("Docker isn't installed")
+</span><span class='line'>  end
+</span><span class='line'>end</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Yup, it&rsquo;s that easy, <code>which docker</code> will return &lsquo;0&rsquo; or &lsquo;false&rsquo; if it does not find the command and &lsquo;1&rsquo; or &lsquo;true&rsquo; if a path to the command is found. This isn&rsquo;t the most robust check ever, but for now it&rsquo;s enough to move on. Since all my other def&rsquo;s work on the <code>docker</code> face and it&rsquo;s sub commands I need to ensure this is present before doing anything else.</p>
@@ -398,21 +394,19 @@
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">webapp_status</span><span class="p">()</span>
-</span><span class='line'>  <span class="c1"># Ensure the webapp is running on localhost:5000</span>
-</span><span class='line'>  <span class="n">webapp_run</span> <span class="o">=</span> <span class="sb">`netstat -anp | grep 5000 | awk &#39;{print $7}&#39; | cut -d/ -f2`</span>
-</span><span class='line'>  <span class="n">should_be</span>   <span class="o">=</span> <span class="s2">&quot;docker&quot;</span>
-</span><span class='line'>  <span class="n">webapp_run</span><span class="o">.</span><span class="n">chomp!</span><span class="o">.</span><span class="n">strip!</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>def webapp_status()
+</span><span class='line'>  # Ensure the webapp is running on localhost:5000
+</span><span class='line'>  webapp_run = `netstat -anp | grep 5000 | awk '{print $7}' | cut -d/ -f2`
+</span><span class='line'>  should_be   = "docker"
+</span><span class='line'>  webapp_run.chomp!.strip!</span></code></pre></td></tr></table></div></figure>
 
 
 <p>This should return this this:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>root@nagios:/home/vagrant# netstat -anp <span class="p">|</span> grep <span class="m">5000</span> <span class="p">|</span> awk <span class="s1">&#39;{print $7}&#39;</span> <span class="p">|</span> cut -d/ -f2
-</span><span class='line'>docker
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>root@nagios:/home/vagrant# netstat -anp | grep 5000 | awk '{print $7}' | cut -d/ -f2
+</span><span class='line'>docker</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Then we pass this into some basic &lsquo;if&rsquo; logic:</p>
@@ -439,29 +433,28 @@
 <span class='line-number'>20</span>
 <span class='line-number'>21</span>
 <span class='line-number'>22</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'> <span class="k">if</span> <span class="n">webapp_run</span> <span class="o">==</span> <span class="n">should_be</span>
-</span><span class='line'>      <span class="c1"># Check to ensure there are no 404 errors in the log</span>
-</span><span class='line'>      <span class="n">check_this</span> <span class="o">=</span> <span class="s2">&quot;docker logs $(docker ps -l | awk &#39;{print $1}&#39; | awk &#39;{if (NR == 2){print $0}}&#39;) 2&gt;&amp;1 | grep 404 | awk &#39;{print $7}&#39; | sort | uniq -c&quot;</span>
-</span><span class='line'>      <span class="n">check</span> <span class="o">=</span> <span class="nb">system</span><span class="p">(</span><span class="n">check_this</span><span class="p">)</span>
-</span><span class='line'>      <span class="k">if</span> <span class="n">check</span>
-</span><span class='line'>          <span class="no">IO</span><span class="o">.</span><span class="n">popen</span><span class="p">(</span><span class="n">check_this</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">io</span><span class="o">|</span>
-</span><span class='line'>              <span class="n">line</span>  <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">readlines</span>
-</span><span class='line'>              <span class="n">errors</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span class='line'>              <span class="n">line</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">this</span><span class="o">|</span>
-</span><span class='line'>                  <span class="n">number</span> <span class="o">=</span> <span class="n">this</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span>
-</span><span class='line'>                  <span class="n">url</span> <span class="o">=</span> <span class="n">this</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">last</span>
-</span><span class='line'>                  <span class="n">errors</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>   
-</span><span class='line'>              <span class="k">end</span>  
-</span><span class='line'>              <span class="n">max_value</span> <span class="o">=</span> <span class="n">errors</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">max</span>
-</span><span class='line'>              <span class="n">max_key</span> <span class="o">=</span> <span class="n">errors</span><span class="o">.</span><span class="n">select</span> <span class="p">{</span> <span class="o">|</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">|</span> <span class="n">v</span><span class="o">==</span><span class="n">max_value</span> <span class="p">}</span><span class="o">.</span><span class="n">keys</span>  
-</span><span class='line'>              <span class="k">case</span> <span class="n">max_value</span><span class="o">.</span><span class="n">to_i</span> <span class="o">&gt;</span> <span class="mi">20</span>
-</span><span class='line'>                  <span class="k">when</span> <span class="kp">false</span>
-</span><span class='line'>                      <span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">max_value</span><span class="si">}</span><span class="s2"> 404 Errors at localhost</span><span class="si">#{</span><span class="n">max_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span class='line'>                  <span class="k">when</span> <span class="kp">true</span>
-</span><span class='line'>                      <span class="n">critical</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">max_value</span><span class="si">}</span><span class="s2"> 404 Errors at localhost</span><span class="si">#{</span><span class="n">max_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span class='line'>              <span class="k">end</span>
-</span><span class='line'>          <span class="k">end</span>  
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>if webapp_run == should_be
+</span><span class='line'>      # Check to ensure there are no 404 errors in the log
+</span><span class='line'>      check_this = "docker logs $(docker ps -l | awk '{print $1}' | awk '{if (NR == 2){print $0}}') 2>&1 | grep 404 | awk '{print $7}' | sort | uniq -c"
+</span><span class='line'>      check = system(check_this)
+</span><span class='line'>      if check 
+</span><span class='line'>          IO.popen(check_this) do |io|
+</span><span class='line'>              line  = io.readlines
+</span><span class='line'>              errors = {} 
+</span><span class='line'>              line.each do |this|
+</span><span class='line'>                  number = this.split(' ').first
+</span><span class='line'>                  url = this.split(' ').last
+</span><span class='line'>                  errors.store(url, number)   
+</span><span class='line'>              end 
+</span><span class='line'>              max_value = errors.values.max
+</span><span class='line'>              max_key = errors.select { |k,v| v==max_value }.keys 
+</span><span class='line'>              case max_value.to_i > 20  
+</span><span class='line'>                  when false  
+</span><span class='line'>                      warning("#{max_value} 404 Errors at localhost#{max_key}")
+</span><span class='line'>                  when true 
+</span><span class='line'>                      critical("#{max_value} 404 Errors at localhost#{max_key}")
+</span><span class='line'>              end
+</span><span class='line'>          end</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Lot&rsquo;s of things are happening there.</p>
@@ -473,10 +466,9 @@
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>root@nagios:/home/vagrant# docker ps -l
+</pre></td><td class='code'><pre><code class=''><span class='line'>root@nagios:/home/vagrant# docker ps -l
 </span><span class='line'>CONTAINER ID        IMAGE                    COMMAND             CREATED             STATUS              PORTS                    NAMES
-</span><span class='line'>c968cced9f32        training/webapp:latest   python app.py       <span class="m">33</span> minutes ago      Up <span class="m">33</span> minutes       0.0.0.0:5000-&gt;5000/tcp   berserk_pare
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>c968cced9f32        training/webapp:latest   python app.py       33 minutes ago      Up 33 minutes       0.0.0.0:5000->5000/tcp   berserk_pare</span></code></pre></td></tr></table></div></figure>
 
 
 <p>This would definitely break if you had many containers running.</p>
@@ -485,9 +477,8 @@
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">root</span><span class="vi">@nagios</span><span class="ss">:/</span><span class="n">home</span><span class="o">/</span><span class="n">vagrant</span><span class="c1"># docker logs c968cced9f32</span>
-</span><span class='line'> <span class="o">*</span> <span class="no">Running</span> <span class="n">on</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//</span><span class="mi">0</span><span class="o">.</span><span class="mi">0</span><span class="o">.</span><span class="mi">0</span><span class="o">.</span><span class="mi">0</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>root@nagios:/home/vagrant# docker logs c968cced9f32
+</span><span class='line'> * Running on http://0.0.0.0:5000/</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Tight.</p>
@@ -504,17 +495,16 @@
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
 <span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">IO</span><span class="o">.</span><span class="n">popen</span><span class="p">(</span><span class="n">check_this</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">io</span><span class="o">|</span>
-</span><span class='line'>  <span class="n">line</span>  <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">readlines</span>
-</span><span class='line'>  <span class="n">errors</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span class='line'>  <span class="n">line</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">this</span><span class="o">|</span>
-</span><span class='line'>      <span class="n">number</span> <span class="o">=</span> <span class="n">this</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span>
-</span><span class='line'>      <span class="n">url</span> <span class="o">=</span> <span class="n">this</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">last</span>
-</span><span class='line'>      <span class="n">errors</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>   
-</span><span class='line'>  <span class="k">end</span>  
-</span><span class='line'>  <span class="n">max_value</span> <span class="o">=</span> <span class="n">errors</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">max</span>
-</span><span class='line'>  <span class="n">max_key</span> <span class="o">=</span> <span class="n">errors</span><span class="o">.</span><span class="n">select</span> <span class="p">{</span> <span class="o">|</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">|</span> <span class="n">v</span><span class="o">==</span><span class="n">max_value</span> <span class="p">}</span><span class="o">.</span><span class="n">keys</span>  
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>IO.popen(check_this) do |io|
+</span><span class='line'>  line  = io.readlines
+</span><span class='line'>  errors = {} 
+</span><span class='line'>  line.each do |this|
+</span><span class='line'>      number = this.split(' ').first
+</span><span class='line'>      url = this.split(' ').last
+</span><span class='line'>      errors.store(url, number)   
+</span><span class='line'>  end 
+</span><span class='line'>  max_value = errors.values.max
+</span><span class='line'>  max_key = errors.select { |k,v| v==max_value }.keys</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Now I can use that key&rsquo;s value to hit my <code>warning</code> or <code>critical</code> methods.</p>
@@ -525,13 +515,12 @@
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">case</span> <span class="n">max_value</span><span class="o">.</span><span class="n">to_i</span> <span class="o">&gt;</span> <span class="mi">20</span>
-</span><span class='line'><span class="k">when</span> <span class="kp">false</span>
-</span><span class='line'>  <span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">max_value</span><span class="si">}</span><span class="s2"> 404 Errors at localhost</span><span class="si">#{</span><span class="n">max_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="k">when</span> <span class="kp">true</span>
-</span><span class='line'>  <span class="n">critical</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">max_value</span><span class="si">}</span><span class="s2"> 404 Errors at localhost</span><span class="si">#{</span><span class="n">max_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>case max_value.to_i > 20  
+</span><span class='line'>when false  
+</span><span class='line'>  warning("#{max_value} 404 Errors at localhost#{max_key}")
+</span><span class='line'>when true 
+</span><span class='line'>  critical("#{max_value} 404 Errors at localhost#{max_key}")
+</span><span class='line'>end</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Of course, the end to this giant loop of loops does&hellip;</p>
@@ -543,21 +532,19 @@
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'>     <span class="k">else</span>
-</span><span class='line'>          <span class="n">ok</span><span class="p">(</span><span class="s2">&quot;Docker &amp; Webapp are in good shape!&quot;</span><span class="p">)</span>
-</span><span class='line'>      <span class="k">end</span>
-</span><span class='line'>  <span class="k">else</span>
-</span><span class='line'>      <span class="n">critical</span><span class="p">(</span><span class="s2">&quot;Webapp is not running on localhost:5000&quot;</span><span class="p">)</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>else
+</span><span class='line'>          ok("Docker & Webapp are in good shape!")
+</span><span class='line'>      end
+</span><span class='line'>  else
+</span><span class='line'>      critical("Webapp is not running on localhost:5000")
+</span><span class='line'>  end
+</span><span class='line'>end</span></code></pre></td></tr></table></div></figure>
 
 
 <p>&hellip; and finally start it</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">docker_installed</span><span class="p">()</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>docker_installed()</span></code></pre></td></tr></table></div></figure>
 
 
 <p>My entire script looks like this:</p>
@@ -634,79 +621,78 @@
 <span class='line-number'>70</span>
 <span class='line-number'>71</span>
 <span class='line-number'>72</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># Full </span>
-</span><span class='line'><span class="c1">#!/usr/bin/ruby</span>
-</span><span class='line'><span class="c1"># Checks the docker status command for number of running containers</span>
-</span><span class='line'><span class="c1"># Ensures the docker container is running by checking that the socket exists</span>
-</span><span class='line'><span class="c1"># </span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># Full 
+</span><span class='line'>#!/usr/bin/ruby
+</span><span class='line'># Checks the docker status command for number of running containers
+</span><span class='line'># Ensures the docker container is running by checking that the socket exists
+</span><span class='line'># 
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Define some helper methods for Nagios with appropriate exit codes</span>
-</span><span class='line'><span class="k">def</span> <span class="nf">ok</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;OK - </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="nb">exit</span> <span class="mi">0</span>
-</span><span class='line'><span class="k">end</span>
+</span><span class='line'># Define some helper methods for Nagios with appropriate exit codes
+</span><span class='line'>def ok(message)
+</span><span class='line'>  puts "OK - #{message}"
+</span><span class='line'>  exit 0
+</span><span class='line'>end
 </span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">critical</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Critical - </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="nb">exit</span> <span class="mi">2</span>
-</span><span class='line'><span class="k">end</span>
+</span><span class='line'>def critical(message)
+</span><span class='line'>  puts "Critical - #{message}"
+</span><span class='line'>  exit 2
+</span><span class='line'>end
 </span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Warning - </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="nb">exit</span> <span class="mi">1</span>
-</span><span class='line'><span class="k">end</span>
+</span><span class='line'>def warning(message)
+</span><span class='line'>  puts "Warning - #{message}"
+</span><span class='line'>  exit 1
+</span><span class='line'>end
 </span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">unknown</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Unknown - </span><span class="si">#{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'>  <span class="nb">exit</span> <span class="mi">3</span>
-</span><span class='line'><span class="k">end</span>
+</span><span class='line'>def unknown(message)
+</span><span class='line'>  puts "Unknown - #{message}"
+</span><span class='line'>  exit 3
+</span><span class='line'>end
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Check to ensure docker is installed</span>
-</span><span class='line'><span class="k">def</span> <span class="nf">docker_installed</span><span class="p">()</span>
-</span><span class='line'>  <span class="k">if</span> <span class="nb">system</span><span class="p">(</span><span class="s2">&quot;which docker &gt; /dev/null&quot;</span><span class="p">)</span>
-</span><span class='line'>      <span class="n">webapp_status</span><span class="p">()</span>
-</span><span class='line'>  <span class="k">else</span>
-</span><span class='line'>      <span class="n">critical</span><span class="p">(</span><span class="s2">&quot;Docker isn&#39;t installed&quot;</span><span class="p">)</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
+</span><span class='line'># Check to ensure docker is installed
+</span><span class='line'>def docker_installed()
+</span><span class='line'>  if system("which docker > /dev/null")
+</span><span class='line'>      webapp_status()
+</span><span class='line'>  else
+</span><span class='line'>      critical("Docker isn't installed")
+</span><span class='line'>  end
+</span><span class='line'>end
 </span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">webapp_status</span><span class="p">()</span>
-</span><span class='line'>  <span class="c1"># Ensure the webapp is running on localhost:5000</span>
-</span><span class='line'>  <span class="n">webapp_run</span> <span class="o">=</span> <span class="sb">`netstat -anp | grep 5000 | awk &#39;{print $7}&#39; | cut -d/ -f2`</span>
-</span><span class='line'>  <span class="n">should_be</span>   <span class="o">=</span> <span class="s2">&quot;docker&quot;</span>
-</span><span class='line'>  <span class="n">webapp_run</span><span class="o">.</span><span class="n">chomp!</span><span class="o">.</span><span class="n">strip!</span>
-</span><span class='line'>  <span class="k">if</span> <span class="n">webapp_run</span> <span class="o">==</span> <span class="n">should_be</span>
-</span><span class='line'>      <span class="c1"># Check to ensure there are no 404 errors in the log</span>
-</span><span class='line'>      <span class="n">check_this</span> <span class="o">=</span> <span class="s2">&quot;docker logs $(docker ps -l | awk &#39;{print $1}&#39; | awk &#39;{if (NR == 2){print $0}}&#39;) 2&gt;&amp;1 | grep 404 | awk &#39;{print $7}&#39; | sort | uniq -c&quot;</span>
-</span><span class='line'>      <span class="n">check</span> <span class="o">=</span> <span class="nb">system</span><span class="p">(</span><span class="n">check_this</span><span class="p">)</span>
-</span><span class='line'>      <span class="k">if</span> <span class="n">check</span>
-</span><span class='line'>          <span class="no">IO</span><span class="o">.</span><span class="n">popen</span><span class="p">(</span><span class="n">check_this</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">io</span><span class="o">|</span>
-</span><span class='line'>              <span class="n">line</span>  <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">readlines</span>
-</span><span class='line'>              <span class="n">errors</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span class='line'>              <span class="n">line</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">this</span><span class="o">|</span>
-</span><span class='line'>                  <span class="n">number</span> <span class="o">=</span> <span class="n">this</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span>
-</span><span class='line'>                  <span class="n">url</span> <span class="o">=</span> <span class="n">this</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">last</span>
-</span><span class='line'>                  <span class="n">errors</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>   
-</span><span class='line'>              <span class="k">end</span>  
-</span><span class='line'>              <span class="n">max_value</span> <span class="o">=</span> <span class="n">errors</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">max</span>
-</span><span class='line'>              <span class="n">max_key</span> <span class="o">=</span> <span class="n">errors</span><span class="o">.</span><span class="n">select</span> <span class="p">{</span> <span class="o">|</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">|</span> <span class="n">v</span><span class="o">==</span><span class="n">max_value</span> <span class="p">}</span><span class="o">.</span><span class="n">keys</span>  
-</span><span class='line'>              <span class="k">case</span> <span class="n">max_value</span><span class="o">.</span><span class="n">to_i</span> <span class="o">&gt;</span> <span class="mi">20</span>
-</span><span class='line'>                  <span class="k">when</span> <span class="kp">false</span>
-</span><span class='line'>                      <span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">max_value</span><span class="si">}</span><span class="s2"> 404 Errors at localhost</span><span class="si">#{</span><span class="n">max_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span class='line'>                  <span class="k">when</span> <span class="kp">true</span>
-</span><span class='line'>                      <span class="n">critical</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">max_value</span><span class="si">}</span><span class="s2"> 404 Errors at localhost</span><span class="si">#{</span><span class="n">max_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span class='line'>              <span class="k">end</span>
-</span><span class='line'>          <span class="k">end</span>  
-</span><span class='line'>      <span class="k">else</span>
-</span><span class='line'>          <span class="n">ok</span><span class="p">(</span><span class="s2">&quot;Docker &amp; Webapp are in good shape!&quot;</span><span class="p">)</span>
-</span><span class='line'>      <span class="k">end</span>
-</span><span class='line'>  <span class="k">else</span>
-</span><span class='line'>      <span class="n">critical</span><span class="p">(</span><span class="s2">&quot;Webapp is not running on localhost:5000&quot;</span><span class="p">)</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
+</span><span class='line'>def webapp_status()
+</span><span class='line'>  # Ensure the webapp is running on localhost:5000
+</span><span class='line'>  webapp_run = `netstat -anp | grep 5000 | awk '{print $7}' | cut -d/ -f2`
+</span><span class='line'>  should_be   = "docker"
+</span><span class='line'>  webapp_run.chomp!.strip!
+</span><span class='line'>  if webapp_run == should_be
+</span><span class='line'>      # Check to ensure there are no 404 errors in the log
+</span><span class='line'>      check_this = "docker logs $(docker ps -l | awk '{print $1}' | awk '{if (NR == 2){print $0}}') 2>&1 | grep 404 | awk '{print $7}' | sort | uniq -c"
+</span><span class='line'>      check = system(check_this)
+</span><span class='line'>      if check 
+</span><span class='line'>          IO.popen(check_this) do |io|
+</span><span class='line'>              line  = io.readlines
+</span><span class='line'>              errors = {} 
+</span><span class='line'>              line.each do |this|
+</span><span class='line'>                  number = this.split(' ').first
+</span><span class='line'>                  url = this.split(' ').last
+</span><span class='line'>                  errors.store(url, number)   
+</span><span class='line'>              end 
+</span><span class='line'>              max_value = errors.values.max
+</span><span class='line'>              max_key = errors.select { |k,v| v==max_value }.keys 
+</span><span class='line'>              case max_value.to_i > 20  
+</span><span class='line'>                  when false  
+</span><span class='line'>                      warning("#{max_value} 404 Errors at localhost#{max_key}")
+</span><span class='line'>                  when true 
+</span><span class='line'>                      critical("#{max_value} 404 Errors at localhost#{max_key}")
+</span><span class='line'>              end
+</span><span class='line'>          end 
+</span><span class='line'>      else
+</span><span class='line'>          ok("Docker & Webapp are in good shape!")
+</span><span class='line'>      end
+</span><span class='line'>  else
+</span><span class='line'>      critical("Webapp is not running on localhost:5000")
+</span><span class='line'>  end
+</span><span class='line'>end
 </span><span class='line'>
-</span><span class='line'><span class="n">docker_installed</span><span class="p">()</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>docker_installed()</span></code></pre></td></tr></table></div></figure>
 
 
 
@@ -762,7 +748,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/09/19/day2-logging/">DC/OS Day 2 Operations</a>
       </li>
     
       <li class="post">

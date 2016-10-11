@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Vertically Scaled Infrastructure - Technoblogic</title>
+  <title>Vertically Scaled Infrastructure - Technoblogic(.io)</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://technoblogic.io/blog/2015/06/17/vertically-scaled-infrastructure/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic(.io)" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,9 +36,9 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Technoblogic</a></h1>
+  <h1><a href="/">Technoblogic(.io)</a></h1>
   
-    <h2>A Technology Blog.</h2>
+    <h2>Shameful Self Promotion</h2>
   
 </hgroup>
 
@@ -139,15 +139,14 @@
 
 <p>Those assignments might be a table such as:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'>service <span class="s1">&#39;a&#39;</span>: 1000-1010
-</span><span class='line'>service <span class="s1">&#39;b&#39;</span>: 1011-1020
-</span><span class='line'>service <span class="s1">&#39;x&#39;</span>: 1021-1030
-</span><span class='line'>service <span class="s1">&#39;z&#39;</span>: 1031-1040
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>service 'a': 1000-1010
+</span><span class='line'>service 'b': 1011-1020
+</span><span class='line'>service 'x': 1021-1030
+</span><span class='line'>service 'z': 1031-1040</span></code></pre></td></tr></table></div></figure>
 
 
 <p>This is usable, and it &ldquo;scales&rdquo; to a maximum of 10 nodes since our known port assignment hash goes 10 deep for each service.</p>
@@ -156,7 +155,7 @@
 
 <p>Now we&rsquo;ve got:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -165,16 +164,15 @@
 <span class='line-number'>7</span>
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'>service <span class="s1">&#39;a&#39;</span>: 1000-1050
-</span><span class='line'>service <span class="s1">&#39;b&#39;</span>: 1051-1100
-</span><span class='line'>service <span class="s1">&#39;c&#39;</span>: 1101-1150
-</span><span class='line'>service <span class="s1">&#39;d&#39;</span>: 1151-1200
-</span><span class='line'>service <span class="s1">&#39;e&#39;</span>: 1201-1250
-</span><span class='line'>service <span class="s1">&#39;f&#39;</span>: 1251-1300
-</span><span class='line'>service <span class="s1">&#39;x&#39;</span>: 1301-1350
-</span><span class='line'>service <span class="s1">&#39;y&#39;</span>: 1351-1400
-</span><span class='line'>service <span class="s1">&#39;z&#39;</span>: 1401-1450
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>service 'a': 1000-1050
+</span><span class='line'>service 'b': 1051-1100
+</span><span class='line'>service 'c': 1101-1150
+</span><span class='line'>service 'd': 1151-1200
+</span><span class='line'>service 'e': 1201-1250
+</span><span class='line'>service 'f': 1251-1300
+</span><span class='line'>service 'x': 1301-1350
+</span><span class='line'>service 'y': 1351-1400
+</span><span class='line'>service 'z': 1401-1450</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Great, we can scale out to 50 instances of each service. Now all I need to do is write all the configuration management code to deploy each one&hellip; each one of <strong><em>450</em></strong> instances across all services.</p>
@@ -193,18 +191,16 @@
 
 <p>For example, if you run <code>docker ps</code> and service &lsquo;x&rsquo; is running you might see:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'>CONTAINER ID        IMAGE             COMMAND  CREATED             STATUS              PORTS                   NAMES
-</span><span class='line'>d7588285b831        service_x:0.5.1   <span class="s2">&quot;java&quot;</span>   <span class="m">57</span> minutes ago      Up <span class="m">57</span> minutes       0.0.0.0:1322-&gt;1301/tcp  stoic_elion
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>CONTAINER ID        IMAGE             COMMAND  CREATED             STATUS              PORTS                   NAMES
+</span><span class='line'>d7588285b831        service_x:0.5.1   "java"   57 minutes ago      Up 57 minutes       0.0.0.0:1322-&gt;1301/tcp  stoic_elion</span></code></pre></td></tr></table></div></figure>
 
 
 <p>and in <code>netstat</code> you would see something akin to:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'>tcp6       <span class="m">0</span>      <span class="m">0</span> :::1132      :::*      LISTEN      4743/docker-proxy
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>tcp6       0      0 :::1132      :::*      LISTEN      4743/docker-proxy</span></code></pre></td></tr></table></div></figure>
 
 
 <p>We don&rsquo;t need a range of port mappings; we need a single mapping. <code>docker-proxy</code> is proxy'ing the requests from the host on port 1322 to the container where the service is listening on a base port of 1301.</p>
@@ -278,7 +274,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/09/19/day2-logging/">DC/OS Day 2 Operations</a>
       </li>
     
       <li class="post">

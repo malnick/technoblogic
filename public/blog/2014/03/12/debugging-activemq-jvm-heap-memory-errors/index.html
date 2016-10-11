@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Debugging ActiveMQ JVM Heap Memory Errors - Technoblogic</title>
+  <title>Debugging ActiveMQ JVM Heap Memory Errors - Technoblogic(.io)</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -22,7 +22,7 @@ INFO | jvm 1 | 2014/03/11 16:12:34 | Exception in thread "ActiveMQ BrokerService
   <link rel="canonical" href="http://technoblogic.io/blog/2014/03/12/debugging-activemq-jvm-heap-memory-errors/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic(.io)" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -37,9 +37,9 @@ INFO | jvm 1 | 2014/03/11 16:12:34 | Exception in thread "ActiveMQ BrokerService
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Technoblogic</a></h1>
+  <h1><a href="/">Technoblogic(.io)</a></h1>
   
-    <h2>A Technology Blog.</h2>
+    <h2>Shameful Self Promotion</h2>
   
 </hgroup>
 
@@ -194,105 +194,104 @@ INFO | jvm 1 | 2014/03/11 16:12:34 | Exception in thread "ActiveMQ BrokerService
 <span class='line-number'>96</span>
 <span class='line-number'>97</span>
 <span class='line-number'>98</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># -*- mode: ruby -*-</span>
-</span><span class='line'><span class="c1"># vi: set ft=ruby :</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># -*- mode: ruby -*-
+</span><span class='line'># vi: set ft=ruby :
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Vagrantfile API/syntax version. Don&#39;t touch unless you know what you&#39;re doing!</span>
-</span><span class='line'><span class="no">VAGRANTFILE_API_VERSION</span> <span class="o">=</span> <span class="s2">&quot;2&quot;</span>
+</span><span class='line'># Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+</span><span class='line'>VAGRANTFILE_API_VERSION = "2"
 </span><span class='line'>
-</span><span class='line'><span class="no">Vagrant</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="no">VAGRANTFILE_API_VERSION</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="s2">&quot;centos-64-x64-nocm&quot;</span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">box_url</span> <span class="o">=</span> <span class="s2">&quot;http://puppet-vagrant-boxes.puppetlabs.com/centos-64-x64-fusion503-nocm.box&quot;</span>
+</span><span class='line'>Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+</span><span class='line'>  config.vm.box = "centos-64-x64-nocm"
+</span><span class='line'>  config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/centos-64-x64-fusion503-nocm.box"
 </span><span class='line'>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">pe_build</span><span class="o">.</span><span class="n">version</span>       <span class="o">=</span> <span class="s1">&#39;3.1.0&#39;</span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">pe_build</span><span class="o">.</span><span class="n">download_root</span> <span class="o">=</span> <span class="s1">&#39;https://s3.amazonaws.com/pe-builds/released&#39;</span>
+</span><span class='line'>  config.pe_build.version       = '3.1.0'
+</span><span class='line'>  config.pe_build.download_root = 'https://s3.amazonaws.com/pe-builds/released'
 </span><span class='line'>
-</span><span class='line'><span class="c1">## Master</span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:master</span> <span class="k">do</span> <span class="o">|</span><span class="n">master</span><span class="o">|</span>
+</span><span class='line'>## Master
+</span><span class='line'>  config.vm.define :master do |master|
 </span><span class='line'>
-</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provider</span> <span class="ss">:vmware_fusion</span> <span class="k">do</span> <span class="o">|</span><span class="n">v</span><span class="o">|</span>
-</span><span class='line'>      <span class="n">v</span><span class="o">.</span><span class="n">vmx</span><span class="o">[</span><span class="s2">&quot;memsize&quot;</span><span class="o">]</span>  <span class="o">=</span> <span class="s2">&quot;4096&quot;</span>
-</span><span class='line'>      <span class="n">v</span><span class="o">.</span><span class="n">vmx</span><span class="o">[</span><span class="s2">&quot;numvcpus&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="s2">&quot;4&quot;</span>
-</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>    master.vm.provider :vmware_fusion do |v|
+</span><span class='line'>      v.vmx["memsize"]  = "4096"
+</span><span class='line'>      v.vmx["numvcpus"] = "4"
+</span><span class='line'>    end
 </span><span class='line'>
-</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.100&quot;</span>
+</span><span class='line'>    master.vm.network :private_network, ip: "10.10.100.100"
 </span><span class='line'>
-</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
-</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
+</span><span class='line'>    master.vm.hostname = 'master.puppetlabs.vm'
+</span><span class='line'>    master.vm.provision :hosts
 </span><span class='line'>
-</span><span class='line'>    <span class="n">master</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
-</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="ss">:master</span>
-</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>    master.vm.provision :pe_bootstrap do |pe|
+</span><span class='line'>      pe.role = :master
+</span><span class='line'>    end
 </span><span class='line'>
-</span><span class='line'>    <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="s2">&quot;shell&quot;</span><span class="p">,</span>
-</span><span class='line'>      <span class="ss">inline</span><span class="p">:</span> <span class="s2">&quot;service iptables stop&quot;</span>
-</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>    config.vm.provision "shell",
+</span><span class='line'>      inline: "service iptables stop"
+</span><span class='line'>  end
 </span><span class='line'>
-</span><span class='line'><span class="c1">## agent 1</span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:agent1</span> <span class="k">do</span> <span class="o">|</span><span class="n">agent</span><span class="o">|</span>
+</span><span class='line'>## agent 1
+</span><span class='line'>  config.vm.define :agent1 do |agent|
 </span><span class='line'>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provider</span> <span class="ss">:vmware_fusion</span>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.111&quot;</span>
+</span><span class='line'>    agent.vm.provider :vmware_fusion
+</span><span class='line'>    agent.vm.network :private_network, ip: "10.10.100.111"
 </span><span class='line'>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;agent1.puppetlabs.vm&#39;</span>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
+</span><span class='line'>    agent.vm.hostname = 'agent1.puppetlabs.vm'
+</span><span class='line'>    agent.vm.provision :hosts
 </span><span class='line'>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
-</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span>   <span class="o">=</span>  <span class="ss">:agent</span>
-</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
-</span><span class='line'>    <span class="k">end</span>
-</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>    agent.vm.provision :pe_bootstrap do |pe|
+</span><span class='line'>      pe.role   =  :agent
+</span><span class='line'>      pe.master = 'master.puppetlabs.vm'
+</span><span class='line'>    end
+</span><span class='line'>  end
 </span><span class='line'>
-</span><span class='line'><span class="c1">## agent 2</span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:agent2</span> <span class="k">do</span> <span class="o">|</span><span class="n">agent</span><span class="o">|</span>
+</span><span class='line'>## agent 2
+</span><span class='line'>  config.vm.define :agent2 do |agent|
 </span><span class='line'>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provider</span> <span class="ss">:vmware_fusion</span>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.112&quot;</span>
+</span><span class='line'>    agent.vm.provider :vmware_fusion
+</span><span class='line'>    agent.vm.network :private_network, ip: "10.10.100.112"
 </span><span class='line'>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;agent2.puppetlabs.vm&#39;</span>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
+</span><span class='line'>    agent.vm.hostname = 'agent2.puppetlabs.vm'
+</span><span class='line'>    agent.vm.provision :hosts
 </span><span class='line'>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
-</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span>   <span class="o">=</span>  <span class="ss">:agent</span>
-</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
-</span><span class='line'>    <span class="k">end</span>
-</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>    agent.vm.provision :pe_bootstrap do |pe|
+</span><span class='line'>      pe.role   =  :agent
+</span><span class='line'>      pe.master = 'master.puppetlabs.vm'
+</span><span class='line'>    end
+</span><span class='line'>  end
 </span><span class='line'>
-</span><span class='line'><span class="c1">## agent 3</span>
-</span><span class='line'>  <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:agent3</span> <span class="k">do</span> <span class="o">|</span><span class="n">agent</span><span class="o">|</span>
+</span><span class='line'>## agent 3
+</span><span class='line'>  config.vm.define :agent3 do |agent|
 </span><span class='line'>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provider</span> <span class="ss">:vmware_fusion</span>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.113&quot;</span>
+</span><span class='line'>    agent.vm.provider :vmware_fusion
+</span><span class='line'>    agent.vm.network :private_network, ip: "10.10.100.113"
 </span><span class='line'>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;agent3.puppetlabs.vm&#39;</span>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
+</span><span class='line'>    agent.vm.hostname = 'agent3.puppetlabs.vm'
+</span><span class='line'>    agent.vm.provision :hosts
 </span><span class='line'>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
-</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span>   <span class="o">=</span>  <span class="ss">:agent</span>
-</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
-</span><span class='line'>    <span class="k">end</span>
-</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>    agent.vm.provision :pe_bootstrap do |pe|
+</span><span class='line'>      pe.role   =  :agent
+</span><span class='line'>      pe.master = 'master.puppetlabs.vm'
+</span><span class='line'>    end
+</span><span class='line'>  end
 </span><span class='line'>
-</span><span class='line'><span class="c1">## agent 4</span>
-</span><span class='line'>   <span class="n">config</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">define</span> <span class="ss">:agent4</span> <span class="k">do</span> <span class="o">|</span><span class="n">agent</span><span class="o">|</span>
+</span><span class='line'>## agent 4
+</span><span class='line'>   config.vm.define :agent4 do |agent|
 </span><span class='line'>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provider</span> <span class="ss">:vmware_fusion</span> <span class="k">do</span> <span class="o">|</span><span class="n">v</span><span class="o">|</span>
-</span><span class='line'>      <span class="n">v</span><span class="o">.</span><span class="n">vmx</span><span class="o">[</span><span class="s2">&quot;memsize&quot;</span><span class="o">]</span>  <span class="o">=</span> <span class="s2">&quot;1024&quot;</span>
-</span><span class='line'>      <span class="n">v</span><span class="o">.</span><span class="n">vmx</span><span class="o">[</span><span class="s2">&quot;numvcpus&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="s2">&quot;2&quot;</span>
-</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>    agent.vm.provider :vmware_fusion do |v|
+</span><span class='line'>      v.vmx["memsize"]  = "1024"
+</span><span class='line'>      v.vmx["numvcpus"] = "2"
+</span><span class='line'>    end
 </span><span class='line'>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">network</span> <span class="ss">:private_network</span><span class="p">,</span> <span class="ss">ip</span><span class="p">:</span> <span class="s2">&quot;10.10.100.114&quot;</span>
+</span><span class='line'>    agent.vm.network :private_network, ip: "10.10.100.114"
 </span><span class='line'>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">hostname</span> <span class="o">=</span> <span class="s1">&#39;agent4.puppetlabs.vm&#39;</span>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:hosts</span>
+</span><span class='line'>    agent.vm.hostname = 'agent4.puppetlabs.vm'
+</span><span class='line'>    agent.vm.provision :hosts
 </span><span class='line'>
-</span><span class='line'>    <span class="n">agent</span><span class="o">.</span><span class="n">vm</span><span class="o">.</span><span class="n">provision</span> <span class="ss">:pe_bootstrap</span> <span class="k">do</span> <span class="o">|</span><span class="n">pe</span><span class="o">|</span>
-</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="ss">:agent</span>
-</span><span class='line'>      <span class="n">pe</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="s1">&#39;master.puppetlabs.vm&#39;</span>
-</span><span class='line'>    <span class="k">end</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>    agent.vm.provision :pe_bootstrap do |pe|
+</span><span class='line'>      pe.role = :agent
+</span><span class='line'>      pe.master = 'master.puppetlabs.vm'
+</span><span class='line'>    end
+</span><span class='line'>  end
+</span><span class='line'>end</span></code></pre></td></tr></table></div></figure>
 
 
 <p>This error occured on an ActiveMQ install that works as the message que for a 1000 node deployment of puppet agents. To get terminology straight here, we have puppet agents and AMQ agents running on these 1000 nodes. They&rsquo;re all qued from a singular AMQ broker.</p>
@@ -305,11 +304,10 @@ INFO | jvm 1 | 2014/03/11 16:12:34 | Exception in thread "ActiveMQ BrokerService
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master vagrant<span class="o">]</span><span class="c"># pgrep -f pe-activemq</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master vagrant]# pgrep -f pe-activemq
 </span><span class='line'>1271
-</span><span class='line'><span class="o">[</span>root@master vagrant<span class="o">]</span><span class="c"># cat /proc/1271/limits | grep files</span>
-</span><span class='line'>Max open files            <span class="m">1024</span>                 <span class="m">4096</span>                 files
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>[root@master vagrant]# cat /proc/1271/limits | grep files
+</span><span class='line'>Max open files            1024                 4096                 files</span></code></pre></td></tr></table></div></figure>
 
 
 <p>My soft limit is 1024 open files, and after rando .jars and logs and stuff that really feels like more around 800. So this is on the money, as far as what the docs say for ActiveMQ servers per broker.</p>
@@ -323,19 +321,17 @@ INFO | jvm 1 | 2014/03/11 16:12:34 | Exception in thread "ActiveMQ BrokerService
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master vagrant<span class="o">]</span><span class="c"># echo -n &quot;Max open files=3:3&quot; &gt; /proc/1271/limits</span>
-</span><span class='line'><span class="o">[</span>root@master vagrant<span class="o">]</span><span class="c"># cat /proc/1271/limits | grep files</span>
-</span><span class='line'>Max open files            <span class="m">3</span>                    <span class="m">3</span>                    files
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master vagrant]# echo -n "Max open files=3:3" > /proc/1271/limits
+</span><span class='line'>[root@master vagrant]# cat /proc/1271/limits | grep files
+</span><span class='line'>Max open files            3                    3                    files</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Why 3? Because:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>root@master vagrant<span class="o">]</span><span class="c"># ls /proc/1271/fd | wc -l</span>
-</span><span class='line'>6
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master vagrant]# ls /proc/1271/fd | wc -l
+</span><span class='line'>6</span></code></pre></td></tr></table></div></figure>
 
 
 <p>So a quick &lsquo;service pe-activemq restart&rsquo; and bang&hellip;</p>
@@ -349,12 +345,11 @@ INFO | jvm 1 | 2014/03/11 16:12:34 | Exception in thread "ActiveMQ BrokerService
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">[</span><span class="n">root</span><span class="vi">@master</span> <span class="n">vagrant</span><span class="o">]</span><span class="c1"># ulimit -n 10</span>
-</span><span class='line'><span class="o">[</span><span class="n">root</span><span class="vi">@master</span> <span class="n">vagrant</span><span class="o">]</span><span class="c1"># service pe-activemq restart</span>
-</span><span class='line'><span class="sr">/etc/ini</span><span class="n">t</span><span class="o">.</span><span class="n">d</span><span class="o">/</span><span class="ss">functions</span><span class="p">:</span> <span class="n">redirection</span> <span class="ss">error</span><span class="p">:</span> <span class="n">cannot</span> <span class="n">duplicate</span> <span class="ss">fd</span><span class="p">:</span> <span class="no">Invalid</span> <span class="n">argument</span>
-</span><span class='line'><span class="no">Stopping</span> <span class="n">pe</span><span class="o">-</span><span class="ss">activemq</span><span class="p">:</span>                                      <span class="o">[</span>  <span class="no">OK</span>  <span class="o">]</span>
-</span><span class='line'><span class="no">Starting</span> <span class="n">pe</span><span class="o">-</span><span class="ss">activemq</span><span class="p">:</span>                                      <span class="o">[</span>  <span class="no">OK</span>  <span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[root@master vagrant]# ulimit -n 10
+</span><span class='line'>[root@master vagrant]# service pe-activemq restart
+</span><span class='line'>/etc/init.d/functions: redirection error: cannot duplicate fd: Invalid argument
+</span><span class='line'>Stopping pe-activemq:                                      [  OK  ]
+</span><span class='line'>Starting pe-activemq:                                      [  OK  ]</span></code></pre></td></tr></table></div></figure>
 
 
 <p>The trick here is getting close enough to the lowest possible resource limits with out getting the</p>
@@ -480,8 +475,6 @@ INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many ope
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2014/01/17/extracting-json-from-puppet-yaml-report/" title="Previous Post: Extracting JSON from Puppet YAML Report">&laquo; Extracting JSON from Puppet YAML Report</a>
-      
       
         <a class="basic-alignment right" href="/blog/2014/03/17/tls-slash-ssl-dh-cipher-padding-bug-in-activemq/" title="Next Post: TLS/SSL DH Cipher Padding Bug in ActiveMQ">TLS/SSL DH Cipher Padding Bug in ActiveMQ &raquo;</a>
       
@@ -498,7 +491,7 @@ INFO   | jvm 4    | 2014/03/13 03:32:39 | java.net.SocketException: Too many ope
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/09/19/day2-logging/">DC/OS Day 2 Operations</a>
       </li>
     
       <li class="post">

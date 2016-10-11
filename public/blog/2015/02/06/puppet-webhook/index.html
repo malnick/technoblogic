@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Puppet-webhook - Technoblogic</title>
+  <title>Puppet-webhook - Technoblogic(.io)</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://technoblogic.io/blog/2015/02/06/puppet-webhook/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic(.io)" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,9 +36,9 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Technoblogic</a></h1>
+  <h1><a href="/">Technoblogic(.io)</a></h1>
   
-    <h2>A Technology Blog.</h2>
+    <h2>Shameful Self Promotion</h2>
   
 </hgroup>
 
@@ -95,31 +95,29 @@
 
 <p>This module contains a <code>http</code> type which can be ensureed to GET or POST. At the time of this writing the POST route has not been completed, however the GET route is implemnted as:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">http</span> <span class="p">{</span> <span class="s1">&#39;the_route&#39;</span><span class="p">:</span>
-</span><span class='line'>    <span class="k">ensure</span>  <span class="o">=&gt;</span> <span class="n">get</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">fqdn</span>    <span class="o">=&gt;</span> <span class="s1">&#39;your.domain.com&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">port</span>    <span class="o">=&gt;</span> <span class="s1">&#39;6969&#39;</span><span class="p">,</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>http { 'the_route':
+</span><span class='line'>    ensure  =&gt; get,
+</span><span class='line'>    fqdn    =&gt; 'your.domain.com',
+</span><span class='line'>    port    =&gt; '6969',
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <p>This construction will essentially execute:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">curl</span> <span class="ss">http</span><span class="p">:</span><span class="sr">//</span><span class="n">your</span><span class="o">.</span><span class="n">domain</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="mi">6969</span><span class="o">/</span><span class="n">the_route</span>
-</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>curl http://your.domain.com:6969/the_route</span></code></pre></td></tr></table></div></figure>
 
 
 <h3>Real world example</h3>
 
 <p>Ok great, now we have an access point to the ruby HTTP lib from Puppet. Now what? Well, eventually you&rsquo;ll be able to do something like this:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -129,17 +127,16 @@
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
 <span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">http</span> <span class="p">{</span> <span class="s1">&#39;my_api&#39;</span><span class="p">:</span>
-</span><span class='line'>    <span class="k">ensure</span>  <span class="o">=&gt;</span> <span class="n">post</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">fqdn</span>    <span class="o">=&gt;</span> <span class="s1">&#39;your.domain.com&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">port</span>    <span class="o">=&gt;</span> <span class="s1">&#39;6969&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="n">data</span>    <span class="o">=&gt;</span> <span class="p">{</span>
-</span><span class='line'>        <span class="s1">&#39;my_key&#39;</span>        <span class="o">=&gt;</span> <span class="s1">&#39;some_value&#39;</span><span class="p">,</span>
-</span><span class='line'>        <span class="s1">&#39;another_key&#39;</span>   <span class="o">=&gt;</span> <span class="vg">$:</span><span class="ss">:some_fact</span><span class="p">,</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="n">header</span>  <span class="o">=&gt;</span> <span class="s1">&#39;application/json&#39;</span><span class="p">,</span> <span class="c1"># or maybe javascript? or whatever your hook expects...</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>http { 'my_api':
+</span><span class='line'>    ensure  =&gt; post,
+</span><span class='line'>    fqdn    =&gt; 'your.domain.com',
+</span><span class='line'>    port    =&gt; '6969',
+</span><span class='line'>    data    =&gt; {
+</span><span class='line'>        'my_key'        =&gt; 'some_value',
+</span><span class='line'>        'another_key'   =&gt; $::some_fact,
+</span><span class='line'>    }
+</span><span class='line'>    header  =&gt; 'application/json', # or maybe javascript? or whatever your hook expects...
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Now that&rsquo;s a more complex example. What if all I want to do is execute a puppet run on my haproxy node after new nodes come up behind it?</p>
@@ -154,7 +151,7 @@
 
 <p>Given a role of <code>haproxy_member_backend_service</code>:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -165,23 +162,22 @@
 <span class='line-number'>9</span>
 <span class='line-number'>10</span>
 <span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="n">roles</span><span class="o">::</span><span class="n">haproxy_member_backend_service</span> <span class="p">{</span>
-</span><span class='line'>    <span class="n">stage</span> <span class="p">{</span> <span class="s1">&#39;last&#39;</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">requires</span> <span class="o">=&gt;</span> <span class="no">Stage</span><span class="o">[</span><span class="s1">&#39;main&#39;</span><span class="o">]</span><span class="p">,</span>
-</span><span class='line'>    <span class="p">}</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>class roles::haproxy_member_backend_service {
+</span><span class='line'>    stage { 'last':
+</span><span class='line'>        requires =&gt; Stage['main'],
+</span><span class='line'>    }
 </span><span class='line'>
-</span><span class='line'>    <span class="c1">#... a bunch of code</span>
+</span><span class='line'>    #... a bunch of code
 </span><span class='line'>
-</span><span class='line'>    <span class="k">class</span> <span class="p">{</span> <span class="s1">&#39;profiles::update_loadbalancer&#39;</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">stage</span> <span class="o">=&gt;</span> <span class="s1">&#39;last&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>    class { 'profiles::update_loadbalancer':
+</span><span class='line'>        stage =&gt; 'last',
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <p>&hellip;and a update_loadbalancer profiles like:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -189,20 +185,19 @@
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
 <span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="n">profiles</span><span class="o">::</span><span class="n">update_loadbalancer</span> <span class="p">{</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">http</span> <span class="p">{</span> <span class="s1">&#39;update_loadbalancer&#39;</span><span class="p">:</span>
-</span><span class='line'>        <span class="k">ensure</span>  <span class="o">=&gt;</span> <span class="n">get</span><span class="p">,</span>
-</span><span class='line'>        <span class="n">port</span>    <span class="o">=&gt;</span> <span class="s1">&#39;6969&#39;</span><span class="p">,</span>
-</span><span class='line'>        <span class="n">fqdn</span>    <span class="o">=&gt;</span> <span class="s1">&#39;my.puppetmaster.com&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>class profiles::update_loadbalancer {
+</span><span class='line'>    
+</span><span class='line'>    http { 'update_loadbalancer':
+</span><span class='line'>        ensure  =&gt; get,
+</span><span class='line'>        port    =&gt; '6969',
+</span><span class='line'>        fqdn    =&gt; 'my.puppetmaster.com',
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <p>We can implement a webhook profile that is included in our puppetmaster module (or role, if your puppetmaster doesn&rsquo;t need a lot of configuration like mine) like this (which uses the handy <code>webhook::listener</code> defined type) to build out a dynamically generated sinatra server:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -215,25 +210,24 @@
 <span class='line-number'>11</span>
 <span class='line-number'>12</span>
 <span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="n">puppetmaster</span><span class="o">::</span><span class="n">webhook</span> <span class="p">{</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>class puppetmaster::webhook {
 </span><span class='line'>
-</span><span class='line'>    <span class="kp">include</span> <span class="n">webhook</span>
-</span><span class='line'>    <span class="n">webhook</span><span class="o">::</span><span class="n">listener</span> <span class="p">{</span><span class="s1">&#39;puppet&#39;</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">port</span> <span class="o">=&gt;</span> <span class="s1">&#39;6969&#39;</span><span class="p">,</span>
-</span><span class='line'>        <span class="n">routes</span>            <span class="o">=&gt;</span> <span class="p">{</span>
-</span><span class='line'>            <span class="s1">&#39;kick_haproxy_app_internal&#39;</span>  <span class="o">=&gt;</span> <span class="p">{</span>
-</span><span class='line'>                <span class="s1">&#39;method&#39;</span>  <span class="o">=&gt;</span> <span class="s1">&#39;get&#39;</span><span class="p">,</span>
-</span><span class='line'>                <span class="s1">&#39;command&#39;</span> <span class="o">=&gt;</span> <span class="s2">&quot;su - peadmin -c &#39;mco puppet runonce -F role=haproxy_app_internal&#39;&quot;</span>
-</span><span class='line'>            <span class="p">},</span>
-</span><span class='line'>        <span class="p">}</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>    include webhook
+</span><span class='line'>    webhook::listener {'puppet':
+</span><span class='line'>        port =&gt; '6969',
+</span><span class='line'>        routes            =&gt; { 
+</span><span class='line'>            'kick_haproxy_app_internal'  =&gt; {
+</span><span class='line'>                'method'  =&gt; 'get',
+</span><span class='line'>                'command' =&gt; "su - peadmin -c 'mco puppet runonce -F role=haproxy_app_internal'"
+</span><span class='line'>            },
+</span><span class='line'>        }
+</span><span class='line'>    }
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <p>That <code>webhook::listener</code> builds a sinatra server at <code>/usr/local/bin/webhook_puppet/</code>. It looks like this:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -280,54 +274,53 @@
 <span class='line-number'>45</span>
 <span class='line-number'>46</span>
 <span class='line-number'>47</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">require</span> <span class="s1">&#39;rubygems&#39;</span>
-</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;rack&#39;</span>
-</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;sinatra&#39;</span>
-</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;webrick&#39;</span>
-</span><span class='line'><span class="nb">require</span> <span class="s1">&#39;logger&#39;</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>require 'rubygems'
+</span><span class='line'>require 'rack'
+</span><span class='line'>require 'sinatra'
+</span><span class='line'>require 'webrick'
+</span><span class='line'>require 'logger'
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Global vars</span>
-</span><span class='line'><span class="no">LOGDIR</span>              <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">expand_path</span><span class="p">(</span><span class="no">File</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">__FILE__</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;/../logs&#39;</span>
-</span><span class='line'><span class="no">SERVER_LOGFILE</span>  <span class="o">=</span> <span class="no">LOGDIR</span> <span class="o">+</span> <span class="s1">&#39;/server.log&#39;</span>
-</span><span class='line'><span class="no">SESSION_LOG</span>         <span class="o">=</span> <span class="no">LOGDIR</span> <span class="o">+</span> <span class="s1">&#39;/session.log&#39;</span>
+</span><span class='line'># Global vars
+</span><span class='line'>LOGDIR              = File.expand_path(File.dirname(__FILE__)) + '/../logs'
+</span><span class='line'>SERVER_LOGFILE  = LOGDIR + '/server.log'
+</span><span class='line'>SESSION_LOG         = LOGDIR + '/session.log'
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Reset some envs</span>
-</span><span class='line'><span class="no">ENV</span><span class="o">[</span><span class="s1">&#39;HOME&#39;</span><span class="o">]</span>     <span class="o">=</span> <span class="s1">&#39;/root&#39;</span>
-</span><span class='line'><span class="no">ENV</span><span class="o">[</span><span class="s1">&#39;PATH&#39;</span><span class="o">]</span>     <span class="o">=</span> <span class="s1">&#39;/sbin:/usr/sbin:/bin:/usr/bin:/opt/puppet/bin&#39;</span>
-</span><span class='line'><span class="no">ENV</span><span class="o">[</span><span class="s1">&#39;RACK_ENV&#39;</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;production&#39;</span>
+</span><span class='line'># Reset some envs
+</span><span class='line'>ENV['HOME']     = '/root'
+</span><span class='line'>ENV['PATH']     = '/sbin:/usr/sbin:/bin:/usr/bin:/opt/puppet/bin'
+</span><span class='line'>ENV['RACK_ENV'] = 'production'
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Implement an access log for robust logging of user info and access and git output</span>
-</span><span class='line'><span class="no">LOG</span> <span class="o">=</span> <span class="no">Logger</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">SESSION_LOG</span><span class="p">)</span>
-</span><span class='line'><span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting session log at </span><span class="si">#{</span><span class="no">SESSION_LOG</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting server log at </span><span class="si">#{</span><span class="no">SERVER_LOGFILE</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span class='line'># Implement an access log for robust logging of user info and access and git output
+</span><span class='line'>LOG = Logger.new(SESSION_LOG)
+</span><span class='line'>LOG.info("Setting session log at #{SESSION_LOG}")
+</span><span class='line'>LOG.info("Setting server log at #{SERVER_LOGFILE}")
 </span><span class='line'>
-</span><span class='line'><span class="c1"># Server options</span>
-</span><span class='line'><span class="n">opts</span> <span class="o">=</span> <span class="p">{</span>
-</span><span class='line'>    <span class="ss">:Port</span>               <span class="o">=&gt;</span> <span class="mi">6969</span><span class="p">,</span>
-</span><span class='line'>    <span class="ss">:Logger</span>             <span class="o">=&gt;</span> <span class="no">WEBrick</span><span class="o">::</span><span class="no">Log</span><span class="o">::</span><span class="kp">new</span><span class="p">(</span><span class="no">SERVER_LOGFILE</span><span class="p">,</span> <span class="no">WEBrick</span><span class="o">::</span><span class="no">Log</span><span class="o">::</span><span class="no">DEBUG</span><span class="p">),</span>
-</span><span class='line'>    <span class="ss">:ServerType</span>         <span class="o">=&gt;</span> <span class="no">WEBrick</span><span class="o">::</span><span class="no">Daemon</span><span class="p">,</span>
-</span><span class='line'>    <span class="ss">:SSLEnable</span>          <span class="o">=&gt;</span> <span class="kp">false</span><span class="p">,</span>
-</span><span class='line'><span class="p">}</span>
+</span><span class='line'># Server options
+</span><span class='line'>opts = {
+</span><span class='line'>    :Port               =&gt; 6969,
+</span><span class='line'>    :Logger             =&gt; WEBrick::Log::new(SERVER_LOGFILE, WEBrick::Log::DEBUG),
+</span><span class='line'>    :ServerType         =&gt; WEBrick::Daemon,
+</span><span class='line'>    :SSLEnable          =&gt; false,
+</span><span class='line'>}
 </span><span class='line'>
-</span><span class='line'><span class="k">class</span> <span class="nc">Server</span> <span class="o">&lt;</span> <span class="no">Sinatra</span><span class="o">::</span><span class="no">Base</span>
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'>    <span class="n">get</span> <span class="s1">&#39;/kick_haproxy_app_internal&#39;</span> <span class="k">do</span>
-</span><span class='line'>        <span class="no">IO</span><span class="o">.</span><span class="n">popen</span><span class="p">(</span><span class="s2">&quot;su - peadmin -c &#39;mco puppet runonce -F role=haproxy_app_internal&#39;&quot;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">output</span><span class="o">|</span>
-</span><span class='line'>            <span class="n">output</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">line</span><span class="o">|</span> <span class="no">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="o">.</span><span class="n">chomp</span><span class="p">)</span> <span class="k">end</span>
-</span><span class='line'>        <span class="k">end</span>
-</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>class Server &lt; Sinatra::Base
 </span><span class='line'>
 </span><span class='line'>
-</span><span class='line'>    <span class="n">not_found</span> <span class="k">do</span>
-</span><span class='line'>        <span class="n">halt</span> <span class="mi">404</span><span class="p">,</span> <span class="s1">&#39;You shall not pass! (page not found)&#39;</span>
-</span><span class='line'>    <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
+</span><span class='line'>    get '/kick_haproxy_app_internal' do
+</span><span class='line'>        IO.popen("su - peadmin -c 'mco puppet runonce -F role=haproxy_app_internal'") do |output|
+</span><span class='line'>            output.each do |line| LOG.info(line.strip.chomp) end
+</span><span class='line'>        end
+</span><span class='line'>    end
 </span><span class='line'>
-</span><span class='line'><span class="no">Rack</span><span class="o">::</span><span class="no">Handler</span><span class="o">::</span><span class="no">WEBrick</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="no">Server</span><span class="p">,</span> <span class="n">opts</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">server</span><span class="o">|</span>
-</span><span class='line'>    <span class="o">[</span><span class="ss">:INT</span><span class="p">,</span> <span class="ss">:TERM</span><span class="o">].</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">sig</span><span class="o">|</span> <span class="nb">trap</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="p">{</span> <span class="n">server</span><span class="o">.</span><span class="n">stop</span> <span class="p">}</span> <span class="p">}</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>
+</span><span class='line'>    not_found do
+</span><span class='line'>        halt 404, 'You shall not pass! (page not found)'
+</span><span class='line'>    end
+</span><span class='line'>end
+</span><span class='line'>
+</span><span class='line'>Rack::Handler::WEBrick.run(Server, opts) do |server|
+</span><span class='line'>    [:INT, :TERM].each { |sig| trap(sig) { server.stop } }
+</span><span class='line'>end</span></code></pre></td></tr></table></div></figure>
 
 
 <p>You can add as many routes as you&rsquo;d like to the <code>routes</code> parameter in the <code>webhook::listener</code> define. It&rsquo;s great for quickly building and codifying your API infrastructure. For now, it only works with very simple things like &lsquo;I need to run this arbitrary command on a box on POST or GET&rsquo;, but I&rsquo;m going to build it out with more complex routes as defautls such as:</p>
@@ -353,7 +346,7 @@
 
 <p>I&rsquo;m going to add the above mentioned route for Jenkins as an optional default. That route is the glue that ties in how we execute puppet runs via MCO when new builds are pushed down the pipeline. The flow would look something like this:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -369,38 +362,36 @@
 <span class='line-number'>14</span>
 <span class='line-number'>15</span>
 <span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">On</span> <span class="n">my</span><span class="o">.</span><span class="n">jenkins</span><span class="o">.</span><span class="n">com</span><span class="p">,</span> <span class="n">final</span> <span class="n">build</span> <span class="n">process</span> <span class="ss">is</span><span class="p">:</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>On my.jenkins.com, final build process is: 
 </span><span class='line'>
-</span><span class='line'>    <span class="no">POST</span> <span class="n">my</span><span class="o">.</span><span class="n">puppetmaster</span><span class="o">.</span><span class="n">com</span> <span class="p">{</span>
-</span><span class='line'>        <span class="s1">&#39;environment&#39;</span>   <span class="o">=</span> <span class="s1">&#39;production&#39;</span><span class="p">,</span>
-</span><span class='line'>        <span class="s1">&#39;role           = &#39;</span><span class="n">some_micro_service_backend</span><span class="s1">&#39;,</span>
-</span><span class='line'><span class="s1">        &#39;</span><span class="n">version</span>        <span class="o">=</span> <span class="s1">&#39;2.1.4&#39;</span>
-</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    POST my.puppetmaster.com {
+</span><span class='line'>        'environment'   = 'production',
+</span><span class='line'>        'role           = 'some_micro_service_backend',
+</span><span class='line'>        'version        = '2.1.4'
+</span><span class='line'>    }
 </span><span class='line'>
-</span><span class='line'><span class="no">On</span> <span class="n">my</span><span class="o">.</span><span class="n">puppetmaster</span><span class="o">.</span><span class="n">com</span><span class="p">,</span> <span class="n">upon</span> <span class="n">receiving</span> <span class="no">POST</span> <span class="n">from</span> <span class="n">my</span><span class="o">.</span><span class="n">jenkins</span><span class="o">.</span><span class="n">com</span> <span class="n">with</span> <span class="n">the</span> <span class="n">above</span> <span class="ss">JSON</span><span class="p">:</span>
+</span><span class='line'>On my.puppetmaster.com, upon receiving POST from my.jenkins.com with the above JSON: 
 </span><span class='line'>
-</span><span class='line'>    <span class="mi">1</span><span class="o">.</span> <span class="no">Update</span> <span class="n">hieradata</span> <span class="n">at</span> <span class="sr">/etc/</span><span class="n">puppetlabs</span><span class="o">/</span><span class="n">puppet</span><span class="o">/</span><span class="n">environments</span><span class="o">/</span><span class="c1">#{environment}/roles/#{role}.yaml </span>
-</span><span class='line'>    <span class="n">with</span> <span class="n">the</span> <span class="n">correct</span> <span class="c1">#{version} from jenkins.</span>
-</span><span class='line'>    <span class="mi">2</span><span class="o">.</span> <span class="no">Commit</span> <span class="n">the</span> <span class="kp">new</span> <span class="n">version</span> <span class="ow">and</span> <span class="n">push</span> <span class="n">back</span> <span class="n">up</span> <span class="n">to</span> <span class="n">our</span> <span class="n">control</span> <span class="n">repo</span> <span class="n">where</span> <span class="n">hieradata</span> <span class="n">dir</span> <span class="n">actually</span> <span class="n">resides</span><span class="o">.</span>
-</span><span class='line'>    <span class="mi">3</span><span class="o">.</span> <span class="ss">Execute</span><span class="p">:</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="n">mco</span> <span class="n">puppet</span> <span class="n">runonce</span> <span class="o">-</span><span class="n">F</span> <span class="s1">&#39;role=#{role}&#39;</span>
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>    1. Update hieradata at /etc/puppetlabs/puppet/environments/#{environment}/roles/#{role}.yaml 
+</span><span class='line'>    with the correct #{version} from jenkins.
+</span><span class='line'>    2. Commit the new version and push back up to our control repo where hieradata dir actually resides. 
+</span><span class='line'>    3. Execute:
+</span><span class='line'>        
+</span><span class='line'>        mco puppet runonce -F 'role=#{role}' </span></code></pre></td></tr></table></div></figure>
 
 
 <p>Boom, we just implemented and end-to-end CI chain from our Jenkins build process, which updated our Puppet Master with the new version of the micro service, which pushed the version to git, and ran puppet on the node whose role matches the micro service being updated.</p>
 
 <p>In our infrastructure the profile for the micro service executes a <code>s3file</code> resource to pull down the build which matches:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">s3file</span> <span class="p">{</span> <span class="s1">&#39;micro_service_${version}:</span>
-</span><span class='line'><span class="s1">    path    =&gt; &#39;</span><span class="o">/</span><span class="n">some</span><span class="o">/</span><span class="n">bucket</span><span class="o">/</span><span class="err">&#39;</span><span class="p">,</span>
-</span><span class='line'>    <span class="k">ensure</span>  <span class="o">=&gt;</span> <span class="n">latest</span><span class="p">,</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>s3file { 'micro_service_${version}:
+</span><span class='line'>    path    =&gt; '/some/bucket/',
+</span><span class='line'>    ensure  =&gt; latest,
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
 
 
 <p>When the node consuming the <code>mco puppet runonce</code> publication runs puppet, that profile ensures we get the latest revision of our code. d</p>
@@ -462,7 +453,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/09/19/day2-logging/">DC/OS Day 2 Operations</a>
       </li>
     
       <li class="post">

@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Weak Diffe-Helman SSL Ciphers - Technoblogic</title>
+  <title>Weak Diffe-Helman SSL Ciphers - Technoblogic(.io)</title>
   <meta name="author" content="Jeff Malnick">
 
   
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://technoblogic.io/blog/2015/07/21/weak-dh-ciphers/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic(.io)" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,9 +36,9 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Technoblogic</a></h1>
+  <h1><a href="/">Technoblogic(.io)</a></h1>
   
-    <h2>A Technology Blog.</h2>
+    <h2>Shameful Self Promotion</h2>
   
 </hgroup>
 
@@ -100,7 +100,7 @@
 
 <p>In order to double check the SSL labs output, I ran my own scan using nmap:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -151,65 +151,64 @@
 <span class='line-number'>49</span>
 <span class='line-number'>50</span>
 <span class='line-number'>51</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>nmap --script ssl-enum-ciphers -p <span class="m">443</span> srcclr.com
-</span><span class='line'>Starting Nmap 6.47 <span class="o">(</span> http://nmap.org <span class="o">)</span> at 2015-07-21 11:31 PDT
-</span><span class='line'>Nmap scan report <span class="k">for</span> srcclr.com <span class="o">(</span>107.23.63.147<span class="o">)</span>
-</span><span class='line'>Host is up <span class="o">(</span>0.094s latency<span class="o">)</span>.
-</span><span class='line'>Other addresses <span class="k">for</span> srcclr.com <span class="o">(</span>not scanned<span class="o">)</span>: 52.7.116.135
-</span><span class='line'>rDNS record <span class="k">for</span> 107.23.63.147: ec2-107-23-63-147.compute-1.amazonaws.com
+</pre></td><td class='code'><pre><code class=''><span class='line'>nmap --script ssl-enum-ciphers -p 443 srcclr.com                  
+</span><span class='line'>Starting Nmap 6.47 ( http://nmap.org ) at 2015-07-21 11:31 PDT
+</span><span class='line'>Nmap scan report for srcclr.com (107.23.63.147)
+</span><span class='line'>Host is up (0.094s latency).
+</span><span class='line'>Other addresses for srcclr.com (not scanned): 52.7.116.135
+</span><span class='line'>rDNS record for 107.23.63.147: ec2-107-23-63-147.compute-1.amazonaws.com
 </span><span class='line'>PORT    STATE SERVICE
 </span><span class='line'>443/tcp open  https
-</span><span class='line'><span class="p">|</span> ssl-enum-ciphers:
-</span><span class='line'><span class="p">|</span>   SSLv3: No supported ciphers found
-</span><span class='line'><span class="p">|</span>   TLSv1.0:
-</span><span class='line'><span class="p">|</span>     ciphers:
-</span><span class='line'><span class="p">|</span>       TLS_DHE_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>     compressors:
-</span><span class='line'><span class="p">|</span>       NULL
-</span><span class='line'><span class="p">|</span>   TLSv1.1:
-</span><span class='line'><span class="p">|</span>     ciphers:
-</span><span class='line'><span class="p">|</span>       TLS_DHE_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>     compressors:
-</span><span class='line'><span class="p">|</span>       NULL
-</span><span class='line'><span class="p">|</span>   TLSv1.2:
-</span><span class='line'><span class="p">|</span>     ciphers:
-</span><span class='line'><span class="p">|</span>       TLS_DHE_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA256 - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_GCM_SHA256 - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA256 - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_GCM_SHA384 - strong
-</span><span class='line'><span class="p">|</span>     compressors:
-</span><span class='line'><span class="p">|</span>       NULL
-</span><span class='line'><span class="p">|</span>_  least strength: strong
+</span><span class='line'>| ssl-enum-ciphers:
+</span><span class='line'>|   SSLv3: No supported ciphers found
+</span><span class='line'>|   TLSv1.0:
+</span><span class='line'>|     ciphers:
+</span><span class='line'>|       TLS_DHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'>|     compressors:
+</span><span class='line'>|       NULL
+</span><span class='line'>|   TLSv1.1:
+</span><span class='line'>|     ciphers:
+</span><span class='line'>|       TLS_DHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'>|     compressors:
+</span><span class='line'>|       NULL
+</span><span class='line'>|   TLSv1.2:
+</span><span class='line'>|     ciphers:
+</span><span class='line'>|       TLS_DHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 - strong
+</span><span class='line'>|       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_128_CBC_SHA256 - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_128_GCM_SHA256 - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_256_CBC_SHA256 - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_256_GCM_SHA384 - strong
+</span><span class='line'>|     compressors:
+</span><span class='line'>|       NULL
+</span><span class='line'>|_  least strength: strong
 </span><span class='line'>
-</span><span class='line'>Nmap <span class="k">done</span>: <span class="m">1</span> IP address <span class="o">(</span><span class="m">1</span> host up<span class="o">)</span> scanned in 4.64 seconds
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>Nmap done: 1 IP address (1 host up) scanned in 4.64 seconds</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Low and behold, there were the weak DHE non EC type ciphers.</p>
 
 <p>Our front ends for our corporate site are hosted on Elastic Load Balancers. I double checked their configuration, and it appears AWS updated the default cipher suite in May, about a month after we deployed the site. The new cipher policy removes the non EC Diffe-Helman ciphers from the list. I turned on the new policy (which should automatically default to newest, IMO) and re-ran a scan:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -258,56 +257,55 @@
 <span class='line-number'>47</span>
 <span class='line-number'>48</span>
 <span class='line-number'>49</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>nmap --script ssl-enum-ciphers -p <span class="m">443</span> srcclr.com
+</pre></td><td class='code'><pre><code class=''><span class='line'>nmap --script ssl-enum-ciphers -p 443 srcclr.com
 </span><span class='line'>
-</span><span class='line'>Starting Nmap 6.47 <span class="o">(</span> http://nmap.org <span class="o">)</span> at 2015-07-21 12:21 PDT
-</span><span class='line'>Nmap scan report <span class="k">for</span> srcclr.com <span class="o">(</span>107.23.63.147<span class="o">)</span>
-</span><span class='line'>Host is up <span class="o">(</span>0.091s latency<span class="o">)</span>.
-</span><span class='line'>Other addresses <span class="k">for</span> srcclr.com <span class="o">(</span>not scanned<span class="o">)</span>: 52.7.116.135
-</span><span class='line'>rDNS record <span class="k">for</span> 107.23.63.147: ec2-107-23-63-147.compute-1.amazonaws.com
+</span><span class='line'>Starting Nmap 6.47 ( http://nmap.org ) at 2015-07-21 12:21 PDT
+</span><span class='line'>Nmap scan report for srcclr.com (107.23.63.147)
+</span><span class='line'>Host is up (0.091s latency).
+</span><span class='line'>Other addresses for srcclr.com (not scanned): 52.7.116.135
+</span><span class='line'>rDNS record for 107.23.63.147: ec2-107-23-63-147.compute-1.amazonaws.com
 </span><span class='line'>PORT    STATE SERVICE
 </span><span class='line'>443/tcp open  https
-</span><span class='line'><span class="p">|</span> ssl-enum-ciphers:
-</span><span class='line'><span class="p">|</span>   SSLv3: No supported ciphers found
-</span><span class='line'><span class="p">|</span>   TLSv1.0:
-</span><span class='line'><span class="p">|</span>     ciphers:
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>     compressors:
-</span><span class='line'><span class="p">|</span>       NULL
-</span><span class='line'><span class="p">|</span>   TLSv1.1:
-</span><span class='line'><span class="p">|</span>     ciphers:
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>     compressors:
-</span><span class='line'><span class="p">|</span>       NULL
-</span><span class='line'><span class="p">|</span>   TLSv1.2:
-</span><span class='line'><span class="p">|</span>     ciphers:
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 - strong
-</span><span class='line'><span class="p">|</span>       TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_CBC_SHA256 - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_128_GCM_SHA256 - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_CBC_SHA256 - strong
-</span><span class='line'><span class="p">|</span>       TLS_RSA_WITH_AES_256_GCM_SHA384 - strong
-</span><span class='line'><span class="p">|</span>     compressors:
-</span><span class='line'><span class="p">|</span>       NULL
-</span><span class='line'><span class="p">|</span>_  least strength: strong
+</span><span class='line'>| ssl-enum-ciphers:
+</span><span class='line'>|   SSLv3: No supported ciphers found
+</span><span class='line'>|   TLSv1.0:
+</span><span class='line'>|     ciphers:
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'>|     compressors:
+</span><span class='line'>|       NULL
+</span><span class='line'>|   TLSv1.1:
+</span><span class='line'>|     ciphers:
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'>|     compressors:
+</span><span class='line'>|       NULL
+</span><span class='line'>|   TLSv1.2:
+</span><span class='line'>|     ciphers:
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 - strong
+</span><span class='line'>|       TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 - strong
+</span><span class='line'>|       TLS_RSA_WITH_3DES_EDE_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_128_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_128_CBC_SHA256 - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_128_GCM_SHA256 - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_256_CBC_SHA - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_256_CBC_SHA256 - strong
+</span><span class='line'>|       TLS_RSA_WITH_AES_256_GCM_SHA384 - strong
+</span><span class='line'>|     compressors:
+</span><span class='line'>|       NULL
+</span><span class='line'>|_  least strength: strong
 </span><span class='line'>
-</span><span class='line'>Nmap <span class="k">done</span>: <span class="m">1</span> IP address <span class="o">(</span><span class="m">1</span> host up<span class="o">)</span> scanned in 4.38 seconds
-</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>Nmap done: 1 IP address (1 host up) scanned in 4.38 seconds</span></code></pre></td></tr></table></div></figure>
 
 
 <p>That appeared to have done the trick. I double checked by <a href="https://www.ssllabs.com/ssltest/analyze.html?d=srcclr.com&amp;s=52.7.116.135&amp;latest">re-scanning our site on SSL labs</a>, and it came up as an A+.</p>
@@ -365,7 +363,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/09/19/day2-logging/">DC/OS Day 2 Operations</a>
       </li>
     
       <li class="post">
