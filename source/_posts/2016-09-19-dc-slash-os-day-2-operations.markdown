@@ -1,14 +1,13 @@
 ---
 layout: post
-title: "DC/OS Day 2 Operations"
+title: "DC/OS Logging API (Day 2 Operations Part 1)"
 date: 2016-09-19 13:08:44 -0700
 comments: true
 categories: 
 author: Jeff Malnick, Nicholas Parker
 ---
 This blog post is the first in a 3 part series on day 2 operations for DC/OS. The first part is an introduction to what we mean by "day 2 operations" and the first piece of this product road map, our logging API. Part 2 is on metrics gathering, shipping and integrations with popular metrics analytics solutions. The final part is on debugging and how we intend to build our debugging API for executing interactive sessions from the DC/OS CLI with a running task in the cluster. 
-
-
+<!-- more -->
 # What is day 2 operations?
 It takes more to run an application in production than installing some software and starting applications. For the operator, their job truly begins on day 2 - maintaining, upgrading, debugging a running cluster without downtime. Without this "second day" of work, the question becomes, what was all this for anyway? 
 

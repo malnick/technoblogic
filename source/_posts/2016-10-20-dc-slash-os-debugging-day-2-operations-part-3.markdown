@@ -7,7 +7,7 @@ categories:
 ---
 ## DC/OS Debugging API
 Things fail in production, many times it takes more than the logs to understand what’s going wrong. Instead of requiring end users to SSH arbitrarily across the cluster and have root access, we have built a single tool that can access any running container from a developer’s laptop without having to figure out where it is running.
-
+<!-- more -->
 What this interaction looks like to our end-users:
 
 ```

@@ -13,7 +13,7 @@ DC/OS has three main focus points for metrics:
 - Task metrics: metrics emitted by the deployed applications within each container
 
 Across these areas there are endless possibilities for metric gathering. We'll discuss how we approach each of these cases. For more information, see our recent [presentation at Mesoscon EU](http://schd.ws/hosted_files/mesosconeu2016/e7/Metrics%20on%20DC-OS%20Enterprise%20%28Mesoscon%29.pdf).
-
+<!-- more -->
 ### Host Metrics
 Host metrics such as system-wide CPU usage, Memory usage, and System load are automatically collected for each system in the cluster. This information is automatically tagged with the system it came from, via the `agent_id` tag. Because we’re running an agent on every host in the cluster, we can parse the cgroups hierarchy and publish these for free.
 
