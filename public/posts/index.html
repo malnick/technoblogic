@@ -9,7 +9,7 @@
   <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content="If you&rsquo;re getting into rspec testing for your manifests you might already know this: Puppet Enterprise has it&rsquo;s own gem environment. This &hellip;">
+  <meta name="description" content="STIG is a methodology for the implementation of security compliance across heterogeneous operating systems. Every OS has a specific STIG. The STIG &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -68,6 +68,80 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/20/brief-intro-to-puppetizing-stig-compliance/">Brief Intro to Puppetizing STIG Compliance</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-03-20T10:01:05-07:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>10:01 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>STIG is a methodology for the implementation of security compliance across heterogeneous operating systems. Every OS has a specific STIG. The STIG for a given OS is maintained and distributed by the Defense Information Systems Agency (DISA). Current STIGs can be found on the <a href="http://iase.disa.mil/stigs/">DISA website</a>.</p>
+
+<p>Puppet is an excellent tool for bringing machines into STIG compliance. At my previous job I was in <a href="https://github.com/malnick/do_debian_stig/blob/master/do_debian_stig.sh">shell script hell</a> until we spun up a POS master and started writing a STIG module that worked across all OS&rsquo;s we supported (14 linux distros, 30 territorial sys admins, ~250 nodes).</p>
+
+<p>In doing a STIG module for puppet it’s best to just work from Cat 1 down. 1 &amp; 2 offenses are pretty big, 3 &amp; 4 are usually minor security patches and can be overlooked if you’re time crunched. Staying on top of the false positives and keeping your module up to date with actual security implementation is the biggest hurdle.</p>
+
+<p>This document is a general guideline from my experience in implementing STIG compliance measures.</p>
+
+<h3>Basic STIG Process</h3>
+
+<ol>
+<li><p>Go to the DISA site and download the STIG for the appropriate OS</p></li>
+<li><p>Do some sort of benchmark scan on a base OS:</p>
+
+<ul>
+<li>I used retina (which is awful) scans that were preloaded with the appropriate <a href="http://www.public.navy.mil/spawar/Atlantic/ProductsServices/Pages/SCAP.aspx">Security Content Automation Protocol (SCAP)</a> documents (.xml files, see below).</li>
+<li> You can also get SCAP benchmarks on the DISA site for the appropriate OS listed with the STIG benchmarks (see below on SCAP)</li>
+</ul>
+</li>
+<li><p>Take retina report with categorized vulnerabilities and start writing puppet modules - oh wait, just kidding! first you’ll need to:</p>
+
+<ol type="a">
+<li> Check for false positives - in most cases the OS provider is way ahead of the game, and simply running ‘apt-get update’ or ‘yum update’ will take care of 80% of the vulnerabilities on the box. STIG guidelines are notoriously behind the OS and will have LOTS of false positives. Most of your time will be spent accounting for what is actually a vulnerability and what is actually already patched by the OS provider.</li>
+</ol>
+</li>
+<li><p>What vulnerabilities are left after cross correlating with security patches are what you have to develop specified puppet classes for, this is actually the easy part.</p></li>
+</ol>
+
+
+<p>A really good resource for this is the <a href="https://fedorahosted.org/aqueduct/wiki/RhelStigProcess">Aqueduct Project</a> at Fedora. They’re really good about staying on top of the recent STIG process and also maintaining a set puppet module for STIGing RHEL boxes (or at least they used to, not sure what their status is now. A recent look shows they&rsquo;re only on RHEL 5 so&hellip;).</p>
+
+<h3>SCAP</h3>
+
+<p>The Security <a href="http://scap.nist.gov">Content Automation Protocol (SCAP)</a> is a protocol developed by the NSA puppet branch of government known as NIST for implementing IT security measures. Some parts of the protocol can be useful in scanning tools such as retina since the XML format for the vulnerability index are standardized.</p>
+
+<p>For example, when you are on the DISA site looking at the current STIG for a specific OS there will be a download button for &lsquo;SCAP Benchmarks&rsquo;. This is a .zip of several .xml&rsquo;s that contain:</p>
+
+<p><a href="http://scap.nist.gov/specifications/cpe/">Common Platform Enumeration (CPE)</a> files for describing and identifying classes of applications, operating systems, and hardware devices present among an enterprise&rsquo;s computing assets.</p>
+
+<p><a href="http://oval.mitre.org">Open Vulnerability and Assessment Language (OVAL)</a> for assessing and reporting upon the rachine state.</p>
+
+<p><a href="http://scap.nist.gov/specifications/xccdf/index.html">Extensible Configuration Checklist Description Format (XCCDF)</a> which is a structured collection of security configuration rules for some set of target systems.</p>
+
+<p>&hellip; and maybe some other random ones as well.</p>
+
+<p>This is a document in motion so I&rsquo;ll be adding more here, feel free to add as you find information as well.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1287,7 +1361,15 @@ The coding for it is far more economical, and we don&rsquo;t have a psudo-bash s
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/10/20/dc-slash-os-debugging-day-2-operations-part-3/">DC/OS Debugging (Day 2 Operations, Part 3)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/20/dc-slash-os-metrics-gathering-day-2-operations-part-2/">DC/OS Metrics Gathering (Day 2 Operations, Part 2)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Logging API (Day 2 Operations Part 1)</a>
       </li>
     
       <li class="post">
@@ -1295,15 +1377,7 @@ The coding for it is far more economical, and we don&rsquo;t have a psudo-bash s
       </li>
     
       <li class="post">
-        <a href="/blog/2016/04/10/monitoring-dc-slash-os-with-nagios/">Monitoring DC/OS With Nagios</a>
-      </li>
-    
-      <li class="post">
         <a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">DC/OS System Health Monitoring</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/03/24/the-data-center-operating-system-installer-part-1/">Building an Installer for the Data Center Operating System</a>
       </li>
     
   </ul>

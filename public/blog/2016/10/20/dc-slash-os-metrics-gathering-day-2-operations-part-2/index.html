@@ -1,0 +1,321 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>DC/OS Metrics Gathering (Day 2 Operations, Part 2) - Technoblogic</title>
+  <meta name="author" content="Jeff Malnick">
+
+  
+  <meta name="description" content="DC/OS Metrics DC/OS has three main focus points for metrics: Host metrics: metrics about the host systems themselves
+Container metrics: metrics about &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://technoblogic.io/blog/2016/10/20/dc-slash-os-metrics-gathering-day-2-operations-part-2/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Technoblogic" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href='https://fonts.googleapis.com/css?family=Noto+Serif:400,700' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Technoblogic</a></h1>
+  
+    <h2>A Technology Blog.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="technoblogic.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/blog/archives">All Posts</a></li>
+  <li><a href="/blog/resume">Resume</a></li>
+  <li><a href="/blog/talks">Talks/Public Venues</a></li>
+  <li><a href="https://github.com/malnick">Github</a></li>
+  <li><a href="https://www.flickr.com/photos/129457394@N03/">Flickr</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">DC/OS Metrics Gathering (Day 2 Operations, Part 2)</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-10-20T13:28:52-07:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:28 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2>DC/OS Metrics</h2>
+
+<p>DC/OS has three main focus points for metrics:</p>
+
+<ul>
+<li>Host metrics: metrics about the host systems themselves</li>
+<li>Container metrics: metrics about the resource utilization of each container</li>
+<li>Task metrics: metrics emitted by the deployed applications within each container</li>
+</ul>
+
+
+<p>Across these areas there are endless possibilities for metric gathering. We&rsquo;ll discuss how we approach each of these cases. For more information, see our recent <a href="http://schd.ws/hosted_files/mesosconeu2016/e7/Metrics%20on%20DC-OS%20Enterprise%20%28Mesoscon%29.pdf">presentation at Mesoscon EU</a>.</p>
+
+<!-- more -->
+
+
+<h3>Host Metrics</h3>
+
+<p>Host metrics such as system-wide CPU usage, Memory usage, and System load are automatically collected for each system in the cluster. This information is automatically tagged with the system it came from, via the <code>agent_id</code> tag. Because we’re running an agent on every host in the cluster, we can parse the cgroups hierarchy and publish these for free.</p>
+
+<h3>Container Metrics</h3>
+
+<p>In addition to the metrics collected for the system as a whole, metrics are also automatically collected for each container on that system, and those data are automatically tagged to identify the container. These metrics mainly focus on resource utilization, as containers are a effectively collection of allocated resources after all.</p>
+
+<h3>Task Metrics</h3>
+
+<p>While it&rsquo;s easy to think about collecting system-level metrics, we&rsquo;d also like to allow tasks themselves to emit their own custom metrics. This opens a world of possibilities, as it effectively allows every task in the cluster to emit any measurable value at any time. These values can then be decorated automatically with metadata to assist in debugging, such as the host it was running on and the framework that started it.</p>
+
+<p>For this case, we explicitly sought a solution that was easy to integrate with any application, written in any programming language. To this end we expose two environment variables to each container: <code>STATSD_UDP_HOST</code> and <code>STATSD_UDP_PORT</code>. Any statsd-formatted metrics sent by the application to this environment-advertised endpoint will automatically be tagged with the originating container and forwarded to the rest of the metrics infrastructure. The <a href="http://docs.datadoghq.com/guides/dogstatsd/#datagram-format">Datadog StatsD tag format</a> is also supported by this endpoint, so any such tags produced by the application will automatically be parsed out and included in the forwarded data. But from the application&rsquo;s perspective, it only needs to check for those two environment variables and configure a local emitter to send the metrics. The rest is handled automatically.</p>
+
+<p>To see some examples of this integration in practice, see how it&rsquo;s done by the <a href="https://github.com/mesosphere/dcos-cassandra-service/blob/964fc1e5d6809a8b2dc040efe9c065405ff56118/cassandra-executor/src/main/java/com/mesosphere/dcos/cassandra/executor/metrics/MetricsConfig.java#L68">DC/OS Apache Cassandra</a> and <a href="https://github.com/mesosphere/dcos-kafka-service/blob/acf844c413ddb8ea7bdb2b1f58b1d79e56c8c6ad/kafka-config-overrider/src/main/java/com/mesosphere/dcos/kafka/config/Overrider.java#L163">DC/OS Apache Kafka</a> services. In each of these cases, it was straightforward to configure even third-party code to support DC/OS Metrics, without needing to touch the code itself for either of these services (modulo the addition of necessary .jars to support emitting StatsD).</p>
+
+<h3>Tagging Metrics</h3>
+
+<p>In order to support easy drill-down, filtering, and grouping of metrics data, all data sent through the DC/OS Metrics stack is automatically tagged with its origin. The tags include the following, but this list is expected to grow over time:</p>
+
+<ul>
+<li>Container identification (for all Container and Application metrics): <code>container_id</code>, <code>executor_id</code>, <code>framework_id</code>, <code>framework_name</code></li>
+<li>Application identification (for e.g. Marathon apps): <code>application_name</code></li>
+<li>System identification: <code>agent_id</code></li>
+</ul>
+
+
+<p>For example, grouping metrics by <code>agent_id</code> would allow an administrator to detect a situation that&rsquo;s system-specific (eg a faulty disk). Meanwhile grouping data by <code>framework_id</code> would allow them to detect which Mesos Frameworks are using the most resources in the system, and grouping that data by <code>container_id</code> would show the same information except with per-container granularity.</p>
+
+<h3>Forwarding Metrics</h3>
+
+<p>Now that metrics have been collected from the applications and from the host itself, they need to be forwarded to a customer-managed location so that the customer can consume them. As with all our day 2 operations API&rsquo;s, our end-goal is ease of integration with popular stacks and solutions. To forward that goal we currently support two widely used methods for outputting the metrics data from the cluster. These methods are:</p>
+
+<ul>
+<li>Kafka service (either in DC/OS itself, or external to the cluster). Widely understood performance and maintenance characteristics. Good throughput for larger clusters.</li>
+<li>StatsD service (eg <code>dogstatsd</code> or the original Etsy <code>statsd</code>). Lighter-weight solution for smaller clusters, where running a Kafka instance may be overkill. Optionally supports outputting [s[satadog-format tags.</li>
+</ul>
+
+
+<p>In either of these cases, it&rsquo;s extremely easy to consume the outputted metrics data and forward it to any customer-managed or third-party monitoring infrastructure.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jeff Malnick</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-10-20T13:28:52-07:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:28 pm</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://technoblogic.io/blog/2016/10/20/dc-slash-os-metrics-gathering-day-2-operations-part-2/" data-via="jmalnick" data-counturl="http://technoblogic.io/blog/2016/10/20/dc-slash-os-metrics-gathering-day-2-operations-part-2/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/09/19/dc-slash-os-day-2-operations/" title="Previous Post: DC/OS Logging API (Day 2 Operations Part 1)">&laquo; DC/OS Logging API (Day 2 Operations Part 1)</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/10/20/dc-slash-os-debugging-day-2-operations-part-3/" title="Next Post: DC/OS Debugging (Day 2 Operations, Part 3)">DC/OS Debugging (Day 2 Operations, Part 3) &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/10/20/dc-slash-os-debugging-day-2-operations-part-3/">DC/OS Debugging (Day 2 Operations, Part 3)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/20/dc-slash-os-metrics-gathering-day-2-operations-part-2/">DC/OS Metrics Gathering (Day 2 Operations, Part 2)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Logging API (Day 2 Operations Part 1)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/26/containerization-in-devops-talk/">Containerization in DevOps Talk</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">DC/OS System Health Monitoring</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/malnick">@malnick</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'malnick',
+            count: 3,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+Included file 'asides/twitter.html' not found in _includes directory
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Jeff Malnick -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+<script>
+  $(document).ready(function() {  
+    var stickyNavTop = $('nav').offset().top;  
+      
+    var stickyNav = function(){  
+      var scrollTop = $(window).scrollTop(); 
+      var navHasClassSticky = $('nav').hasClass('sticky');
+
+      if (scrollTop > stickyNavTop && navHasClassSticky) {   
+        return true;
+      } else if (scrollTop > stickyNavTop) {
+        $('nav').hide();
+        $('nav').addClass('sticky');
+        $('nav').fadeIn('2000');
+      } else {  
+        $('nav').removeClass('sticky');   
+      }  
+    };  
+      
+    stickyNav();  
+      
+    $(window).scroll(function() {  
+      stickyNav();  
+    });  
+  });  
+</script>
+
+
+</body>
+</html>

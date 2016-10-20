@@ -9,7 +9,7 @@
   <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content="Day 2 operations are actions which DC/OS operators take after the initial deployment of a DC/OS cluster. For the DC/OS operator, this is where their &hellip;">
+  <meta name="description" content="DC/OS Debugging API Things fail in production, many times it takes more than the logs to understand what’s going wrong. Instead of requiring end &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,7 +74,88 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/10/20/dc-slash-os-debugging-day-2-operations-part-3/">DC/OS Debugging (Day 2 Operations, Part 3)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-10-20T13:29:22-07:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:29 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>DC/OS Debugging API</h2>
+
+<p>Things fail in production, many times it takes more than the logs to understand what’s going wrong. Instead of requiring end users to SSH arbitrarily across the cluster and have root access, we have built a single tool that can access any running container from a developer’s laptop without having to figure out where it is running.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/10/20/dc-slash-os-debugging-day-2-operations-part-3/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/10/20/dc-slash-os-metrics-gathering-day-2-operations-part-2/">DC/OS Metrics Gathering (Day 2 Operations, Part 2)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-10-20T13:28:52-07:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:28 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>DC/OS Metrics</h2>
+
+<p>DC/OS has three main focus points for metrics:</p>
+
+<ul>
+<li>Host metrics: metrics about the host systems themselves</li>
+<li>Container metrics: metrics about the resource utilization of each container</li>
+<li>Task metrics: metrics emitted by the deployed applications within each container</li>
+</ul>
+
+
+<p>Across these areas there are endless possibilities for metric gathering. We&rsquo;ll discuss how we approach each of these cases. For more information, see our recent <a href="http://schd.ws/hosted_files/mesosconeu2016/e7/Metrics%20on%20DC-OS%20Enterprise%20%28Mesoscon%29.pdf">presentation at Mesoscon EU</a>.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/10/20/dc-slash-os-metrics-gathering-day-2-operations-part-2/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Logging API (Day 2 Operations Part 1)</a></h1>
     
     
       <p class="meta">
@@ -90,60 +171,14 @@
   </header>
 
 
-  <div class="entry-content"><p>Day 2 operations are actions which DC/OS operators take after the initial deployment of a DC/OS cluster. For the DC/OS operator, this is where their job truly begins; as a product, DC/OS strives to make day 2 operations as seamless and intuitive as possible. Since DC/OS is an operating system, not simply a container orchestrator (though we have frameworks such as Marathon which do that in spades), we have the perfect platform for gathering metrics, logs and implementing these intuitive debugging features that our competitors lack.</p>
+  <div class="entry-content"><p>This blog post is the first in a 3 part series on day 2 operations for DC/OS. The first part is an introduction to what we mean by &ldquo;day 2 operations&rdquo; and the first piece of this product road map, our logging API. Part 2 is on metrics gathering, shipping and integrations with popular metrics analytics solutions. The final part is on debugging and how we intend to build our debugging API for executing interactive sessions from the DC/OS CLI with a running task in the cluster.</p>
 
-<p>Enabling our operators with rich API&rsquo;s that are generic enough to fit into any stack, whether it&rsquo;s ELK for logs, or Data Dog for metrics, our aim is to ship features which integrate gracefully with the most common, feature-full solutions available. And we are not aiming to ship just cluster metrics and logs, we aim to ship metrics and logs for the applications you run on the cluster as well.</p>
-
-<p>For our Enterprise customers, you can expect these API&rsquo;s to be secured with the same authentication and authorization you&rsquo;ve come to expect since the release of Enterprise DC/OS 1.8.</p>
-
-<p>We identified 3 core areas that we are aiming to ship in DC/OS 1.10 for both open source and enterprise distributions:
-- Logging
-- Metrics
-- Debugging</p>
-
-<p>The only difference between the two across these distros is the enterprise version will have authorization and authentication.</p>
-
-<h2>DC/OS Logging API</h2>
-
-<p>Without automated log aggregation your monitoring, alerting and derived metrics are nothing. Logs provide some of the best possible insights into your application health as well as DC/OS cluster health. They&rsquo;re invaluable for debugging and are where first responders go when things head South.</p>
-
-<p>Our aim in building a cluster-wide logging API is to ensure our operators can integrate DC/OS with any log aggregator. That means it needs to work as seamlessly with an ELK stack which is front-ended with Redis as well as it does dumping to Splunk or other hosted log systems. For our enterprise customers it needs to obey our security requirements for authorization and authentication when being queried by services or cluster operators.</p>
-
-<h3>Architecture</h3>
-
-<p>The logging API has one goal: make DC/OS core service logs and applications deployed to DC/OS (frameworks or containers) logs available through one, secured, intuitive HTTP API.</p>
-
-<h4>Step 1: Everything goes to Journald</h4>
-
-<p>In order to do this we needed to re-design how we currently get logs from frameworks. Today, DC/OS frameworks dump their <code>STDOUT</code> and <code>STDERR</code> to the <a href="http://mesos.apache.org/documentation/latest/sandbox/">Mesos Sandbox</a>. This isn&rsquo;t easily accessible or integrated with where all the other host-level (read: DC/OS core services such as Adminrouter) dump their logs. Core services or anything running as a systemd unit, dumps its logs to <a href="https://www.freedesktop.org/software/systemd/man/systemd-journald.service.html">journald</a>.</p>
-
-<p>Our first step then, is to make the framework logs go to journald. To do this, we had to write a Mesos Module. This module takes every line a framework produces and mutates it using the journald API, using journald labels to mark what framework the log line is associated with along with other metadata. With this new module in place, we get all the logs on a cluster aggregated into one place, and we can build an API on top of that to expose it to the rest of the world.</p>
-
-<h4>Step 2: Build a (secure) HTTP API on Journald</h4>
-
-<p>Having all the framework and container logs in journald posses some serious security risks:
-1. How do we ensure authorized users access only the log data which their applications produce?
-1. How do we filter log results based on these ACLs?</p>
-
-<p>For our enterprise customers, the logging API needs to follow fine-grained access control lists (ACLs) for any log line. That means, if Alice does not have permission to touch Bob&rsquo;s application, then she must not be allowed to access logs which pertain to Bob&rsquo;s application. If Bob gives Alice permission to view his application, then Alice should be able to view the Bob&rsquo;s application log data.</p>
-
-<p>In order to put these assurances to rest, we use the meta-data that the Mesos Logging Module amends each log line and leverage it at the application layer to ensure logs which are not meant for a specific user are not served. The logging API talks to the same services which provide fine-grained ACLs as our other DC/OS components to ensure these assurances are met.</p>
-
-<h4>Step 3: Proxy the Logs API on Adminrouter</h4>
-
-<h3>Journald Performance Testing</h3>
-
-<h2>DC/OS Metrics Shippers // Collectors</h2>
-
-<h3>Shipping Metrics</h3>
-
-<h3>Collecting Metrics</h3>
-
-<h3>Integration Examples</h3>
-
-<h2>DC/OS Debugging API</h2>
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/09/19/dc-slash-os-day-2-operations/">Read on &rarr;</a>
+    </footer>
   
 
 
@@ -174,42 +209,6 @@
 
 </div>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/04/10/monitoring-dc-slash-os-with-nagios/">Monitoring DC/OS With Nagios</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-04-10T12:02:02-07:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>12:02 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="http://blog.duderamos.com/wp-content/uploads/2015/06/nagios-300x123.png" alt="nagios" /> <img src="http://jobs.smashingmagazine.com/logos/0000/8231/Mesosphere_Logo_-_Horizontal_Lockup__RGB__Large__small.jpg" alt="dcos" /></p>
-
-<p>Nagios is a popular monitoring framework for distributed hosts. This guide explains how to monitor a DC/OS cluster with <a href="https://assets.nagios.com/downloads/nagioscore/docs/nagioscore/4/en/monitoring-linux.html">Nagios Core 4x</a> using <a href="https://assets.nagios.com/downloads/nagioscore/docs/nagioscore/4/en/addons.html#nrpe">NRPE</a>.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/04/10/monitoring-dc-slash-os-with-nagios/">Read on &rarr;</a>
-    </footer>
   
 
 
@@ -429,40 +428,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/07/31/a-restful-haproxy-service-abstraction/">A Restful Haproxy Service Abstraction</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-07-31T06:05:55-07:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>31</span><span class='date-suffix'>st</span>, <span class='date-year'>2015</span></span> <span class='time'>6:05 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>A major hurdle of microservices is visibility into the versions of your deployed infrastructure. At SRC:CLR we have 7 different micro services plus our platform that drive our product. These services are deployed as immutable infrastructure, their IP&rsquo;s and configuration is fluid and changing all the time. During a deployment, we might to a canary update of our services, but having to manually query the <code>/info</code> endpoint across &lsquo;n&rsquo; number of nodes, IP addresses, and dynamic management port assignments is error prone and difficult. In order to gain visibility into the currently running services, we wrote a tool that finds available services by querying our frontend and internal loadbalancers for running services, and then queries those running services to get their running versions and display them in a lightweight frontend.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/07/31/a-restful-haproxy-service-abstraction/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/">&larr; Older</a>
@@ -478,7 +443,15 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Day 2 Operations</a>
+        <a href="/blog/2016/10/20/dc-slash-os-debugging-day-2-operations-part-3/">DC/OS Debugging (Day 2 Operations, Part 3)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/20/dc-slash-os-metrics-gathering-day-2-operations-part-2/">DC/OS Metrics Gathering (Day 2 Operations, Part 2)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/09/19/dc-slash-os-day-2-operations/">DC/OS Logging API (Day 2 Operations Part 1)</a>
       </li>
     
       <li class="post">
@@ -486,15 +459,7 @@
       </li>
     
       <li class="post">
-        <a href="/blog/2016/04/10/monitoring-dc-slash-os-with-nagios/">Monitoring DC/OS With Nagios</a>
-      </li>
-    
-      <li class="post">
         <a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">DC/OS System Health Monitoring</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/03/24/the-data-center-operating-system-installer-part-1/">Building an Installer for the Data Center Operating System</a>
       </li>
     
   </ul>
