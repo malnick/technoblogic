@@ -9,7 +9,7 @@
   <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content="DC/OS Debugging API Things fail in production, many times it takes more than the logs to understand what’s going wrong. Instead of requiring end &hellip;">
+  <meta name="description" content="Today, I see a new movement in infrastructure engineering which I call ClusterOps. In this new post-DevOps land we&rsquo;ve moved passed how to &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -68,6 +68,56 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/12/12/post-devops-clusterops/">ClusterOps Is Post-DevOps</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-12-12T09:11:09-08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:11 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Today, I see a new movement in infrastructure engineering which I call ClusterOps. In this new post-DevOps land we&rsquo;ve moved passed how to codify infrastructure as code, system administrators are squarely part of the development teams which they enable. In the ClusterOps world, we are building tools to enable companies to treat their systems as a single entity, orchestrating various container technologies across clusters in hybrid clouds, federating them together on a grand scale.</p>
+
+<p>Many small start ups are seeing a great deal of benefit, enabling them to hire less people to manage complicated micro services platforms. On the enterprise scale, I&rsquo;m seeing large companies benefit from federated clusters across hybrid clouds, allowing them to build complicated charge-back models to their internal teams and save costs by maximizing usability of their cloud-based infrastructure.</p>
+
+<p>The new ClusterOps world is defined by orchestration tools we&rsquo;ve come to know very well: <a href="http://dcos.io">DC/OS</a>, <a href="http://kubernetes.io">Kubernetes</a>, and <a href="https://www.docker.com/products/docker-swarm">Docker Swarm</a>. These tools allow simplified orchestration of services through various containerization technology and abstracting the complexity of managing many hosts into a single pool of resources. There are many words that folks use today to describe these tools, but nobody will deny that all look like one thing: an operating system.</p>
+
+<p>In a former world, we developed tools to enable system administrators to treat their infrastructure as code. This movement redefined the system administrator as a developer. Automating large, complicated systems by defining their parts in cloud formation templates and automating up to layer 7 with tools like <a href="http://puppet.com"> Puppet</a>, Chef and Ansible. When cloud options were not available, we built our own with systems such as <a href="https://www.redhat.com/en/insights/openstack">OpenStack</a>.</p>
+
+<p>Entire companies were built around enabling companies to succeed in the DevOps space. Companies such as s <a href="https://www.redhat.com">RedHat</a> and countless other consultancies made bets on the tools available, and leveraged them to build offerings in their vision of &ldquo;the right way&rdquo;.</p>
+
+<p>Today, vendors in this space provide these tools overlapping features for free or with licensing. Some companies purchased the intellectual property to build them into an existing licensing model. What this conveys is that these tools were successful. So much so that companies are able to build a tidy profit from them by making them more accessible.</p>
+
+<p>In this way, those companies brought DevOps to the masses. No longer did you have to be that trick Sys Admin with code experience. Anyone could get a streamlined setup with bare metal through layer 7 automation, a fly continuous integration pipeline, top notch monitoring and infrastructure visibility, all for a price.</p>
+
+<p>This conveys that not only were these tools successful, the movement that brought them to the doorsteps of companies large and small was also a winning strategy. The DevOps movement won out over monolithic,  siloed engineering.</p>
+
+<p>ClusterOps is the next logical progression in this movement:
+<strong><em>DevOps addressed managing singular resources with code; ClusterOps addresses the complicated relationships these resources have with each other.</em></strong></p>
+
+<p>Tools such as DC/OS and Kubernetes allow us to treat many hosts as a singular entity. They take care of scheduling where, when and how many instances of a given service are running. They abstract away the notion of singular hosts, and replace them with a single point of contact for operators and developers. This single point of contact allow those professionals to treat these systems as a cluster; the interaction, development and operation of this pool of resources is ClusterOps.</p>
+
+<p>ClusterOps vendors are already popping up everywhere. With many consultancies and developer tool companies being built every day to enable their clients with this <em>new way</em>. Just as the success of DevOps was signified by a similar explosion of support and tools for infrastructure as code, the proliferation of companies and tools for cluster operations conveys a similar movement and success story. I&rsquo;m very excited about this future for the infrastructure engineering space and am looking forward to seeing how it develops.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -394,40 +444,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/08/13/version-management-in-soa/">Version Management in SOA</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-08-13T08:47:19-07:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>13</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>8:47 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Service oriented architectures offer significant increases in agile deployment pipelines. They allow what were traditionally, large, monolithic code bases to be broken down into smaller, more manageable pieces. Instead of diagnosing a single issue that affects the application as a whole, SOA allows developers to troubleshoot smaller, atomic pieces.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/08/13/version-management-in-soa/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/">&larr; Older</a>
@@ -443,6 +459,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/12/12/post-devops-clusterops/">ClusterOps Is Post-DevOps</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/10/20/dc-slash-os-debugging-day-2-operations-part-3/">DC/OS Debugging (Day 2 Operations, Part 3)</a>
       </li>
     
@@ -456,10 +476,6 @@
     
       <li class="post">
         <a href="/blog/2016/04/26/containerization-in-devops-talk/">Containerization in DevOps Talk</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">DC/OS System Health Monitoring</a>
       </li>
     
   </ul>

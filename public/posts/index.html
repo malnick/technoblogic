@@ -9,7 +9,7 @@
   <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content="STIG is a methodology for the implementation of security compliance across heterogeneous operating systems. Every OS has a specific STIG. The STIG &hellip;">
+  <meta name="description" content="When starting out with Types and Providers for Puppet it&rsquo;s common to misunderstand when something is a Parameter and when something is a &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -68,6 +68,80 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/19/puppet-types-understanding-parameters-and-properties/">Puppet Types: Understanding Parameters and Properties</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-04-19T08:30:28-07:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>8:30 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>When starting out with Types and Providers for Puppet it&rsquo;s common to misunderstand when something is a <em>Parameter</em> and when something is a <em>Property</em>.</p>
+
+<h3><strong>Properties</strong></h3>
+
+<p>Properties are anything that will <strong>modify</strong> a resource. In other words, attributes of a type that will change how that resource type exists on your system. A property is a charactaristic of a resource. A property does not change what a resource is, which is where the confusion usually begins.</p>
+
+<p>For example, let&rsquo;s take the file resource (anyone who has had the opportunity of taking Extending Puppet for Developers might find this redundant).</p>
+
+<pre><code>file {'/tmp/test':
+    ensure   =&gt; file,
+    path     =&gt; '/tmp/test', # $namevar
+    owner    =&gt; 'root',
+    group    =&gt; 'root',
+    checksum =&gt; 'md5',
+    content  =&gt; 'foo',
+    }
+</code></pre>
+
+<p>Any ideas which attributes are parameters and which are properties? Let&rsquo;s start with</p>
+
+<pre><code>ensure =&gt; file,
+</code></pre>
+
+<p>The &lsquo;ensure&rsquo; attribute is actually created by the &lsquo;ensurable&rsquo; method from the Puppet::Type class. Any attribute calling &lsquo;ensurable&rsquo; gets the default &lsquo;present'and 'absent&rsquo; values telling the type to call from the provider &lsquo;exists?()&rsquo; then based on output from &lsquo;exists?&rsquo; evaluates &lsquo;creates()&rsquo; or &lsquo;destroy()&rsquo;.</p>
+
+<p>Ensure modifies the resource, but does not change the definition of what that resource is to the system, therefore ensure is a property.</p>
+
+<p>Other properties of file are</p>
+
+<pre><code>owner
+group
+content
+</code></pre>
+
+<p>Content? Yes, content. On a file system the content of the file does not define the file, the <em>$path</em> to the file is the definition of a file. Therefore content is just a charactaristic of that file, making that attribute a property as well.</p>
+
+<h3><strong>Parameters</strong></h3>
+
+<p>Parameters are used by Puppet to provision the resource onto the system. Parameters are resource attributes that can be retrieved and are used to create, or define the resource as it exists on the system.</p>
+
+<pre><code>path =&gt; '/tmp/testing',
+</code></pre>
+
+<p>For example, the $namevar of the the file resource is the $path. That&rsquo;s because the $path of a file defines the resource on the system. You can query the path of a file, however if you change the path of a file you define an entierly new file. Therefore, $path is a parameter.</p>
+
+<p>Another parameter of file would the checksum attribute. The checksum type is used when determining whether to replace a file’s contents. If your md5 checksum does not match the md5 checksum of the file on the system your file will be created; if it does match your file will not be updated if it exists; if it doesn&rsquo;t exist if will be provisioned. Checksum defines what the file should look like on the system; it&rsquo;s used by Puppet to provision the file but not stored as part of the file resource.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1361,6 +1435,10 @@ The coding for it is far more economical, and we don&rsquo;t have a psudo-bash s
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/12/12/post-devops-clusterops/">ClusterOps Is Post-DevOps</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/10/20/dc-slash-os-debugging-day-2-operations-part-3/">DC/OS Debugging (Day 2 Operations, Part 3)</a>
       </li>
     
@@ -1374,10 +1452,6 @@ The coding for it is far more economical, and we don&rsquo;t have a psudo-bash s
     
       <li class="post">
         <a href="/blog/2016/04/26/containerization-in-devops-talk/">Containerization in DevOps Talk</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/03/25/dc-scale-application-health-monitoring/">DC/OS System Health Monitoring</a>
       </li>
     
   </ul>
