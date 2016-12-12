@@ -5,7 +5,7 @@ date: 2016-12-12 09:11:09 -0800
 comments: true
 categories: 
 ---
-Today, I see a new movement in infrastructure engineering which I call ClusterOps. In this new post-DevOps land we've moved passed how to codify infrastructure as code, system administrators are squarely part of the development teams which they enable. In the ClusterOps world, we are building tools to enable companies to treat their systems as a single entity, orchestrating various container technologies across clusters in hybrid clouds, federating them together on a grand scale.
+In the new post-DevOps land we've moved passed how to codify infrastructure as code, system administrators are squarely part of the development teams which they enable. In the ClusterOps world, we are building tools to enable companies to treat their systems as a single entity, orchestrating various container technologies across clusters in hybrid clouds, federating them together on a grand scale.
 
 Many small start ups are seeing a great deal of benefit, enabling them to hire less people to manage complicated micro services platforms. On the enterprise scale, I'm seeing large companies benefit from federated clusters across hybrid clouds, allowing them to build complicated charge-back models to their internal teams and save costs by maximizing usability of their cloud-based infrastructure.
 
