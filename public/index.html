@@ -9,7 +9,7 @@
   <meta name="author" content="Jeff Malnick">
 
   
-  <meta name="description" content="This blog post is the first in a 3 part series on day 2 operations for DC/OS. The first part is an introduction to what we mean by &ldquo;day 2 &hellip;">
+  <meta name="description" content="Today, I see a new movement in infrastructure engineering which I call ClusterOps. In this new post-DevOps land we&rsquo;ve moved passed how to &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -68,6 +68,43 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/12/12/post-devops-clusterops/">Post-DevOps: ClusterOps</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-12-12T09:11:09-08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:11 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Today, I see a new movement in infrastructure engineering which I call ClusterOps. In this new post-DevOps land we&rsquo;ve moved passed how to codify infrastructure as code, system administrators are squarely part of the development teams which they enable. In the ClusterOps world, we are building tools to enable companies to treat their systems as a single entity, orchestrating various container technologies across clusters in hybrid clouds, federating them together on a grand scale.</p>
+
+<p>Many small start ups are seeing a great deal of benefit, enabling them to hire less people to manage complicated micro services platforms. On the enterprise scale, I&rsquo;m seeing large companies benefit from federated clusters across hybrid clouds, allowing them to build complicated charge-back models to their internal teams and save costs by maximizing usability of their cloud-based infrastructure.</p>
+
+<p>The new ClusterOps world is defined by orchestration tools we&rsquo;ve come to know very well: <a href="http://dcos.io">DC/OS</a>, <a href="http://kubernetes.io">Kubernetes</a>, and <a href="https://www.docker.com/products/docker-swarm">Docker Swarm</a>. These tools allow simplified orchestration of services through various containerization technology and abstracting the complexity of managing many hosts into a single pool of resources. There are many words that folks use today to describe these tools, but nobody will deny that all look like one thing: an operating system.</p>
+
+<p>In a former world, we developed tools to enable system administrators to treat their infrastructure as code. This movement redefined the system administrator as a developer, automating large, complicated systems by defining their parts in cloud formation templates and automating up to layer 7 with ools like <a href="http://puppet.com"> Puppet</a>, Chef and Ansible. When cloud options were not available, we built our own with systems such as <a href="https://www.redhat.com/en/insights/openstack">OpenStack</a>.</p>
+
+<p>Entire companies were built around enabling companies to succeed i the DevOps space. Companies uch as s <a href="https://www.redhat.com">RedHat</a> and countless other consultancies made bets on the tools available, and leveraged them to build offerings in their vision of"the right way".</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -381,40 +418,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/07/21/weak-dh-ciphers/">Weak Diffe-Helman SSL Ciphers</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-07-21T11:32:12-07:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2015</span></span> <span class='time'>11:32 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>We recently scanned our <code>srcclr.com</code> domain via <a href="https://www.ssllabs.com/">Qualsys</a> SSL Labs scanning suite. When we deployed this site in March (a migration from sourceclear.com to srcclr.com) we had an A+ rating.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/07/21/weak-dh-ciphers/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/">&larr; Older</a>
@@ -430,6 +433,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/12/12/post-devops-clusterops/">Post-DevOps: ClusterOps</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/09/19/day2-logging/">DC/OS Day 2 Operations: Part 1 - Logging API</a>
       </li>
     
@@ -443,10 +450,6 @@
     
       <li class="post">
         <a href="/blog/2016/03/24/the-data-center-operating-system-installer-part-1/">Building an Installer for the Data Center Operating System</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/01/17/automated-installs-over-ssh-lessons-learned/">How to Deploy Highly Scalable Systems Over SSH</a>
       </li>
     
   </ul>

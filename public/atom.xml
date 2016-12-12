@@ -4,7 +4,7 @@
   <title><![CDATA[]]></title>
   <link href="http://technoblogic.io/atom.xml" rel="self"/>
   <link href="http://technoblogic.io/"/>
-  <updated>2016-10-11T07:01:55-07:00</updated>
+  <updated>2016-12-12T10:19:18-08:00</updated>
   <id>http://technoblogic.io/</id>
   <author>
     <name><![CDATA[Jeff Malnick]]></name>
@@ -12,6 +12,14 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[]]></title>
+    <link href="http://technoblogic.io/blog/2016/12/12/post-devops-clusterops/"/>
+    <updated>2016-12-12T09:11:09-08:00</updated>
+    <id>http://technoblogic.io/blog/2016/12/12/post-devops-clusterops</id>
+    <content type="html"><![CDATA[]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[]]></title>
@@ -162,14 +170,6 @@
     <link href="http://technoblogic.io/blog/2015/02/06/puppet-webhook/"/>
     <updated>2015-02-06T06:52:36-08:00</updated>
     <id>http://technoblogic.io/blog/2015/02/06/puppet-webhook</id>
-    <content type="html"><![CDATA[]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[]]></title>
-    <link href="http://technoblogic.io/blog/2014/12/23/using-dns-for-applying-roles-to-nodes-in-puppet/"/>
-    <updated>2014-12-23T16:49:37-08:00</updated>
-    <id>http://technoblogic.io/blog/2014/12/23/using-dns-for-applying-roles-to-nodes-in-puppet</id>
     <content type="html"><![CDATA[]]></content>
   </entry>
   
